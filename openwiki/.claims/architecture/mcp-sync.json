@@ -1,0 +1,262 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:e6dccc554e5ab616439123ef8d55c75938c7a6783b9354e23ea6bc9b9d8b991b",
+  "claims": [
+    {
+      "id": "claim_4e40e87b0b6644e98ab4e88baa325c2b",
+      "statement": "The console keeps a global MCP registry at state.mcp.servers (Record<string, McpServerDef>) persisted in .agents/console/state.json, where each McpServerDef carries name, transport (stdio {command, args?, env?} or http {url, headers?}), a global enabled toggle, and optional runtimeOverrides per runtime.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/state.ts#L36-L37",
+          "version": "repo-lines-v1:sha256:022a445ecaa739a122e7bdd6834ec4cd036aefac72b0660a8cc157cb260bc277:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWFmZjFlYWZiMTU1MDJhMDE2NjM0NWZiZTJjNjkyMmQ4Y2Q2ZWE0NTY2NjdmNGQ4N2FjYjFhNTg2OTQyOTI2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZThhODYxM2MxNTEzZWQwZjdiYWVhZTM4Y2QzZWZkOTVjNWQ2YzVhNTUwZjgzNjk4NzVjYjc0ZGJiYmIyM2VmNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmY2Njg5ZWM1ZWE2OTA3Zjk0OWRmNDk5NWZkNDNkY2RhYWJmZmRmN2IwNWQwNWExNjhhZTExN2UzNzMxNjNkYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTBhMTMzNTdiMzdjNmRhZjkzNjVkODExMWMzMzQzZGY5MjEwN2IwNTkyMjc4ZTc1MmM0NjE4ZGE4MDZlYTlmYiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/types.ts#L156-L168",
+          "version": "repo-lines-v1:sha256:cbe3cbb98f0b4bbbe0e9bb33c0b710804d025fd0868bc9e20bdbb736f0edf9d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjliYTA5NWJiNGQ5M2VkYTY3NzY2NzI5OTc4ZWUyMzA5ZjI1MDUxZDlhNzM0M2UwYjQ0OTBlN2E1NmU1NTEzMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlYWVkYmFiMjEwZjIxZTY0NGU5YTJkOTZlNzRhZGJhNjg4ZDdjZDZmODUyZGY2ZGYzZmNhNDRhMDQ1ZTk3NTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1ZTEwNzhiNDQ0MmI2NTc1YWY4NmQ1ODJjMWQwNzA2MjE2M2M4MTAzMGMwZGY1ODkxOGMxNTNhNzRmOWM0NjUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_722a9b1351b040e3a747b0d7722a8b1a",
+      "statement": "Effective enablement of a server for a runtime is runtimeOverrides[runtime] ?? enabled: the project .mcp.json target receives globally-enabled servers only (runtimeId null), while per-runtime user config targets apply their runtime override when set; a value of null in a PATCH runtimeOverride deletes the override and restores the global default.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/mcp/route.ts#L79-L85",
+          "version": "repo-lines-v1:sha256:c93ea2eed6e619090e4aa69ec6d0f42504765189b7a68d978d9170e297868eb4:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDQ0YWFmOTIwZDkyNTdjMTgyZGUxMzEyYjQxODI3NTQ3ZWUzNzcwMzNmYWJjODAxMTY3MGQyYjZjNWNjY2I5YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTZlMTg3MTYzNGEwM2FlZTJkMDMzZDM1M2NhNDM0NjNmMzJhNGMxYzVmNmFhNjg4YzY5NTZhYjQ5YzVkMDkxMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjExODhjNTUzZTdkNjEzYmM4NjA3OWM0Y2RiOTM1OGNiNzkzM2FmMzc3ZDlhYzE1OTk3OGY2ZGQ3YmU2NTZkZiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L115-L116",
+          "version": "repo-lines-v1:sha256:2277a32fe8bbe0b0918f49810894c6b349b1ea43c1728857a23aba02ebabe93f:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJkZmFjMmVmOTIyYmVjNjdkYjE0NWZkMGM0YjVkM2RkNzliNzQ3YjdlNWEzODI5OTA4MmViZDc2ODA0ZjA5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGE4NWEwZjg0MTQ1ZDQ4N2EzNGQ4MjkyZGUzNGYyNTllYzk3MTJjODdhYzMzYmQ4ZDAyZWFhNDgwZjYzM2JlZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjAzMGY4NDVjY2MxM2IzNjY1MmZmY2JhMjVhZWUxZWM2NDEwMjNmZDQyNGM0NmFkZjIwYzFiMjg5NmMzOWZkNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTA2NDM2NGY1ZGU2MWE3YjViOTRjZjQzZDViZmY4ZjUzZDkzMTdmZjc3OTgxZTk4ZDRhOTJjNDQ1YmZiOWIzNSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L45-L52",
+          "version": "repo-lines-v1:sha256:bb7eda067961b13d8395545e505aff009d0d0fb0adc5b593d930f95930ea9233:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2I1MzllNmI4ZWJjZWFmZWRkODQ0NTc5YWE2ZTg1NDk1N2E0OGRkM2UzMjMyNGUxODE4ZWYwOGQwM2QwN2E4NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDczMGRmODExNDRmMTIyN2I5YjQwNWVhZGY1M2ZhNTcwNmJhYzRlZjcxNDZjMGZlNWFmOWRmY2U1YWViNTVjNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjQ4ZWVlYWQyNjRhYjE0YjFiZDMyNTUwNTI0M2IyOTZmNWMwYjMwZDI1ZmE2ZjkxM2ZkMTZkNDAwMzMyYWJlYiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_88e686acac58419692590bb29129deef",
+      "statement": "Disabling a server removes it from all synced files but keeps its registry record so a single toggle restores it; DELETE /api/mcp removes it from both the registry and every file.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/mcp/route.ts#L93-L105",
+          "version": "repo-lines-v1:sha256:efa142cb254e93080b7217558799001b102e7b3990d410f4139c19a6f8f97bd5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5ZGY0NGZjZDU3OGRkNmVjMWY5NzFiMjJiMTlkMzQzNmE3Y2U1ZjMzMjJmZTE0ZThkZDY0NTA2NGE0MDMxOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRiNTgzZDU5ZDA1MWRiMGZlNzFlODhhMmNkMWY3OWE3MDM5ODFmNzg5MGE0OWQ0N2E5NDI3OGNiMTNmM2EyNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L9-L17",
+          "version": "repo-lines-v1:sha256:8869fcfe0f1fb1c9fa243d57ff198ab6b4c99d627061aae30b1919577f4e8224:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjNlNTY5YjVlNjk0MzQwNmQ5OTUyMTZkOGNjOTljODU1MmIwOWUxYTZhODU0YzlkNGE0MWUwMTBjMDI4YWJmMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTI0YzM2YTMzOGZhYzIwMjgyN2VkMDA4MzgxODVkODI5YWFhYWE1ZGIyMWVjMjQxZTZhNGIzZjE4MDkyY2IyNiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7cc513a7f6cb48afb6324b2a33ce6fad",
+      "statement": "Server names must match ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$ (isValidMcpName); this is enforced at POST /api/mcp, in plugin manifest normalization, and again inside the sync engine via assertValidNames before any file or CLI write, because names flow into TOML section headers, JSON keys, and spawnSync argument lists - a shell/path injection boundary.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/mcp/route.ts#L49-L52",
+          "version": "repo-lines-v1:sha256:4e9dfb451cd2f6658b6bbc3e80c053660ebbb622efd612d6a513996c5043a7ea:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjg4YTc4YTJmZDMyYzljNzk1ZjZlNTA4ZDg1NWVjNjQ1NDhlODQwMzJjOWVmNTMxNzBmNWM0OTEyOTAyODA3ZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODI0YzhmYmMwMWViZmM4YTA4ZWQ2ODA3ZGJhYTJjNmI1NTI4MTc4MmI4MzUyOGJkNDU2Njc0MmFiZmNmNzFhYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjhjMDE3NDdiNDBmZjZiZmE0ZTkwYTJiNmRiYTA0ODYzZjFlMzEyM2M2MmJkODlmZDQzNmNiNDc2MjJmMWUzMiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L19-L30",
+          "version": "repo-lines-v1:sha256:617658a93afb619d6458edea37eff3805fdb44d6a82736d85c37506f5261dc75:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmYzEzZTc5NDU2NmZkOWM1OTZiZjVmZGRhMmRlYWFjNTgyYTI0ODJiNzk3NzUwNWRlYTU0MGNjYmNjZGVjNTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmNzFkMzQzZThkNTEzZmNkNmFlZjQzZjYzNmM1NGE1ZDgzNzM5MTRjM2EyNTFmMTZjNDAxODlmZjE5NGNkOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFlYWVhZWViZTYwOTc0YmYwNDM3NDJhYzBkMTk4ZjRhOTg2NmU3ZDM4NzQxZWQ4YzU2NjY3M2Q4NzMzM2Q1NzIifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/plugins.ts#L168-L172",
+          "version": "repo-lines-v1:sha256:8f575349d9fd4358ba5eee43328c4c4d2386d2d803f1f2d020ae8012f61e6cb2:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2YwZWJjMTkyZjQ3YzM1ZjU4YjBmODIwN2FmMzc3ZTc0MmI1YjUyOTZkNWRkYmRiMjlhODc3YzczZmMwNTRmNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDMyMmM4Y2MzNzBiNjg2ZDdkNmU5NjMyMGI0YjEzNzE3Mzg0YTY1M2I2NTAyM2M5MDUyZGQ0ZTk1NGVmMjAwYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDVjYTk3MDI3ZDJkMmMwZjlkN2RmMDM4ODg1MWE3Y2ZlN2QyN2I0NDZmNDY5YzViYjI5ZGJmMDU1YWZmOWI3NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzZiMTU1NTRkM2FkYTA3NTRlZmZmNDRlZjhhMDRkOTQ1ZTkzMTBkNDU1NmNlOWY1ZjhmZjE5NWVhMGFmOTFiMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_229fa75c3b6b4736ba406eb4ffef74cf",
+      "statement": "syncMcp iterates five fixed targets: project (<repo>/.mcp.json, key mcpServers), claude-user (claude CLI at user scope with ~/.claude.json merge fallback), codex-global (~/.codex/config.toml), cursor-global (~/.cursor/mcp.json), and opencode-global (~/.config/opencode/opencode.jsonc, key mcp); ZCode and Kimi have no global MCP config and are covered only by the project target.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/components/McpPanel.tsx#L122-L126",
+          "version": "repo-lines-v1:sha256:b12b5f4059f4e74e0eb8827e6e1cc9d2cfe67b4731e719cb3ce150a93c19b153:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzJjYWUwMGRkMjAyNTE4ZTVjZDljMzQ3N2IyYTg1ODg4MzcyOTgwYmFhMTA2MDk3YTkyMTU4YzhlNjhmNzYyZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDNiMjY1NWFkMzU3NjM0ODkxNzY5ZThkNmY1OGE3ZWUxMjcyZDhiNDA3M2QyYWFlNmM3MjNmYjNmNzBlMGVkMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDJkNDJiZjIxZjZlMzZjZGVjMTFiNjEzMzFmMzhhMDZhZDA1YTg3NzAzYTVhYmM5ZTRmYzI1NWMyNWUxNTI5OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzI3MTA3NzI1ZjA4NzNmOGVkOGFhNTc2YjlkYTQ4MDg5MzNmYWUzNGRkMzhkODQ3MjVjMDNjNmQwM2M4NWU0NCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L124-L229",
+          "version": "repo-lines-v1:sha256:2410e49f80eb8a65c79618a28cb4ad14895fd3fed937c71d9915b7f664d6a07c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzYzNjMjUzODQyNmVhN2IxZGRjY2MyZTU2MmJlMmU2OTQ0YTM1YmFiMDcwZjFmYWExYzI1ZDBjNTIyNDc4YmVlIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMDJkMmMwZDZkYzVlNzRkOTJmYTE0YjkxZGJlYTI2NDA5MGJlYjM1ZmRiOTE4OGQ5YjM0MTE4MWRjZTlmNGNlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlYmEwMzc2ZjA2M2RmNmUzNTY1YzVmMzllODY0ZjUyMjUwOTEwZmJiMjZlYWQ2YzM3MTRhZDgzOTM1OWMxMTdjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI2YmYyZDYxZmFhZjE1MTQ1N2FmZjA2Y2JiYmE3NTQ0M2JjNDA1YTdlYzk2YzQ5Yjc1ODVmZmRlM2ZkMmFkZWIwIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_c6a15c958ae94314b2d63c464de84de7",
+      "statement": "Entry rendering is centralized in stdioOrHttp: http becomes {type:\"http\", url, ...headers} for mcpServers-style targets or {type:\"remote\", url} for OpenCode (headers dropped there and in Codex TOML); stdio becomes {type:\"stdio\", command, args?, env?} or OpenCode's {type:\"local\", ...}, omitting args/env when empty.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L34-L43",
+          "version": "repo-lines-v1:sha256:c4473e469ab9647a27fae952d92e6e7b962e45dcac7d3757be01bb5753111754:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3ZjdmYTIyMjk5M2YzZmE3ZDNiMTYyN2Q1NWViZmNjMzViOTE1ODlhNjVjMDk2MzZhMWU0NmJhMzgwMTkzMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlYWVhZWViZTYwOTc0YmYwNDM3NDJhYzBkMTk4ZjRhOTg2NmU3ZDM4NzQxZWQ4YzU2NjY3M2Q4NzMzM2Q1NzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAxODcxY2EzYmIxY2YxYzJmMTY5MjM1NDk1MjhhY2FiYTUwNGZjZDg5OTkzZGU1OTM1ODFjYmExNjZlNDE2MWMifQ"
+        },
+        {
+          "resource": "repo://docs/mcp.md#L30-L35",
+          "version": "repo-lines-v1:sha256:8a6d6c7a71adcf44de91b92dfe6f2eb768b6dc87de205e9f11e371d54d52ad35:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTExYzgzMDA0YTcwM2IzMjg5NzNhZjk3N2FmMmU3ZjM4NTY0ZTc0OTJjNWYzOGU2MGE1MGM1OWQ0Y2MyM2ZkZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTAwMDUzZGY1YmY2YzdiMjI1YzE1M2EwM2I5ZDdiZmMzNzY2MDg4NDEyNTA1YWJhMTJjYjdhYTllNDVjMjYwNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2MwMDQ5NzBlOTI2Yjc3MmRkZjZkOTAyNDM2NTQ4MmRjZWYxODQ0N2M3ZTlkMmRkMDUyZjZiNzdlOGFmNzc4YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzIxZDQwN2M2MDEwNTE2ZjFjYWM4ZjlhOGM1ZTUzOGRkNDZhYWYwZmM1YzFjOTZjMDA4NDVmNTc4ZjQ0NTU0OSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9fe01a1b1d6440d0bffa905d7e65cda3",
+      "statement": "JSON targets are merged by mergeJsonMap, which tolerantly reads missing or JSONC files (block/line comments stripped before JSON.parse fallback) and rewrites only managed names inside a single top-level key, leaving all other keys and foreign server entries untouched.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L58-L93",
+          "version": "repo-lines-v1:sha256:4282b04bef6b34858ff0f932c0dd5302a0ff87606b1857c9919114326a66c3a5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhYjllMDlhZWRkZjI5ZjY0ZGMwMmM5YmMzYWVhYmNmMjY3YWQ5MmUxNmQ0ZDY1NDFjNmFkMDNjMjVjNWNjZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4YzcyNmJkMjNiMjExODI0N2JmNmVhYzQzYWM5OGIyZjg3OWI2NDUxZDljMTgzZDk5NmMxMWRkZGI2ZGRhZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIzM2JjNWYxOGE3MThkZDgxMjg1YmMyMGI3NzJmNTM0ODBmYzdlMzM3ZjYyMjU3NzgwN2IxMzBkNGRiZDViMzQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4b7af9a4f85f4b32a3939790114a3d51",
+      "statement": "The claude-user target prefers the official CLI when `claude --version` succeeds: it runs `claude mcp remove <name> -s user` then `claude mcp add-json <name> <json> -s user` via spawnSync with a fixed binary and argument list (no shell), rejects arguments containing newline/NUL, and treats 'not found' stderr on remove as success; without the CLI it falls back to merging ~/.claude.json.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L140-L170",
+          "version": "repo-lines-v1:sha256:dc35ad275af81b085b2e567f9d5434aaa19006cc2f0e7163c226248264b33bce:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMTFmMjM5YWM2NWM5ZmVjZDRmNzk3NWQ0ZWUwYzY3N2I1OGE4ZWE2Nzg1MmVhMjVkMjc5MjM5MjUxOGQyZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhNjY5M2JlNDI1MzFkMWRmM2Y2MWJlMWNjNmJiOTRjMDY1YmNiNDU1NzZmODM0NzBhMjAxYjYxZmYwYWEzYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA3OWE2ZTVmMmE1OWZiNDZlM2FhOTA0NjFjYTA1NjczYzNlZmFkZjZiYjA4ZjRmMTM4NzNlMjk3ODc5OTc2ZDIifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L95-L109",
+          "version": "repo-lines-v1:sha256:120be96fb07ba3cbf99e7fc360d0baf81150a1e4cea56ded352baf055600ec23:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3MWZmZDVhMmVjODIzMjgwMWEwNjEwNTkzM2U4MGM1MmNhZmM4ODE2YWY2OWUyMTkzZGQxYjZjYzNkZjI5NTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlNTNlODY3ZmFiNWY4ZTI3MDUzMzZjZjE5ZDAxYTdmZjBjOTVjMWRiMDIzZWFiMmNmM2VjY2IyZWM1OTMzYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhODIxN2ExNWRjZGI3NGY1OTFhZmZlNGM1NjJhNjcyMmMyNWE2ZGU1ZjM2ZmVlMTZhN2ZkMTBlNDA2M2Q1N2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e2cb46d16aa64dc5b18615d613ca4ca6",
+      "statement": "The Codex target edits ~/.codex/config.toml only through upsertMcpSection/removeMcpSection in lib/toml.ts, which locate and replace [mcp_servers.<name>] and its [mcp_servers.<name>.env] subtable while preserving the rest of the file byte-for-byte; values are serialized via JSON.stringify (valid TOML), http servers become url = \"…\", and a stdio entry without command throws.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L171-L198",
+          "version": "repo-lines-v1:sha256:1b769b7708c7e677c4f33f3e3adf8c37a4ba63f82d75cb247b9dcd93d3e8f77e:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMTFmMjM5YWM2NWM5ZmVjZDRmNzk3NWQ0ZWUwYzY3N2I1OGE4ZWE2Nzg1MmVhMjVkMjc5MjM5MjUxOGQyZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhNjY5M2JlNDI1MzFkMWRmM2Y2MWJlMWNjNmJiOTRjMDY1YmNiNDU1NzZmODM0NzBhMjAxYjYxZmYwYWEzYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjMzIxZWJlZTQ4ZDVlMjljYjUwMTRkNjYwYTY4MjA2NjY1Mjg3NmRjZDA0NDQyOTE1OWE5MTJmZTVlNjY1MzMifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/lib/toml.ts#L1-L65",
+          "version": "repo-lines-v1:sha256:c4341ba00b4f08274199e8d018ba7701d18bffd3f7d6fbd156e5be7f96f3e335:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1feeb1419f004ab48b21b233ad2e3cb4",
+      "statement": "Each target manages only the managed-name set registryNames ∪ state.lastMcpSync[target].applied: desired names are written, other managed names are deleted, names the console never wrote are never touched, and the union with the previously applied list ensures servers that left the registry (e.g. disabled plugins, uninstalled tools) are still removed from files.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L117-L122",
+          "version": "repo-lines-v1:sha256:b627c502e936919a144ba763a5ace44fad2fbeeb3b061ed3f31920f5870cf43d:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGYyYTJmOTk2ZjA4ZTY4MGJkMjkyMTM1YTZmYTQ5NzhiZGEyNmU2MDJkODRmMzNjYjFkNTk0Nzc1ZDQzMDRiNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWYwMmU2OGI0MWU3NDIxOGNjYmMyYjkzZTBjYWU0ZDZhYWI4MWM2NmY2NGEyMTdmZGEyZjhiYThiOWZlZmI5MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBjNDQ3NzE1NWI2YmE5ZDYzMzBmY2FjZGU1ZmVjOGNmZjEwYmFiNjU5MTQyODg0YzNhMTk1ZGU0ZjZkZDA2MyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L239-L245",
+          "version": "repo-lines-v1:sha256:7795d738f7c3c0d4cf0558de2fb206425fbc37257dca8793f79d2f63d819d829:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDc5M2I3OTlkNGQ4OWY0ZmQ4N2UxNTkxNGQzMmQ4Mzk4N2Y4NTczMWIzN2Y5ZTNlNTI4N2I3NzZjZjQxODA2NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2YxODk3ZjZmZTRmMzgzM2U0NDM5NGYwYTI2M2JmN2Y4ZDE2ZjAwYTI1ZTg2MTM0ZGUyMWYyYjEwNGU0Njg0YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzZkNzk4NjM3OTNiNTliZmQ2OTViMDFkZjY5Zjg5MzdiZWI0NzY1ZjBmYzY3Y2EwZDAwYWQwMTdkMGYyMTU3ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjAwYjliY2E3OWU2Y2E3NmI1YzA5MmYxZmE3MWE0OTVhMzIyZmUzMGVkZmI2N2I5MGFmODdlNDZiZWZjYzZmOCJ9"
+        },
+        {
+          "resource": "repo://docs/mcp.md#L60-L71",
+          "version": "repo-lines-v1:sha256:58725cbf8a94a0ee2dd2d0b653a9c48086c7f1633918537968c3230acb7c96ff:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4MTZiMDRjOWM4YTFiODcxNGQ1YzMzOTM5ZDZlOTkyY2I5MDJlZmI3NzBlMTBjNTU3Mjg3NzY0ZWMzNGRiYjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5M2FlMzBhMTczY2YwMTk0MDA4YTVjNTIzMTBiMTZjZmVlNGQyZDI2NTI4OTQzMjRhNWFjZDNlYzIwZjRlZDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2NjM4YzZjZjk1YzdhODI2ZWMzYzk0MjVhZjc4MGI2MzkwMjMyODU0ZGY4MzlkNWNjY2M1ZjgyNDhhNDY2NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYyNTAxOTJhYjA0MWE5ZTdmMDBiMWE0ZTNmMmU5YTZlMzYxNTI2MjQ4ZjA4ZWU4MmQ0MTk0M2U2MGU3MmNiODMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_28847e5b4939469d8bfd2d9b042b75ea",
+      "statement": "Per-target results {target, label, runtimes, ok, at, applied, removed, error?} are computed before apply and stored into state.lastMcpSync; failures are isolated per target (a throwing apply is caught and recorded as ok:false while other targets still run); an empty registry with no prior writes and no prior error short-circuits ok:true without touching files.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L232-L272",
+          "version": "repo-lines-v1:sha256:53dc91730ac48a1d5baf8e72577c47fca551446f368cb50f2420280d1214ba38:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3NzQ3NWQ2YTQxMTkyYmIxYWZhNTE2MjFmYjJkMzhhN2I5MzJhZTRkMzIwMTBlMDgxMDY4OWQxYzYxZDIyMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3YWZmMTYxZGFhN2FkM2IxN2FkOTZhY2E0NjUxZjZmZjJkMTk5NGYwNTUwNGNjZGM1MjNjZjVmZDQyMTIzZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVhYWExZDI4MWJkM2NhNTZhODNlMTBmYzEwMGE5YTkzNzZiYWJmMjcyZDdiZDhlZTVjNWIxMmQyMzIzMDkyODcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/types.ts#L170-L179",
+          "version": "repo-lines-v1:sha256:05a95c0fdfa694986e85da6127c1c2c907897827e83149372aebd456c0c7d3b4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkNDVlYjlkOTY1N2NlNmJkODBkOTNiYzk2M2RiM2U4YTBmZTg2Mjg5MjNiNjJmNTE1ZjM4ODU5YmM4NTRlMDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlMWNlNmZhZjhiZDZhNWU4YzBmOWU0NzZmZDk0YmQzYWUxNDU5ZTllN2NmNmYxMTQwMWJlMzQ2ZmM5N2NlOGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1NTc0OTViODNmMWQ4NGI4NDNhNThiM2M5ODE5ZGRmMWVkZDk3MTYyOWYzMWNhYzgxYmI0MDk1ZWExZGIxNTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_92027b54ea824ef181ceca8ab066fa1b",
+      "statement": "Every registry-mutating endpoint (POST/PATCH/DELETE /api/mcp, /api/plugins, /api/tools/action) follows the same pipeline: mutate state.mcp.servers, run syncMcp, saveState (atomic tmp+rename), invalidate dashboard cache; sync failures are surfaced as error-severity diagnostics by sharedIssues in core/issues.ts.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/mcp/route.ts#L56-L60",
+          "version": "repo-lines-v1:sha256:777c0318ae5cd5929712afdc20d34cd8785e34cbca7fe4503ed7f46e7e253f8c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzY5ZTBlMmU5YmJmM2YzM2U2ZTBmODQzOWMyNzA3ZmU2NTkzM2Y0YmYwOGQ0YTk3ZjRjNWQ4NGI5NDRiYzc3MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMGE4MWU2MmM2NDZiY2U2MjUyOTEwNDBmMmUyNTZhNDhmMTEwZDA5NTQ4Y2YxNjJlZTcyY2YyZGU3YWVhNmRkOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjhjMDE3NDdiNDBmZjZiZmE0ZTkwYTJiNmRiYTA0ODYzZjFlMzEyM2M2MmJkODlmZDQzNmNiNDc2MjJmMWUzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDA1OTdjZmM0NzQ5MTRmNTdlYTEyNGFhYzBmODM2Njc4ODlmZDFjMWI1NDk0N2M4OWEzMmMzYmYyOWZhYmRmMyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/plugins/route.ts#L53-L57",
+          "version": "repo-lines-v1:sha256:863e85fd08f1d16747e1f6323d2c392b20a29e1a771baec4dcd0b405762f75bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDljNGI5YmVhM2FlMzU5ZTIzZTc3Nzc5ZjBlNGY3YzJlMDQ2NDM4ZjEyNzA0ZTI1ZjllYjM4ZjQ0ZmI0NjBiYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTI4NzhkZWM5ZDhmZDQ5NGVlOTllMWZkMzBkM2RiMzg4MzRiNmYyMTA1N2I0M2U0NzIyMTFkYTJhODk2NzY0MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmE2Y2M4ZmQ4MDlkZThmMWUyMjMwNjM5YWEyYTljYzhjNzE0Yjg4YjZhYmMyZDRhYzIyMGIyYTVlZGU1NjE4ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmUyOTUxYTFlNWJlMGI5YmQ3ZjE2ODc4MzE2NjBiMTk5OTIyMzM3OGQwYTNlODM1NmE2ODZkNDkyNDA4MGRhMSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/tools/action/route.ts#L62-L67",
+          "version": "repo-lines-v1:sha256:17529fe1afe6e2fd3d5830227716ddc03125f49d6ae30f0bbd13107f3d292887:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzgwYTMxZGY2NDcyOTJjMWJkODQ2MjBlNGRjNjA2MDhjMDgyNDZhYTNhYjhkZWI3ZjdkYjg4ZmIzOThjZTM2MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGNkYzFkODcyYjRhZjhhZTRjNmI4MGM4YzVmYzhlMmQzYTQ0ZTYwOTQ2OWVmMzdhYTg1YzI4ODQ5OWI3ZmRkZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjZkMjNkYTQ2M2IyOTBhNzAwZmYxNGUzNjViNjAwOWM5N2E5NmMzZTk5NTczMWFjN2M3MDcxMWFmODM3Yjc3NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzA5YWM1NjJlMzFiOGRkMTY0NmI0ODc2YzBjMDBkNWY0NDQ0MmY2YmJhOWNhZjY2ZDA0ODIwYmQ4ZWVhOGZmNyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/issues.ts#L23-L32",
+          "version": "repo-lines-v1:sha256:65f144ff537ee60eff213f2b269650a5dd2c8a3cdf2d3ac6972a1b8e33adca93:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxZTE3NDY5MDkwMzI3MGUwYThiMzRlYWViZWFkNTA2YTczZjBmMGZjZDkwNGFmMjA1Nzg5YzQ1ZTYzMDRiMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlMTJiNjExODk0M2UzMGMwMDY4MzNlNzgxNjMwYTUzYjMyZjQxN2VmNWY5Nzk1YzNmMTJmMzMwODAyNGM1ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhM2ExMzJmNGFjYmE0ZTA0YzU0NWJlZTE3MTViNzVkMmM3NzQ0ZTg3ZjhkMWE5OTkwMjgyZjg3ZGY3ZjJlNDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d65f8740931c44f8b02a07f5570308a7",
+      "statement": "Plugins contribute their MCP servers to the shared registry on enable and remove them on disable/uninstall via contributeMcp, which deletes an entry only if its transport still matches the plugin contribution (sameTransport), so a user-replaced server survives plugin removal; tool installs register state.mcp.servers[tool.id] from def.mcpPreset(params) and uninstall deletes it only when a tool record exists.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/tools/action/route.ts#L129-L133",
+          "version": "repo-lines-v1:sha256:17350175e083e4ea1ac50de18777c0a592e3096833f355de8af0c2bc5b6aa3b4:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzhlMGNmZmY1OGNhZjk1ZjQ2Y2YzZTQxNTVmNWVmMjk2Mjg0MzJhZmY2NGM0MTkwMjVmYmQ4YmE2N2JlNTMyNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWZjOWRhMWZlYTUwYjRkOTk2OWIyNjVmZDg3NTlkMDIxYjlhMDNmZTU5YWE1ODcwMTFiYTUyNzg2MDQ0NTY5NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjYyZjQ5NDdhODA5YWMxODQ3NzFkN2Q1YzRiMDFlNTU0NWNiMzk1ZDE4N2MzOTY2YWE0MGVjMGYzMjUzZjhmNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWUwMzcwNWY5Y2E1MjA4OTRhZDhkYzY1Mzk4MGJjZTgyYjdkZjgzNjdlNmJhZDQxYTUwY2FkN2JhNjE3NjQwNiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/tools/action/route.ts#L62-L65",
+          "version": "repo-lines-v1:sha256:70506e84b17a2e269eb30e206bb2c2a50ecd7c272dc049fbf7d980050b673c8c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzgwYTMxZGY2NDcyOTJjMWJkODQ2MjBlNGRjNjA2MDhjMDgyNDZhYTNhYjhkZWI3ZjdkYjg4ZmIzOThjZTM2MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjZkMjNkYTQ2M2IyOTBhNzAwZmYxNGUzNjViNjAwOWM5N2E5NmMzZTk5NTczMWFjN2M3MDcxMWFmODM3Yjc3NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWUyMDk3NTJkNjc4ZjUyODliNTU0ZWU3MWVhMmE3OGNiY2Q1ZmZhNThjYzRmYWVkNzM2MGVjNTk1Y2Y0MWIxNCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/plugins.ts#L224-L246",
+          "version": "repo-lines-v1:sha256:f627075778c72dcb2928a842609b643f8766d4dd07292b98406b77cec7dbb324:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiMmU4M2Q4MjIyYWZhYTI1YzQ3Yjg0MDNjNGU1YjdiMTBhODZlZWYxMTI5MTllOWQ1NzhiYzdjMzU5NTQ4OWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmMGQxMzk5Mjg4YmY2ODVhZTgzOWJkNzhmYjhhNGMyYWVmZWRiM2U5MmVjMjRkNDQ1MjE3MGUyODFjODg1OWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjODUzZTU3NDg2YzcyNTJkYjI3YTkwN2E5MzgwMGFhMzJiYTJkYWVhNjczZjIxMjQ4MmYzMGZlNmUxYjNmNzYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_641a88b650b1445e891cde5c238dc57a",
+      "statement": "The preset catalog MCP_PRESETS in core/plugins.ts (Context7, DeepWiki, WebMCP, Playwright, Serena, qmd, CodeGraph) is served by GET /api/mcp/catalog through mcpPresetsForPm, which rewrites `npx -y` stdio presets to `bunx` without `-y` when the package manager preference (.agents/console/package-manager.json, default bun) is bun, leaving npm and http presets unchanged.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/mcp/catalog/route.ts",
+          "version": "repo-file-v1:sha256:3df1d9e8e56656f1bcb18e8c473d3ea1e0491fe4a67539af91645d52ccbd4e1d"
+        },
+        {
+          "resource": "repo://apps/console/src/core/__tests__/tools.test.ts#L137-L146",
+          "version": "repo-lines-v1:sha256:0731e346261b62adc376c0c56a4e81d97236c4e969cdda4026c249a6520b787f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiMTlmOTdkYjQzNzYxODAxNTcxYzIxZWNlODQxNzkwZGZhMmU2MDQ1YTMxNWJiOGZlMzg1YjZlODYwOGIwM2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJiZGJmMmE1NDcxNDIzNWI1N2ViNjg2YjI4NDhjYTk0MjU0YjhmZmE1ZjhkZDIzMjUwZTcyYzIxOTc0ZjE3ZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY1YWYzZWRlMGIyZWZjMDEzNzI0ZDNmMjVkMmIzOThiMTgxMmFmM2U3NmFjMjNmYjhiODkzOTE0MTM3NzJkMmUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/plugins.ts#L38-L107",
+          "version": "repo-lines-v1:sha256:8cb662cba5e13b69156f75f3dfb30a60ec8b445d411c8630c7643640b71289c5:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyMjk3YjBmYmMxYTU5ODE1OTM5OWRhZGMzM2Q1NjIzMTcxMTZlYzQ4MmRiOWE3NTVmOTEyNWE0ZDI1MTMyOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU5YjI3N2EzOTAyOWNhMDc3M2I4OTE2OTZjYzY2ZWY1NDgyM2E1YzZlYTAxYzRlYjRiYmQ0OGE3NDhmOWIzZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjZGU5OWI3MTE5YzhhYjhkYzM3MWI0YTU5MDMwYjJlZThiNjViOGE3MGMxZjUzNTQ5YjQyMDBmZTcxMGI5ODcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/tools.ts#L131-L144",
+          "version": "repo-lines-v1:sha256:07163af9aca6bad2d086fc602ff5592b3cff32522012e48ea2b2d934655c32b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZjFmNjJkNWYxMTA3Njk2ZjZhNmE3MjYxOTBlZWJhNDNhZjRiOTU1ZDAzYWNkMzNiZDU1ZDNhYTNkZmI3MjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdjMmU3OGQ3ZWNkMmEyYzE3MDI0NGI1OWE0NDQ5MDE3MjRlZjQ0OTQyNmViZjQyNmJmZTViOWIyZjZhNzk4NTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkzOWMxYWFjZmI5MGQyNjIxYTk1OTU2MjU4MTExMTI1ZDA1ZDVhYjUyNTBhODQyNTM4NmM2NjFkMTYzNjZiZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dcd30f60deff4019a124d2b1a0489401",
+      "statement": "McpPanel provides registry CRUD, global toggle, per-runtime override chips (effective = override ?? enabled, asterisk marks explicit overrides) and renders the last sync per-target status with applied/removed names and errors; McpSettingsModal edits the transport wholesale via PATCH /api/mcp without touching enabled or runtimeOverrides; InstallMcpModal installs catalog presets or custom servers (including http headers) via POST /api/mcp.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/components/InstallMcpModal.tsx#L43-L63",
+          "version": "repo-lines-v1:sha256:e93f636657c26117165ee97c553df3e247c99312b7b42a0ba24dd72cbffa24cd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFjMjY0YjkzMjI1YTIxMTRhMWE4OTQ2MmIyMDc1OTBkNGQ3MThkMTQwYTAzMGM0NDBmOGY3N2VkNGNiMTE5NTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMyZDhmOWIzNDg4YmE0NzMzYzVjZmE0ZDI0Yzc0ZjUzNWY2ODFhOWNkYjkyMzZkYTY3NzU2NjE3MjYwYmU0M2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkODE3NDhlMDZlMWQ1YzQyOTBjMmQzYjc5NzVlMDE3MzViMmM0OGEwN2YxMWRkODNkNjUxMjAzN2MxY2NlNjgifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/McpPanel.tsx#L186-L262",
+          "version": "repo-lines-v1:sha256:b0160cf7bc09e94158661dcb2033ca92e15a75396fb424be21b6ac78750e2734:eyJzZWxlY3RlZExpbmVDb3VudCI6NzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4YjQ1NDc2YjE3N2Y1MzMxNDk1ZGQ2MzBmODY2ZmQzMmZkMGNiNzQ5YjFkYWMwNTg0MjM2Yjc3NmVhODljNzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwMDhlYWM3NTAyNTk5ODkwZDNkYWVmMjI3ODU4OGEzZTIwYTVlYWJiYTA3YTZkNTU2MjQ0YjNkYjhkOWZlZDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZhMWExYjA3YzEzYTZiMmVjMjVmMDI4NDhlZjAwYmMzZjEwOWU2YzczNTlkYWQ5YzBiMjk4YzAxNTMzNmIwYmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjZmFlZGQxMzE0YTM1N2IwNDBlOTQ4MmZhY2RiM2YyNGNiOTllOGNkM2JlNmE0OTk1M2Q0NjA5ZTBjNTY0NDUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/McpSettingsModal.tsx#L18-L22",
+          "version": "repo-lines-v1:sha256:2e035a4b2dc96446faeaf8f3a4b9736d86308b7db91c4a273c8055bd17d44346:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjc5MTc5YmRlYmU5ZTgyZWY4ODQ1NTExNDliZTliYjE0ZTUxNzRjMzU0Nzg1MzZiMmQyZTEyZTNkMWExYzgyZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmYxOGVhOTYwMTQwZWEyNDk1NjQyMTJhOGZhMjU1ZWMwOGI1MTk3NTAxOTM0NjFiYWE5OWJjOTJmOTMxM2U5YiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_18e267a991b2477bb6eabfa98842cc0e",
+      "statement": "The TOML section editor is covered by lib/__tests__/toml.test.ts, which verifies upsert preserves foreign sections, replaces an existing section with its .env subtable, remove keeps the rest of the file, http serializes via url, and removing a missing section is a no-op.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/lib/__tests__/toml.test.ts#L15-L53",
+          "version": "repo-lines-v1:sha256:3f8ecfe60d16d5084fa859f73c5013bdb38d1bc98ab8c0ee75c17ed2e3a05b66:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVlN2RhYTU0NmFiNzA5ZWYyOTIyYjQ3NzM2NjU1Y2U2MWE1ZmM2MjU5MWQxMjc5NWQyOTg1OGIzZDM1YTNjYTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjllOWY1OGQyOThlZWVlMDg1MTFlMGFmZTQ2MjQ4ZDQzMDEwNGE1YzM0N2RhZmNiNWU5NjRkZWVhOGEwODhhMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-30T23:26:29.291Z"
+  }
+}

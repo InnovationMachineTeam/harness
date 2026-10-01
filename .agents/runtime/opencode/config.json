@@ -1,0 +1,51 @@
+{
+  "$schema": "docs/platform/agent-runtime-configs.md",
+  "id": "opencode",
+  "vendorAdapter": "opencode.json + .opencode/plugins/agentos-guard.ts",
+  "guard": {
+    "command": "node .agents/runtime/guard.mjs",
+    "hooksSupport": "native",
+    "notes": "OpenCode has no declarative hooks key in opencode.json, so the adapter is a project plugin: .opencode/plugins/agentos-guard.ts subscribes to tool.execute.before, pipes {tool_name, tool_input} to .agents/runtime/guard.mjs with AGENT_RUNTIME=opencode and AGENT_RUNTIME_CONFIG=.agents/runtime/opencode/config.json, and throws on exit 2 - a thrown error denies the tool call, so the policy is enforced by the harness. warn-level hits go to the OpenCode log via client.app.log. The plugin runs under Bun; guard.mjs is spawned with node.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+  },
+  "capabilities": {
+    "subagentSpawn": "unknown",
+    "resume": "unknown",
+    "cancel": "unknown",
+    "toolEvents": "unknown",
+    "usage": "unknown",
+    "worktreeAwareness": "unknown"
+  },
+  "capabilitiesNotes": "OpenCode was added to this repository on 2026-09-30 together with its adapter; nothing here has exercised a session yet, so every capability is unknown rather than assumed. toolEvents: the plugin can observe every tool call through tool.execute.before/after, but no event has been recorded in this repository yet - it moves to verified at first exercised run. The plugin API also exposes session.*, permission.* and message.* events, which is the surface the console emitter would use.",
+  "models": {
+    "fast": {
+      "model": "GLM 5.3 Flash",
+      "thinkingLevel": "low",
+      "verified": false
+    },
+    "standard": {
+      "model": "GLM 5.3",
+      "thinkingLevel": "medium",
+      "verified": false
+    },
+    "strong": {
+      "model": "Claude Opus 5",
+      "thinkingLevel": "high",
+      "verified": false
+    },
+    "subagents": {
+      "model": "GLM 5.3 Flash",
+      "thinkingLevel": "low",
+      "verified": false
+    }
+  },
+  "pricingVerified": false,
+  "pricingNotes": "OpenCode is bring-your-own-provider: models resolve against the providers configured for the user (auth), not against this file. The tiers above are the intended mapping; confirm them with the user at first launch, write the confirmed values back and flip verified per tier. No rates are recorded; `delivery estimate --runtime opencode` warns and falls back to the placeholder table.",
+  "permissions": {
+    "filesystem": { "read": true, "write": true },
+    "git": { "commit": true, "push": false, "forcePush": false },
+    "shell": "policy-guarded",
+    "mcp": [".mcp.json", "opencode.json"],
+    "notes": "Reads and writes go through OpenCode's own permission prompts; the plugin guard adds this repository's policy on top (throw denies the call). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
+  }
+}

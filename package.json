@@ -1,0 +1,17 @@
+{
+  "name": "harness",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "setup": "bash tooling/scripts/setup.sh",
+    "prepare": "husky",
+    "console": "bun run --filter '@harness/console' dev",
+    "console:build": "bun run --filter '@harness/console' build",
+    "console:test": "bun run --filter '@harness/console' test"
+  },
+  "devDependencies": {
+    "husky": "9.1.7"
+  }
+}

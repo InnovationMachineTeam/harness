@@ -1,0 +1,51 @@
+{
+  "$schema": "docs/platform/agent-runtime-configs.md",
+  "id": "codex",
+  "vendorAdapter": ".codex/hooks.json",
+  "guard": {
+    "command": "node .agents/runtime/guard.mjs",
+    "hooksSupport": "native",
+    "notes": "Repo-level .codex/hooks.json registers a PreToolUse hook that runs the guard with AGENT_RUNTIME=codex and AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json (exit 0 allows, exit 2 blocks). Schema (verified against codex-rs/config/src/hook_config.rs, 2026-09-30): the file is {\"description\"?, \"hooks\": {<Event>: [{\"matcher\"?, \"hooks\": [{\"type\":\"command\", \"command\", \"timeout\"(sec)?, \"statusMessage\"?}]}]}} - event names live inside the \"hooks\" wrapper, never at the top level (deny_unknown_fields); events: PreToolUse, PermissionRequest, PostToolUse, PreCompact, PostCompact, SessionStart, SessionEnd, UserPromptSubmit, SubagentStart, SubagentStop, Stop, Interrupt. Codex loads project hooks only after the .codex/ layer is trusted via the /hooks command; until then the policy is honoured behaviourally - pipe a doubtful call through the guard before running it. Hooks run from the repository root, so the relative guard path works.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+  },
+  "capabilities": {
+    "subagentSpawn": "unknown",
+    "resume": "unknown",
+    "cancel": "unknown",
+    "toolEvents": "unknown",
+    "usage": "unknown",
+    "worktreeAwareness": "unknown"
+  },
+  "capabilitiesNotes": "toolEvents: this file's own `guard.notes` already states the confirmed fact - \"Codex CLI reads AGENTS.md natively but has no repository-level PreToolUse hook\" - no tool-call event reaches this repository's policy or observability layer without a user mirroring config by hand outside the repo, matching `hooksSupport: behavioral`. The other five: no script, doc, event log or working integration in this repository exercises or confirms Codex subagent spawn, resume, cancel or usage reporting, or worktree awareness - general belief about the Codex product is not evidence this project has confirmed, so all four are left `unknown` rather than guessed. Updated 2026-09-30: Codex gained repo-level hooks and .codex/hooks.json now wires PreToolUse to the local guard, so toolEvents moves to `unknown` - it becomes `verified` at the first exercised run in this repository.",
+  "models": {
+    "fast": {
+      "model": "GPT 6 Luna",
+      "thinkingLevel": "low",
+      "verified": false
+    },
+    "standard": {
+      "model": "GPT 6 Sol",
+      "thinkingLevel": "medium",
+      "verified": false
+    },
+    "strong": {
+      "model": "GPT 6 Astra",
+      "thinkingLevel": "high",
+      "verified": false
+    },
+    "subagents": {
+      "model": "GPT 6 Sol",
+      "thinkingLevel": "low",
+      "verified": false
+    }
+  },
+  "pricingVerified": false,
+  "pricingNotes": "No rates are recorded for this vendor; `delivery estimate --runtime codex` warns and falls back to the placeholder table.",
+  "permissions": {
+    "filesystem": { "read": true, "write": true },
+    "git": { "commit": true, "push": false, "forcePush": false },
+    "shell": "policy-guarded",
+    "mcp": [".mcp.json"],
+    "notes": "Sandbox and approval policy live in the user's ~/.codex/config.toml, not in this repository. Structural changes to roles, agents or skills always need explicit user approval, in every mode."
+  }
+}

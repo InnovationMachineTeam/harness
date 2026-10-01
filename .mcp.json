@@ -1,0 +1,57 @@
+{
+  "mcpServers": {
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/"
+    },
+    "webmcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@jason.today/webmcp@latest",
+        "--mcp"
+      ]
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
+    },
+    "chrome-devtools": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest"
+      ]
+    },
+    "serena": {
+      "type": "stdio",
+      "command": "serena",
+      "args": [
+        "start-mcp-server",
+        "--context=ide",
+        "--project-from-cwd"
+      ]
+    },
+    "codegraph": {
+      "type": "stdio",
+      "command": "codegraph",
+      "args": [
+        "serve",
+        "--mcp"
+      ]
+    },
+    "qmd": {
+      "type": "stdio",
+      "command": "qmd",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

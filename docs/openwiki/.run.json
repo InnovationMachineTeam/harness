@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "runId": "8a7eb972-592a-45d2-b8af-0b1630f6fd33",
+  "mode": "init",
+  "phase": "generating",
+  "startedAt": "2026-09-30T23:34:10.344Z",
+  "language": "en",
+  "languageChanged": false,
+  "requiredRewritePages": [],
+  "initialPages": [],
+  "sourceFingerprint": "sha256:9b38596c9e2ada69eafc76d82c9dd1a20762150549eec8a48bba7cffbf451202",
+  "targetGitHead": "735c2e6ec821daf2ec36017505274f0341ab7653",
+  "actor": {
+    "producerActor": "openwiki/0.5.1",
+    "metadataModel": "kimi-k3:cloud"
+  },
+  "previousLastUpdate": null,
+  "beforeContentSnapshot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "preparedWiki": {
+    "generatedProvenance": []
+  },
+  "plan": {
+    "pages": [
+      {
+        "id": "3eb2cac5-d6f7-4790-bf86-7bef19242aee",
+        "path": "/openwiki/architecture/api-registry.md",
+        "title": "HTTP API Route Registry",
+        "purpose": "Domain-grouped reference of every documented API route: runtimes, mcp (+catalog), skills (+skills-sh search/install SSE), plugins (+marketplace), processes, sessions (+reply), prompts, settings, tools (action/diagnose/dashboard/job/usage), workspaces (+clone), memory (docs/openwiki/graphify/runtimes/file/visualizer), and the /dashboard/* Headroom embed proxy - with each route's role and whether it mutates state.",
+        "seedPaths": [
+          "architecture.md",
+          "plugins.md",
+          "sessions.md",
+          "skills.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/workflows/install-jobs-and-streaming.md"
+        ],
+        "instructions": [
+          "Group routes by domain tables as in architecture.md; explicitly mark mutating routes (they must follow the file-first saveState + invalidateDashboardCache discipline) and SSE routes (job streams read file logs).",
+          "Note the SSRF/security properties attached to specific routes (clone host filter, memory/file allowlist, dashboard proxy literal upstream) as pointers into the security-model page rather than duplicating it."
+        ],
+        "status": "complete",
+        "completedBy": "openwiki/0.5.1"
+      },
+      {
+        "id": "6655b52f-d701-47f4-a81a-0cf9d964b340",
+        "path": "/openwiki/architecture/overview.md",
+        "title": "Console Architecture Overview",
+        "purpose": "System-level picture of the Agentic OS Console: Bun-workspace Next.js 15 / React 19 / zustand stack, client-server-core-adapter layering, data flow over RSC/JSON/SSE, the three sources of truth (vendor runtime configs, state.json, server-driven UI data), the core mutation invariant (file first, then client), and the performance mechanisms (dashboard micro-cache with TTL+dedup, single-ps snapshot, scanLimit, tabCache, streaming skeletons).",
+        "seedPaths": [
+          "README.md",
+          "architecture.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/api-registry.md",
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/runtimes/adapter-system.md"
+        ],
+        "instructions": [
+          "Embed a mermaid flowchart showing the layer stack (pages/components/store → API routes → src/core modules → runtime adapters → FS/ps/headless-CLI) grounded in architecture.md's ASCII diagram.",
+          "Keep the performance table (core/cache.ts TTL 5s + dedup, ps-snapshot TTL 2s, scanLimit, tabCache, loading.tsx) as a compact reference - these mechanisms recur on many pages.",
+          "List the key invariants verbatim-level: runtime list truth is .agents/runtime/<vendor>/config.json (console only reads), console state is .agents/console/state.json outside git, UI runtime plugins are presentation-only."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "055033c8-4d62-48ff-8b08-103df052f5f7",
+        "path": "/openwiki/architecture/security-model.md",
+        "title": "Security Model and Guard Boundaries",
+        "purpose": "Cross-cutting security rules an agent must obey when changing the console: SSRF-filtered server fetches (scheme/host allowlists, private-range bans, timeouts, size caps), literal-command spawn discipline with argument arrays and no shells (Mimosa pre-commit blocks spawn wrappers as injection patterns), prompt and package/MCP-name sanitization, the memory file read allowlist (checkReadPath: markdown in workspaces, openwiki/ and runtime memory dirs, realpath containment, no hidden components, 1 MB cap), the guard write boundary (console writes only .agents/console/ + managed MCP configs; never runtime configs or skill files), embed-proxy constraints, and secrets exclusion from git.",
+        "seedPaths": [
+          "architecture.md",
+          "operations.md",
+          "plugins.md",
+          "tools-dev.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/tools/plugin-development.md",
+          "/openwiki/workflows/runtime-operations.md",
+          "/openwiki/workflows/workspaces-and-memory.md"
+        ],
+        "instructions": [
+          "Embed a mermaid flowchart of the checkReadPath decision chain (absolute path → allowed roots → realpath containment → hidden-component ban → extension/size cap).",
+          "Per repo guidance: when validating security-relevant behavior, prefer the narrowest quiet validation that proves the changed behavior and preserve complete failure output.",
+          "State the non-obvious rules explicitly: never introduce wrapper functions around spawn (inline switch over literal commands is the approved pattern), prompts are sanitized for NUL/length/leading dash, plugin installs are resolved by id from trusted catalogs only."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "43bc0cdb-677f-47ee-b7a7-1a8cc89595c0",
+        "path": "/openwiki/architecture/state-and-persistence.md",
+        "title": "Console State and Persistence",
+        "purpose": "The .agents/console/state.json persistence model: full schema (mcp, skills, defaultRuntime, settings.taskRuntimes, plugins, workspaces, tools, lastMcpSync), atomic tmp+rename writes, merge-on-defaults reads so a missing/broken file never crashes the console, ~/ expansion via expandHome, validation rules (openwiki/graphify subsets of workspaces), the mutation ordering invariant (mutate → saveState → response → client store; store never leads the file), cache invalidation on every mutation, and the adjacent side files (package-manager.json, tools.env, tools-usage.json, dashboards.json, tool-jobs/, logs/, runs/) with their distinct formats.",
+        "seedPaths": [
+          "architecture.md",
+          "operations.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/skills/levels-and-toggles.md",
+          "/openwiki/workflows/install-jobs-and-streaming.md"
+        ],
+        "instructions": [
+          "Embed a mermaid sequence diagram of the mutation flow (API route → state mutation → saveState tmp+rename → invalidateDashboardCache → response → zustand store update).",
+          "Include the JSONC schema block from architecture.md and the per-section ownership notes (who reads/writes each section); call out that state.json is machine-local (paths belong to this machine, .agents/console/ is gitignored)."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "3e4f4c36-5c12-4a7d-bea1-1c5f6c6eeb5e",
+        "path": "/openwiki/mcp/registry-and-sync.md",
+        "title": "MCP Registry and Sync Semantics",
+        "purpose": "The console-owned MCP registry: the effective-enabledness formula (runtimeOverrides[R] ?? enabled), toggle semantics (remove from target files, keep the registry entry for one-click restore), transport editing (stdio command/args/env, http url/headers - transport replaced wholesale on PATCH), the managed-names ownership model (each target owns current-registry ∪ previously-applied names, so foreign entries survive and departed servers are cleaned), and the mutation→syncMcp→lastMcpSync→saveState→cache-invalidation pipeline with per-target results surfaced in the UI.",
+        "seedPaths": [
+          "architecture.md",
+          "mcp.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/mcp/sync-targets.md",
+          "/openwiki/plugins-and-marketplace.md"
+        ],
+        "instructions": [
+          "Embed a mermaid sequence diagram of the change flow: UI/API mutation → registry update → syncMcp across targets → lastMcpSync results → saveState (file first) → invalidateDashboardCache → client response.",
+          "Explain the managed-names bug class (server leaving the registry would linger in target files forever without the ∪-with-last-applied rule, caught by live plugin round-trip) - it is the invariant most likely to be broken by refactors."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "354d9235-0d5e-4238-8028-3a8109e82457",
+        "path": "/openwiki/mcp/sync-targets.md",
+        "title": "MCP Sync Targets and Native Formats",
+        "purpose": "Reference for every sync target and its native format: project .mcp.json, claude-user via `claude mcp add-json/remove -s user` with ~/.claude.json merge fallback, codex-global via the section-based TOML editor (lib/toml.ts), cursor-global mcp.json, opencode-global jsonc (type local/remote), zcode/kimi as project-only, plus the header-support matrix per target, the MCP_PRESETS catalog (Context7, DeepWiki, WebMCP, Playwright; serena/qmd/codegraph tool presets) and the bunx↔npx adaptation to the configured package manager without overwriting installed servers.",
+        "seedPaths": [
+          "mcp.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/plugins-and-marketplace.md",
+          "/openwiki/tools/registry-and-lifecycle.md"
+        ],
+        "instructions": [
+          "Keep the target/format table and the stdio-vs-http examples (JSON and TOML) verbatim-level; they are the contract third-party refactors must preserve.",
+          "Note that headers are supported only by JSON targets (.mcp.json, Cursor, Claude fallback); opencode remote and Codex TOML write url only - an easy detail to regress."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "6740df54-0463-4a8b-b2cf-f3e6b4985cb0",
+        "path": "/openwiki/plugins-and-marketplace.md",
+        "title": "Plugins and Marketplace Catalogs",
+        "purpose": "The plugin system: PluginDef bundles (id, mcp contributions, declared skills, source) whose enabled state physically moves MCP servers into or out of the shared registry (with the transport-compare safeguard that protects user-modified servers from being removed on disable), the builtin chrome-devtools plugin, marketplace JSON manifests with server-side validation/normalization, the trusted-catalog install rule (lookup by id from builtin + added marketplaces, never from request bodies), and the marketplace SSRF protections (https-only, private-range host bans, 10s timeout, 512KB cap).",
+        "seedPaths": [
+          "mcp.md",
+          "plugins.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/api-registry.md",
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/mcp/sync-targets.md"
+        ],
+        "instructions": [
+          "Call out that DELETE = disable + record removal, and that the live round-trip bug (servers surviving plugin disable) motivated the managed-names model documented in mcp pages.",
+          "Show the PluginDef interface and a manifest example; make the enable→registry→sync / disable→transport-compare→remove cycle explicit as a mermaid flowchart."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "ce8533e2-f82e-4b8e-be22-443f41c25b4f",
+        "path": "/openwiki/runtimes/activity-diagnostics-awaiting.md",
+        "title": "Runtime Activity, Statuses, Diagnostics and Awaiting-Input",
+        "purpose": "The runtime health model: per-runtime repo-scope and machine-scope activity signals (mtime traces, rollout correlation, sqlite freshness), the status ladder (active-now ≤5min → recently-active windows → inactive, plus disabled/unknown), the issues system (common checks: unverified models, MCP sync errors; adapter checks: guard hook file, AGENT_RUNTIME link, zcode hooks.enabled, cursor fail-open, Kimi mirrored [[hooks]], OpenCode plugin) surfacing as ⚠ badges with the \"Исправить\" fix path, and the awaiting-input heuristic (completed turn + file silent ≥2 min + processes alive) with per-runtime detection specifics.",
+        "seedPaths": [
+          "operations.md",
+          "runtimes.md"
+        ],
+        "relatedPages": [
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/runtimes/adapter-system.md",
+          "/openwiki/runtimes/sessions-and-replies.md",
+          "/openwiki/workflows/runtime-operations.md"
+        ],
+        "instructions": [
+          "Embed a mermaid stateDiagram-v2 of the status ladder (disabled/unknown/inactive/recently-active/active-now) with the timing thresholds as transitions.",
+          "Keep the per-runtime signal table and the awaiting-input heuristics table - they are the tables agents consult when adding or fixing an adapter."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "2523dc46-23a5-49d8-b4c7-e905916d783a",
+        "path": "/openwiki/runtimes/adapter-system.md",
+        "title": "Runtime Adapter System",
+        "purpose": "How the six agent runtimes (Claude Code, Codex CLI, ZCode, Cursor, Kimi, OpenCode) plug into the console: .agents/runtime/<id>/config.json as the discovery source of truth, the RuntimeAdapter interface (probeSignals, isInstalled, detectIssues, awaitingInput, listSkills/listSessions/getSession, replyCommand/runCommand - all optional except identity), ProbeContext with FsSignalHelpers as the only FS access, ADAPTERS registration, client UI plugins (monogram/color only), and the 5-step recipe for adding a new runtime.",
+        "seedPaths": [
+          "architecture.md",
+          "runtimes.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/overview.md",
+          "/openwiki/runtimes/activity-diagnostics-awaiting.md",
+          "/openwiki/runtimes/sessions-and-replies.md",
+          "/openwiki/ui/ui-kit.md"
+        ],
+        "instructions": [
+          "Keep the 'add a new runtime' checklist (config.json → adapter file → ADAPTERS line → optional UI plugin → docs table updates in the same commit series per AGENTS.md §11) as an actionable recipe.",
+          "Present the RuntimeAdapter interface as a method-by-method table with what each hook feeds on the dashboard; emphasize adapters never touch the FS directly (only via FsSignalHelpers) for testability."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "79cf1556-5a7b-4e23-a76f-84bea0db0def",
+        "path": "/openwiki/runtimes/sessions-and-replies.md",
+        "title": "Session History, Filtering and Headless Replies",
+        "purpose": "Session introspection across runtimes: per-runtime session sources (claude projects jsonl with dashed-slug workspace mapping, codex rollout session_meta cwd peek, kimi session_index + state.json, zcode rollout↔plan correlation, sqlite-based cursor/opencode honestly marked unsupported), workspace-folder filtering semantics, preview extraction (head/tail chunk helpers, ~30 entry transcripts), and the headless resume mechanism (per-runtime reply commands, 120s timeout, cwd = session dir, separate process that never touches the user's interactive session).",
+        "seedPaths": [
+          "operations.md",
+          "runtimes.md",
+          "sessions.md"
+        ],
+        "relatedPages": [
+          "/openwiki/runtimes/activity-diagnostics-awaiting.md",
+          "/openwiki/runtimes/adapter-system.md",
+          "/openwiki/workflows/runtime-operations.md",
+          "/openwiki/workflows/workspaces-and-memory.md"
+        ],
+        "instructions": [
+          "Embed a mermaid sequence diagram of the reply flow (session view → POST /api/sessions/reply → adapter replyCommand → detached CLI spawn with literal command → output to UI).",
+          "Keep the resume-command and session-source tables verbatim-level; note new-session prompt commands (claude -p, codex exec, etc.) cross-reference the runtime-operations page rather than duplicating it."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "f5aa7157-35b1-4bdf-8c5a-0e2561755cf6",
+        "path": "/openwiki/skills/levels-and-toggles.md",
+        "title": "Skill Levels and Toggle Overlays",
+        "purpose": "The skill model: the three levels shown in a runtime space (Runtime Skills from per-runtime directories, Harness Skills from .agents/skills/<slug>/SKILL.md, Scripts for non-skill agents/plugins/prompts, plus the per-runtime MCP override tab), and the overlay precedence formula effective = runtimeOverrides[skill][R] ?? defaults[skill] ?? useGlobal, with the core principle that the console never modifies skill files - every toggle is a state.json overlay applied file-first.",
+        "seedPaths": [
+          "architecture.md",
+          "skills.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/runtimes/adapter-system.md",
+          "/openwiki/skills/skills-sh-lifecycle.md"
+        ],
+        "instructions": [
+          "List the per-runtime skill directory sources (claude ~/.claude/skills, ZCode plugin cache, ~/.cursor/skills-cursor, ~/.codex/skills, Kimi extra_skill_dirs) as the adapter contract.",
+          "Present the effective() precedence as both the formula and a worked example; stress the 'file first, then UI' application order shared with all state mutations."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "c35334c2-2418-4895-ac4d-346237b02e37",
+        "path": "/openwiki/skills/skills-sh-lifecycle.md",
+        "title": "skills.sh Search, Install, Remove and Creation",
+        "purpose": "The skills.sh lifecycle end to end: search via `bunx skills find` CLI parsing (owner/repo@skill ids, 60s cache, HTTP fallback under 3 results), the detail-description chain (registry snapshot → og:description → GitHub page → DeepWiki → iframe fallback, 5-min cache) plus security audit sources, install as an SSE-streamed job (`bunx skills add -y` into .agents/skills with agent-directory symlinks and skills-lock.json, stdin input route, pre-install audit modal), removal with CLI plus manual fallback cleanup, and skill creation via a prompt-builder that launches a headless session on the configured task runtime targeting .agents/skills/<slug>/SKILL.md.",
+        "seedPaths": [
+          "architecture.md",
+          "operations.md",
+          "skills.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/skills/levels-and-toggles.md",
+          "/openwiki/workflows/install-jobs-and-streaming.md",
+          "/openwiki/workflows/runtime-operations.md"
+        ],
+        "instructions": [
+          "Embed a mermaid sequence diagram of the install flow (search result → audit modal → POST install → bunx skills add job → SSE stream from output → symlink/lock results in skill list).",
+          "Keep the CLI-output parse format and the DISABLE_TELEMETRY=1 / repo-root-cwd spawn parameters exact; note SSRF rules that govern the description/audit fetches."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "4df5ef4f-99de-4929-8f7c-3c5e92342bd5",
+        "path": "/openwiki/tools/dispatcher-and-maintenance.md",
+        "title": "tool.sh Dispatcher, Project Indexing and Pre-Commit Maintenance",
+        "purpose": "The agent-facing and maintenance side of context tools: the tooling/scripts/tool.sh dispatcher contract (status output, exit 0 vs exit 3 + TOOL_UNAVAILABLE hint, tools.env TOOL_<ID> state with which-fallback), setup.sh installation flow including safe external installers (downloaded to .agents/.tmp/setup/, no curl|bash), per-workspace project init/reinit for Serena/CodeGraph/Graphify (init/index/update command triples, initMarker detection), the husky pre-commit index refresh (best-effort, SKIP_TOOLS_UPDATE=1 escape hatch), and the artifact ignore policy (.codegraph/, graphify-out/ ignored; .serena/ committable).",
+        "seedPaths": [
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/tools/plugin-development.md",
+          "/openwiki/tools/registry-and-lifecycle.md",
+          "/openwiki/workflows/workspaces-and-memory.md"
+        ],
+        "instructions": [
+          "Document the dispatcher contract exactly - exit 3 + 'TOOL_UNAVAILABLE <id>: <hint>' is the signal that tells agents to fall back to normal workflow; include the tool.sh status/run usage snippets.",
+          "Note that projectInit.update runs on every commit and must be fast and silent when uninitialized; Graphify --code-only needs no LLM key while full mode does."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "cbf5b59a-2d1a-4695-a7a4-78d9f1832ddb",
+        "path": "/openwiki/tools/plugin-development.md",
+        "title": "Developing Tool Plugins (ToolDef)",
+        "purpose": "Author guide for a new context-tool plugin: the full ToolDef field reference (systemInstall with globalInstallCommand pm-awareness, requires, mcpPreset, perRuntime supported/install/uninstall/markerFile/notes/params, detachedInstall + dashboardCommand for services, uninstallStopsDashboard, postInstallCommands, projectInit init/reinit/update/initMarker, dashboard), auto-derived diagnostics checks and the \"Исправить\" fix-prompt hookup, the nine-step same-commit-series checklist (core/tools.ts, tool.sh, setup.sh, docs/tools.md, AGENTS.md tables, core/__tests__/tools.test.ts, MCP preset, version-detection caveat), and the security limits (no shells, boundary-checked cleanup paths, literal job filenames, TCP-only dashboard liveness).",
+        "seedPaths": [
+          "tools-dev.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/tools/dispatcher-and-maintenance.md",
+          "/openwiki/tools/registry-and-lifecycle.md"
+        ],
+        "instructions": [
+          "Per repo guidance: state that the required test (core/__tests__/tools.test.ts covering install/uninstall commands and the support matrix) should be validated with the narrowest quiet test run, preserving complete failure output.",
+          "Reproduce the ToolDef annotated structure and the checklist as the page backbone; emphasize spawn-without-shell literal arrays because guard/Mimosa enforce it."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "251bce21-0a9c-4e2d-a343-486fd4b3c6a0",
+        "path": "/openwiki/tools/registry-and-lifecycle.md",
+        "title": "Context Tools Registry and Lifecycle",
+        "purpose": "The context-saving tool ecosystem managed by the console (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, OpenWiki): the integration map (system package / MCP preset / per-runtime install / dashboard), ToolDef-plugin organization under core/tools/<id>.ts with the core/tools.ts aggregator, the lifecycle states missing→on→off with install/uninstall/reinstall/toggle actions and their quirks (optional uninstall steps, RTK programmatic project cleanup of marker blocks, Headroom uninstall-stops-dashboard, marker-based merge of external installs), the Bun/NPM package-manager choice, per-runtime unsupported matrix, dashboard embedding with autostart/lazy-lift, and the tools-usage.json statistics model.",
+        "seedPaths": [
+          "tools-dev.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/tools/dispatcher-and-maintenance.md",
+          "/openwiki/tools/plugin-development.md",
+          "/openwiki/workflows/install-jobs-and-streaming.md",
+          "/openwiki/workflows/workspaces-and-memory.md"
+        ],
+        "instructions": [
+          "Embed a mermaid stateDiagram-v2 of the lifecycle (missing → on → off) with action arrows labeled install/uninstall/reinstall/toggle.",
+          "Keep the integration-map and unsupported-matrix tables; reproduce the reinstall safety rules verbatim (uninstall failures must not break the chain; installed-record merges marker findings)."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "e060c252-d173-499a-b8cc-8ba49d680bb4",
+        "path": "/openwiki/ui/ui-kit.md",
+        "title": "Console UIKit and Layout Contract",
+        "purpose": "The UIKit contract for console screens: single source of primitives (apps/console/src/ui/UIKit.tsx), layout components (Page, PageHeader with actions slot, NavBar with isActive callback), controls (Button/IconButton variants and sizes, Toggle, Select replacing native selects with keyboard semantics, Input/Textarea, Segmented, Tabs with badges), containers and text (Panel, Modal, Notice, Chip tones, EmptyState, SectionLabel/FieldLabel/Footnote), confirmDialog via the single UIKitHost, utility hooks (cx, useClickOutside), and the extension rules (tone maps own colors, no native browser controls, lucide-react icons only, UIKit stays domain-free, docs updated in the same commit series).",
+        "seedPaths": [
+          "ui-kit.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/overview.md",
+          "/openwiki/quickstart.md",
+          "/openwiki/runtimes/adapter-system.md"
+        ],
+        "instructions": [
+          "Keep the component/props tables compact and reference-grade; include short usage snippets for Page composition and confirmDialog.",
+          "Restate the non-obvious rules that reviewers enforce: new primitives go into UIKit with a docblock (never styled ad hoc in screens), rounding/spacing come from size/variant props to avoid Tailwind class conflicts, Modal does not close on overlay click to protect forms."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "f5b1ae20-9009-4d63-a7cc-bd6bf61bea27",
+        "path": "/openwiki/workflows/install-jobs-and-streaming.md",
+        "title": "Install Jobs, SSE Streaming and Detached Processes",
+        "purpose": "The shared long-running-job pattern used across features: file-backed job logs (.agents/console/tool-jobs/<id>.log|.json) tailed by SSE routes so streams survive Next.js HMR and route-bundle boundaries, stdin input routes for interactive installers, skills.sh install jobs, tool install/reinstall jobs with dryRun preview, workspace clone job terminals, standalone dashboard instances (pid in dashboards.json, logs in logs/<id>-dashboard.log, autostart with lazy 30s-throttled lift), and detached build processes tracked by .console-build.json pid/mode files - the invariant being that no job state lives in in-memory Maps.",
+        "seedPaths": [
+          "architecture.md",
+          "operations.md",
+          "skills.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/api-registry.md",
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/skills/skills-sh-lifecycle.md",
+          "/openwiki/tools/registry-and-lifecycle.md",
+          "/openwiki/workflows/workspaces-and-memory.md"
+        ],
+        "instructions": [
+          "Embed a mermaid sequence diagram of a generic job lifecycle (start → spawn detached writing file log → SSE route tails file → optional stdin input → status .json completion → cache invalidation).",
+          "Explain the HMR/bundle-boundary rationale for file-backed logs (in-memory Map is empty in the neighboring route bundle - the root cause of the 'waiting for output forever' bug) as the design invariant to preserve."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "eeba1791-b139-4e61-9b73-9d40cc651ace",
+        "path": "/openwiki/workflows/runtime-operations.md",
+        "title": "Runtime Operations: Processes, Prompts and Task Settings",
+        "purpose": "Cross-system day-to-day control workflow: process management (ps filtered by adapter processPattern, app-vs-cli classification, stop SIGTERM→3s grace→SIGKILL with fresh-ps PID re-verification, restart for .app bundles only), headless prompt execution via POST /api/prompts/run with the runtime selection chain (explicit → settings.taskRuntimes.promptExecution → defaultRuntime ★), the Diagnostics \"Исправить\" button building fix prompts from issues (buildFixPrompt honoring AGENTS.md/guard), detached run logs under .agents/console/runs/, prompt sanitization, and the task-runtime settings page semantics.",
+        "seedPaths": [
+          "operations.md",
+          "runtimes.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/runtimes/activity-diagnostics-awaiting.md",
+          "/openwiki/runtimes/sessions-and-replies.md"
+        ],
+        "instructions": [
+          "Embed a mermaid flowchart of the prompt runtime-selection chain and a sequence diagram of the process-stop action (action request → fresh ps snapshot → PID verify → SIGTERM → grace → SIGKILL).",
+          "Make explicit that the Fix button is disabled with a hint when no effective runtime is selected, and that the same prompt route serves skill creation via taskRuntimes.skillCreation."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "0ccb36e5-6127-4665-8d39-4ccd99043909",
+        "path": "/openwiki/workflows/workspaces-and-memory.md",
+        "title": "Workspaces and Memory (Docs, OpenWiki, Graphify, Runtime)",
+        "purpose": "Workspace-driven workflows: the workspaces model (exactly one mandatory folder + additional, absolute-path/exists/no-dup validation, ~ expansion) feeding session filtering and repo-scope activity signals; sources/ git-clone jobs with https-only SSRF host filtering; and the Memory tab reading everything from disk with no own storage - Docs tree rendering (limits 500 files/depth 8, auto-select README→AGENTS), OpenWiki builds via external CLI (openwiki --init/--update as detached processes with .console-build.json/.console-build.log status files and 4s polling, runtime-★ fallback when no LLM key), the static wiki-graph visualizer export/publish into public/visualizers/<sha256-slug>/, Graphify extract/update builds plus graph.html publish into public/graphify/<slug>/, per-runtime memory file sources, and the memory-file read allowlist.",
+        "seedPaths": [
+          "architecture.md",
+          "operations.md",
+          "tools.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/security-model.md",
+          "/openwiki/architecture/state-and-persistence.md",
+          "/openwiki/runtimes/sessions-and-replies.md",
+          "/openwiki/tools/registry-and-lifecycle.md",
+          "/openwiki/workflows/install-jobs-and-streaming.md"
+        ],
+        "instructions": [
+          "Embed a mermaid sequence diagram of an OpenWiki build (UI build button → literal spawn openwiki --init/--update cwd=workspace → .console-build.json/.log status polling → iframe/viewer publish).",
+          "Note cross-cutting facts: build isolation per folder, slug = sha256 of workspace path for publishes, /api/memory/openwiki resyncs and cleans slugs, graph rendering needs internet CDN while builds are local."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "9e60838b-37fa-4dd5-a914-00ea89188109",
+        "path": "/openwiki/quickstart.md",
+        "title": "Quickstart: Agentic OS Console Docs Wiki",
+        "purpose": "Task-routing entry point. Explains that this repo is the documentation workspace of the harness / Agentic OS Console system (code lives in the parent monorepo apps/console, tooling/, .agents/), maps the wiki hierarchy (architecture / runtimes / mcp / skills / tools / workflows / ui), and routes common change tasks - add a runtime, add an MCP server or plugin, add a skill, add a context tool, change console UI, touch state.json or security-sensitive code - to the right pages.",
+        "seedPaths": [
+          "AGENTS.md",
+          "README.md",
+          "architecture.md"
+        ],
+        "relatedPages": [
+          "/openwiki/architecture/overview.md",
+          "/openwiki/mcp/registry-and-sync.md",
+          "/openwiki/runtimes/adapter-system.md",
+          "/openwiki/tools/registry-and-lifecycle.md",
+          "/openwiki/ui/ui-kit.md",
+          "/openwiki/workflows/runtime-operations.md"
+        ],
+        "instructions": [
+          "Organize the quickstart as a task-routing table ('I want to change X' → wiki page), not a directory dump; route readers down the hierarchy into exactly one best starting page per task.",
+          "Per repo guidance: treat the documented behavior (backed by the parent repo's source and tests) as authoritative; unknowns in the docs are verification gaps, not requirements.",
+          "This repository contains only documentation (Russian-language) for the Agentic OS Console; referenced code paths such as apps/console/src/** and tooling/scripts/** belong to the parent harness monorepo - describe the system as documented here and keep those cross-repo references explicit instead of inventing source-level claims."
+        ],
+        "status": "pending"
+      }
+    ],
+    "deletePages": []
+  }
+}

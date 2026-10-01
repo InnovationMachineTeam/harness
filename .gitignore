@@ -1,0 +1,53 @@
+# ===== Секреты (вне git - как и в guard-политике AGENTS.md §3) =====
+.env
+.env.*
+!.env.example
+*.pem
+id_rsa
+id_rsa.*
+secrets/
+
+# ===== Зависимости и сборка =====
+node_modules/
+.next/
+out/
+
+# ===== Локальные артефакты сессий, сканера и ОС =====
+.DS_Store
+*.log
+.mimosa/
+.zcode/plans/
+.claude/settings.local.json
+
+# ===== .agents: игнорируем зону, но трекаем конфигурацию harness =====
+# всё под .agents по умолчанию не версионируется…
+.agents/*
+# …кроме канонических конфигов рантаймов и установленных навыков
+!.agents/runtime/
+!.agents/skills/
+# состояние консоли (.agents/console/) - локальное машинное состояние
+# (MCP-реестр, настройки, рабочие папки с путями этой машины), в git не попадает
+.agents/.tmp/
+
+# артефакт инкрементальной сборки TS
+*.tsbuildinfo
+
+# публикуемые экспорты визуализатора OpenWiki (пересоздаются консолью)
+apps/console/public/visualizers/
+
+# локальные клоны проектов для работы агентов
+sources/
+
+# бэкапы/локи инсталляторов инструментов
+*.graphify-bak
+.claude/.headroom_wrap_settings.lock
+.codegraph/
+apps/console/public/graphify/
+
+# артефакты инструментов (пересоздаются консолью и pre-commit)
+graphify-out/
+docs/graphify-out/
+
+# метки сборок консоли (openwiki/graphify)
+**/.console-build.json
+**/.console-build.log

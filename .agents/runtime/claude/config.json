@@ -1,0 +1,59 @@
+{
+  "$schema": "docs/platform/agent-runtime-configs.md",
+  "id": "claude",
+  "vendorAdapter": ".claude/settings.json",
+  "guard": {
+    "command": "node .agents/runtime/guard.mjs",
+    "hooksSupport": "native",
+    "notes": "A PreToolUse matcher in .claude/settings.json calls the guard with AGENT_RUNTIME=claude and AGENT_RUNTIME_CONFIG=.agents/runtime/claude/config.json (exit 0 allows, exit 2 blocks), so the policy is enforced by the harness rather than by the agent's good behaviour. The policy engine is .agents/runtime/guard.mjs, local to this repository. MCP servers are registered in .mcp.json and enabled in .claude/settings.json.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+  },
+  "capabilities": {
+    "subagentSpawn": "verified",
+    "resume": "verified",
+    "cancel": "verified",
+    "toolEvents": "verified",
+    "usage": "unsupported",
+    "worktreeAwareness": "verified"
+  },
+  "capabilitiesNotes": "subagentSpawn: this repository's own Agentic OS Console event log (.agents/.tmp/events/*.jsonl) records hundreds of successful `Agent` tool.pre/tool.post pairs across sessions here, and every role charter and .agents/runtime/*/config.json already names a `subagents` model tier the master dispatches to - a working, exercised feature, not a belief about the vendor. resume: the same event log records repeated successful `SendMessage` calls (18 as of 2026-09-20), which the Agent tool's own description defines as resuming a previously spawned background agent with full context; grounded in this session's own tool contract plus recorded successful use, not general recall. cancel: the event log records repeated successful `TaskStop` calls (14 as of 2026-09-20), stopping a running background agent - a confirmed, exercised capability. toolEvents: `.claude/settings.json` wires a PreToolUse matcher to `tooling/agentos/agent-hooks/src/guard.ts` (this repository's own hook, ADR-0019), and the event log holds tens of thousands of recorded tool.pre/tool.post pairs from it - the harness itself calls out on every tool use, which is the definition of the capability. usage: `tooling/agentos/console/src/collectors/observe-costs.ts` and docs/platform/agentic-os-console.md say so directly - \"Claude Code's hooks do not report usage, and reading transcripts is opt-in\" / \"Claude Code transcripts - not built; opt-in by design (14 §2) - would give exact token usage, which is why Costs has no actuals today\". The standard hook path this repository actually uses carries no token or cost figures; marked unsupported on that confirmed absence rather than on the unbuilt, opt-in transcript path, which is a different and unverified question. worktreeAwareness: this session's own tool list carries native `EnterWorktree`/`ExitWorktree` tools, and the event log records five successful, `ok:true` pairs of them against a real path under .claude/worktrees/ in this repository - used, not merely offered.",
+  "models": {
+    "fast": {
+      "model": "claude-sonnet-5-5",
+      "label": "Sonnet 5.5",
+      "thinkingLevel": "low",
+      "pricing": { "inputUsdMtok": 1, "outputUsdMtok": 5 },
+      "verified": true
+    },
+    "standard": {
+      "model": "claude-opus-5-5",
+      "label": "Opus 5.5",
+      "thinkingLevel": "medium",
+      "pricing": { "inputUsdMtok": 3, "outputUsdMtok": 15 },
+      "verified": true
+    },
+    "strong": {
+      "model": "claude-fable-5-1",
+      "label": "Fable 5.1",
+      "thinkingLevel": "high",
+      "pricing": { "inputUsdMtok": 5, "outputUsdMtok": 25 },
+      "verified": true
+    },
+    "subagents": {
+      "model": "claude-sonnet-5-5",
+      "label": "Sonnet 5.5",
+      "thinkingLevel": "medium",
+      "pricing": { "inputUsdMtok": 2, "outputUsdMtok": 10 },
+      "verified": true
+    }
+  },
+  "pricingVerified": false,
+  "pricingNotes": "The model identifiers are confirmed; the rates are the placeholder tiers carried over from tooling/agentos/delivery/src/pricing.ts and are not tariffs. `delivery estimate` prints a warning while this flag is false. Replace them with the published rates and set the flag before any number here is quoted as a cost.",
+  "permissions": {
+    "filesystem": { "read": true, "write": true },
+    "git": { "commit": true, "push": false, "forcePush": false },
+    "shell": "policy-guarded",
+    "mcp": [".mcp.json", ".claude/settings.json"],
+    "notes": "Tool safety is enforced by native PreToolUse hooks; read and write follow the host's own permission model (plan and accept modes). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
+  }
+}

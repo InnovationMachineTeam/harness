@@ -1,0 +1,20 @@
+{
+  "hooks": {
+    "enabled": true,
+    "events": {
+      "PreToolUse": [
+        {
+          "matcher": "Bash|Write|Edit|Read|Grep|Glob",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "AGENT_RUNTIME=zcode AGENT_RUNTIME_CONFIG=\"${ZCODE_PROJECT_DIR}/.agents/runtime/zcode/config.json\" node \"${ZCODE_PROJECT_DIR}/.agents/runtime/guard.mjs\"",
+              "timeout": 30,
+              "statusMessage": "Checking against repository policy"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

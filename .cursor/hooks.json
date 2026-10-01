@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "hooks": {
+    "preToolUse": [
+      {
+        "command": "AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG=\"$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json\" node \"$CURSOR_PROJECT_DIR/.agents/runtime/guard.mjs\"",
+        "timeout": 30,
+        "failClosed": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+/*
+ * Дизайн-токены консоли. Канонический источник значений - DESIGN.md (тёмная)
+ * и DESIGN.light.md (светлая) в корне репозитория; значения ниже -
+ * стартовые значения по умолчанию, синхронизируемые вкладкой "Настройки → Design"
+ * (managed-блок между design-tokens:start/end переписывается автоматически).
+ */
+
+@theme inline {
+  --color-page: var(--design-page);
+  --color-surface: var(--design-surface);
+  --color-raised: var(--design-raised);
+  --color-overlay: var(--design-overlay);
+  --color-line: var(--design-line);
+  --color-line-strong: var(--design-line-strong);
+  --color-fg: var(--design-fg);
+  --color-fg-muted: var(--design-fg-muted);
+  --color-fg-faint: var(--design-fg-faint);
+  --color-accent: var(--design-accent);
+  --color-info: var(--design-info);
+  --color-warning: var(--design-warning);
+  --color-danger: var(--design-danger);
+  --color-swatch-1: var(--design-swatch-1);
+  --color-swatch-2: var(--design-swatch-2);
+  --color-swatch-3: var(--design-swatch-3);
+  --color-swatch-4: var(--design-swatch-4);
+  --color-swatch-5: var(--design-swatch-5);
+  --radius-md: var(--design-radius-md);
+  --radius-lg: var(--design-radius-lg);
+  --radius-xl: var(--design-radius-xl);
+}
+
+html,
+html[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* design-tokens:start */
+:root,
+[data-theme="dark"] {
+  --design-page: #282a36;
+  --design-surface: #2d2f3d;
+  --design-raised: #353846;
+  --design-overlay: #3b3e4e;
+  --design-line: #44475a;
+  --design-line-strong: #565869;
+  --design-fg: #f8f8f2;
+  --design-fg-muted: #a9adcd;
+  --design-fg-faint: #6272a4;
+  --design-accent: #50fa7b;
+  --design-info: #8be9fd;
+  --design-warning: #f1fa8c;
+  --design-danger: #ff5555;
+  --design-swatch-1: #bd93f9;
+  --design-swatch-2: #ff79c6;
+  --design-swatch-3: #ffb86c;
+  --design-swatch-4: #f1fa8c;
+  --design-swatch-5: #57c7ff;
+  --design-radius-md: 6px;
+  --design-radius-lg: 8px;
+  --design-radius-xl: 12px;
+}
+[data-theme="light"] {
+  --design-page: #f4f4f5;
+  --design-surface: #ffffff;
+  --design-raised: #ebebed;
+  --design-overlay: #ffffff;
+  --design-line: #dddee1;
+  --design-line-strong: #c4c6ca;
+  --design-fg: #1d1e20;
+  --design-fg-muted: #55575c;
+  --design-fg-faint: #72747c;
+  --design-accent: #047857;
+  --design-info: #0369a1;
+  --design-warning: #b45309;
+  --design-danger: #dc2626;
+  --design-swatch-1: #7c3aed;
+  --design-swatch-2: #e11d48;
+  --design-swatch-3: #c2410c;
+  --design-swatch-4: #4d7c0f;
+  --design-swatch-5: #0e7490;
+  --design-radius-md: 6px;
+  --design-radius-lg: 8px;
+  --design-radius-xl: 12px;
+}
+/* design-tokens:end */

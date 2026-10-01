@@ -1,0 +1,51 @@
+{
+  "$schema": "docs/platform/agent-runtime-configs.md",
+  "id": "cursor",
+  "vendorAdapter": ".cursor/hooks.json",
+  "guard": {
+    "command": "node .agents/runtime/guard.mjs",
+    "hooksSupport": "native",
+    "notes": "Cursor supports project-level hooks (version 1 schema): .cursor/hooks.json registers a preToolUse hook that runs the guard with AGENT_RUNTIME=cursor and AGENT_RUNTIME_CONFIG=.agents/runtime/cursor/config.json via $CURSOR_PROJECT_DIR paths; exit 2 blocks the call. failClosed is false, so a crashed or timed-out hook lets the call through - the guard is a layer on top of Cursor's own approvals, not a replacement for checking doubtful calls by hand.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+  },
+  "capabilities": {
+    "subagentSpawn": "unknown",
+    "resume": "unknown",
+    "cancel": "unknown",
+    "toolEvents": "unknown",
+    "usage": "unknown",
+    "worktreeAwareness": "unknown"
+  },
+  "capabilitiesNotes": "toolEvents: docs/platform/agent-hooks-feedback.md §14 records the confirmed outcome directly - \"§7's .cursor/hooks.json was not built: Cursor still offers no repository-level hook here\" - which is why the adapter fell back to .cursor/rules/agent-hooks.mdc (alwaysApply) asking the agent to run the guard itself, matching hooksSupport: behavioral. The other five: nothing in this repository (script, doc, event log, working integration) has exercised or confirmed Cursor subagent spawn, resume, cancel, usage reporting or worktree awareness - even the model table below is still TBD, so treating any of these as confirmed would be inventing certainty this project has not earned. Left unknown. Updated 2026-09-30: Cursor now ships project-level .cursor/hooks.json and this repository wires preToolUse to the local guard, so toolEvents moves to `unknown` - `verified` at the first exercised run; the model table below was filled from Cursor's public model list of the same date and still needs in-app confirmation.",
+  "models": {
+    "fast": {
+      "model": "Composer 2.5 (Fast)",
+      "thinkingLevel": "low",
+      "verified": false
+    },
+    "standard": {
+      "model": "Composer 2.5",
+      "thinkingLevel": "medium",
+      "verified": false
+    },
+    "strong": {
+      "model": "Claude Fable 5.1",
+      "thinkingLevel": "high",
+      "verified": false
+    },
+    "subagents": {
+      "model": "Claude Sonnet 5.5",
+      "thinkingLevel": "low",
+      "verified": false
+    }
+  },
+  "pricingVerified": false,
+  "pricingNotes": "Tiers were filled on 2026-09-30 from Cursor's public model list (Composer 2.5 and its Fast variant are Cursor's own; strong alternatives in the picker: Claude Opus 5, GPT-5.3 Codex, Gemini 3 Pro). Names exist in the picker but have not been exercised in this repository - confirm at first launch, write back and flip verified. No rates are recorded; `delivery estimate --runtime cursor` warns and falls back to the placeholder table.",
+  "permissions": {
+    "filesystem": { "read": true, "write": true },
+    "git": { "commit": true, "push": false, "forcePush": false },
+    "shell": "policy-guarded",
+    "mcp": [".mcp.json", ".cursor/mcp.json"],
+    "notes": "Approve and deny live in the IDE's own agent settings; the guard policy is enforced through the preToolUse hook in .cursor/hooks.json (fail-open on hook errors). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
+  }
+}

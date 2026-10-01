@@ -1,0 +1,70 @@
+{
+  "canonicalInstructions": "AGENTS.md",
+  "defaultVendor": "claude",
+  "publicSkills": [".agents/skills/master"],
+  "privateSkillRoot": ".agents/skills/master/skills",
+  "roleAgentRoot": ".agents/roles",
+  "agentConfigsRoot": ".agents/agents",
+  "workflowsRoot": ".agents/skills/master/workflows",
+  "guard": ".agents/runtime/guard.mjs",
+  "verification": {
+    "fast": "bun run tooling/scripts/src/verify.ts verify-fast",
+    "integration": "bun run tooling/scripts/src/verify.ts verify-integration",
+    "security": "bun run tooling/scripts/src/verify.ts verify-security",
+    "e2e": "bun run tooling/scripts/src/verify.ts verify-e2e"
+  },
+  "temp": ".agents/.tmp",
+  "limits": {
+    "decisionTreeDepth": 4,
+    "researchPasses": 2,
+    "architecturePasses": 2,
+    "reviewPasses": 2,
+    "repairAttempts": 3,
+    "rootCauseDepth": 5,
+    "maxParallelAgents": 4,
+    "wipLimit": 4,
+    "requiredReadingBytes": 118000,
+    "referenceTopics": 3
+  },
+  "profiles": {
+    "fast": {
+      "defaultModel": "fast",
+      "limits": {
+        "decisionTreeDepth": 2,
+        "researchPasses": 1,
+        "architecturePasses": 1,
+        "reviewPasses": 1,
+        "repairAttempts": 2,
+        "rootCauseDepth": 3,
+        "maxParallelAgents": 2,
+        "wipLimit": 2
+      }
+    },
+    "default": {
+      "defaultModel": "standard",
+      "limits": {
+        "decisionTreeDepth": 4,
+        "researchPasses": 2,
+        "architecturePasses": 2,
+        "reviewPasses": 2,
+        "repairAttempts": 3,
+        "rootCauseDepth": 5,
+        "maxParallelAgents": 4,
+        "wipLimit": 4
+      }
+    },
+    "deep": {
+      "defaultModel": "strong",
+      "limits": {
+        "decisionTreeDepth": 6,
+        "researchPasses": 3,
+        "architecturePasses": 3,
+        "reviewPasses": 3,
+        "repairAttempts": 5,
+        "rootCauseDepth": 7,
+        "maxParallelAgents": 6,
+        "wipLimit": 6
+      }
+    }
+  }
+}

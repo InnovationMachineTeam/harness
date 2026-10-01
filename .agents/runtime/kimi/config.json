@@ -1,0 +1,51 @@
+{
+  "$schema": "docs/platform/agent-runtime-configs.md",
+  "id": "kimi",
+  "vendorAdapter": ".kimi/config.toml (mirrored into ~/.kimi-code/config.toml)",
+  "guard": {
+    "command": "node .agents/runtime/guard.mjs",
+    "hooksSupport": "user-mirror",
+    "notes": "Kimi Code has no project-level hook file: .kimi/config.toml holds the [[hooks]] entries (PreToolUse, matcher Bash|Write|Edit|Read|Grep|Glob) and the user mirrors them into ~/.kimi-code/config.toml. Hooks run with cwd set to the session's project directory, so the relative guard path works once mirrored; exit 2 blocks the call. Until the mirror exists the policy is honoured behaviourally - pipe a doubtful call through the guard before running it.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+  },
+  "capabilities": {
+    "subagentSpawn": "unknown",
+    "resume": "unknown",
+    "cancel": "unknown",
+    "toolEvents": "unsupported",
+    "usage": "unknown",
+    "worktreeAwareness": "unknown"
+  },
+  "capabilitiesNotes": "toolEvents: this file's own guard.notes already record the confirmed fact - \"There is no project hook, so the policy in tooling/agentos/agent-hooks is honoured behaviourally\" - no vendor adapter and no PreToolUse mechanism exists in this repository for Kimi, matching hooksSupport: behavioral. The other five: permissions.notes below already says the runtime is not configured, and no script, doc or event log here has ever exercised a Kimi subagent, resume, cancel, usage report or worktree-aware run - left unknown rather than assumed from the product's general reputation. Updated 2026-09-30: .kimi/config.toml now exists as the mirror-source for ~/.kimi-code/config.toml; toolEvents stays `unsupported` until the user mirrors it and a run is exercised, then re-grade.",
+  "models": {
+    "fast": {
+      "model": "kimi-k2.7-code-highspeed",
+      "thinkingLevel": "low",
+      "verified": false
+    },
+    "standard": {
+      "model": "kimi-k3",
+      "thinkingLevel": "medium",
+      "verified": false
+    },
+    "strong": {
+      "model": "kimi-k3",
+      "thinkingLevel": "high",
+      "verified": false
+    },
+    "subagents": {
+      "model": "kimi-k2.7-code",
+      "thinkingLevel": "low",
+      "verified": false
+    }
+  },
+  "pricingVerified": false,
+  "pricingNotes": "No rates are recorded for this vendor; `delivery estimate --runtime kimi` warns and falls back to the placeholder table.",
+  "permissions": {
+    "filesystem": { "read": true, "write": true },
+    "git": { "commit": true, "push": false, "forcePush": false },
+    "shell": "policy-guarded",
+    "mcp": [".mcp.json"],
+    "notes": "At first launch in Kimi: ask the user to mirror .kimi/config.toml into ~/.kimi-code/config.toml, and ask for the model mapping and how approvals are granted. Structural changes to roles, agents or skills always need explicit user approval, in every mode."
+  }
+}

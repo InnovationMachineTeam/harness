@@ -1,0 +1,392 @@
+{
+  "schemaVersion": 1,
+  "runId": "5d8e4ac3-d8c5-4312-83cd-ed413adb7271",
+  "mode": "init",
+  "phase": "generating",
+  "startedAt": "2026-09-30T23:26:29.291Z",
+  "language": "en",
+  "languageChanged": false,
+  "requiredRewritePages": [],
+  "initialPages": [],
+  "sourceFingerprint": "sha256:3a184090e9bd8f6898ba6fdac692986097611ac9d42a8d793bd0d70b010bab78",
+  "targetGitHead": "e362b2a9670c26b38a3f1c5259627ac4f4ebd71c",
+  "actor": {
+    "producerActor": "openwiki/0.5.1",
+    "metadataModel": "kimi-k3:cloud"
+  },
+  "previousLastUpdate": null,
+  "beforeContentSnapshot": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "preparedWiki": {
+    "generatedProvenance": []
+  },
+  "plan": {
+    "pages": [
+      {
+        "id": "9f94d25e-06c5-4cbc-bf2d-2f424adb6cea",
+        "path": "/openwiki/architecture/mcp-sync.md",
+        "title": "MCP-реестр и синк в конфиги рантаймов",
+        "purpose": "The global MCP registry and sync engine: registry state shape, managed-name semantics (targets only touch registry-owned names), per-target sync formats (.mcp.json project file, per-runtime user config files including TOML), runtime overrides, transport forms (stdio/http with headers), preset catalog with bun/npm adaptation, and sync results in lastMcpSync.",
+        "seedPaths": [
+          "apps/console/src/app/api/mcp",
+          "apps/console/src/components/McpPanel.tsx",
+          "apps/console/src/core/mcp/sync.ts",
+          "apps/console/src/core/plugins.ts",
+          "apps/console/src/lib/toml.ts",
+          "docs/mcp.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Config files may be JSONC (block/line comments are stripped before parse); TOML files go through upsertMcpSection/removeMcpSection in lib/toml.ts - preserve formatting helpers rather than raw string edits.",
+          "Effective enablement: runtimeOverrides[runtime] ?? enabled; project .mcp.json gets globally-enabled servers only.",
+          "Server names must pass isValidMcpName (^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$) - this is a shell/path injection boundary; do not loosen.",
+          "Sync rule: each target manages ONLY names from the console registry - foreign entries in runtime config files are never touched; a disabled server is removed from files but stays in the registry (toggle restores it)."
+        ],
+        "status": "complete",
+        "completedBy": "openwiki/0.5.1"
+      },
+      {
+        "id": "3dea0425-8cd9-4344-9830-a2fc9ca597f3",
+        "path": "/openwiki/architecture/memory.md",
+        "title": "Память: Docs, OpenWiki, Graphify, memory-файлы рантаймов",
+        "purpose": "The Memory tab subsystem: Docs tree over workspace markdown (limits 500 files/depth 8), OpenWiki wiki builds per toggled workspace (openwiki --init/--update detached, pid/log tracking, LLM provider config, visualizer export published to public/visualizers/<sha256-slug>), Graphify graph builds mirroring the same mechanics (graphify extract/update, graph.html published to public/graphify/<slug>), runtime memory files (~/.claude/projects/<slug>/memory, ~/.codex/memories), and the allowlist-guarded file reader.",
+        "seedPaths": [
+          "apps/console/src/app/api/memory",
+          "apps/console/src/app/memory/page.tsx",
+          "apps/console/src/components/memory",
+          "apps/console/src/core/graphify.ts",
+          "apps/console/src/core/memory.ts",
+          "apps/console/src/core/openwikiLlm.ts",
+          "docs/operations.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Builds spawn literal commands (openwiki --init|--update, graphify extract/update .) with cwd = workspace dir, no shell, no user input in args; pid/mode tracked in openwiki/.console-build.json, logs in .console-build.log.",
+          "Everything is read from disk - no own storage; tree built from FileEntry lists via buildNavTree.",
+          "GET /api/memory/file enforces checkReadPath: only *.md within workspaces, non-dot files under <dir>/openwiki/ and runtime memory dirs, specific global files; realpath containment blocks symlink escapes, hidden path components rejected, 1 MB cap. Never add a route that reads arbitrary user-supplied paths.",
+          "Published visualizers/graphs are a fixed 5-file set copied into public/{visualizers,graphify}/<slug>/ where slug = sha256 of the workspace path - no dynamic routes with user paths; /api/memory/openwiki re-syncs and prunes stale slugs."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "3829f2b0-9051-4c0d-8dd5-2544f17cee44",
+        "path": "/openwiki/architecture/overview.md",
+        "title": "Архитектура консоли: слои, API, потоки данных",
+        "purpose": "System overview of the Agentic OS Console: Bun workspace layout, Next.js 15 App Router layering (pages/components/zustand store → API routes → src/core modules → src/runtimes adapters → FS/ps/headless-CLI), the full API route registry, dashboard caching, and the key invariants that every other page builds on.",
+        "seedPaths": [
+          "apps/console/README.md",
+          "apps/console/src/app",
+          "apps/console/src/app/api",
+          "apps/console/src/core",
+          "apps/console/src/lib",
+          "docs/architecture.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Every mutating API route follows: mutate state → saveState() (atomic tmp+rename) → response → client store update → invalidateDashboardCache(); the client store never leads the file.",
+          "Include a mermaid diagram of the client/server/adapter layered flow (pages → fetch JSON/SSE → API routes → core → adapters → FS/ps/headless CLI) so agents see data flow at a glance.",
+          "Server code must use only node:* builtins (child_process, fs, os, path) - no new server runtime dependencies.",
+          "Source of truth for the runtime list is .agents/runtime/<vendor>/config.json on disk; the console only reads those configs - never hardcode runtime lists in UI (TOOL_RUNTIMES in core/tools.ts is a deliberate, documented exception kept in sync by the same-commit rule)."
+        ],
+        "status": "complete",
+        "completedBy": "openwiki/0.5.1"
+      },
+      {
+        "id": "ea229925-d984-46d4-9224-3730d6079a2c",
+        "path": "/openwiki/architecture/runtime-adapters.md",
+        "title": "Модульная система рантаймов: адаптеры и пробинг",
+        "purpose": "The runtime adapter subsystem: RuntimeAdapter contract (all optional hooks: isInstalled, probeSignals, detectIssues, awaitingInput, listSessions/getSession, replyCommand/runCommand), vendor config discovery via loadVendorConfigs, probeRuntimes fan-out with per-adapter error isolation, activity classification and statuses, per-runtime signal sources, and the probe helpers (fsSignals, ps snapshot) adapters must use.",
+        "seedPaths": [
+          ".agents/runtime",
+          "apps/console/src/core/activity.ts",
+          "apps/console/src/core/registry.ts",
+          "apps/console/src/core/types.ts",
+          "apps/console/src/lib/signals/fs.ts",
+          "apps/console/src/lib/signals/processes.ts",
+          "apps/console/src/runtimes/claude.ts",
+          "apps/console/src/runtimes/codex.ts",
+          "apps/console/src/runtimes/index.ts",
+          "docs/runtimes.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Adapters access the filesystem only through ProbeContext.fs (FsSignalHelpers) - never direct fs imports - for testability and scanLimit protection against giant directories.",
+          "Include a mermaid sequence diagram of probeRuntimes: loadVendorConfigs → per-adapter probeSignals/ps match → classifyActivity → RuntimeSnapshotDTO.",
+          "Process listing relies on a single TTL'd ps snapshot per probe cycle; fresh snapshot is mandatory before sending signals to PIDs.",
+          "RuntimeAdapter.id must equal the .agents/runtime/<id> directory name; a vendor config directory without an adapter still appears on the dashboard as a generic card (status unknown) - adapters are optional decorations.",
+          "Status ladder: active-now (signal ≤5 min) → recently-active (within chosen window 1h/24h/7d/all) → inactive; plus disabled (no install markers) and unknown (no adapter / probe error). One adapter failing must not break the dashboard (probeError path)."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "77706df2-16f2-4bed-87bf-80910e281840",
+        "path": "/openwiki/architecture/sessions.md",
+        "title": "Сессии агентов: история, превью, headless-ответ",
+        "purpose": "Session subsystem: per-runtime session storage formats on disk (claude projects/<slug>/*.jsonl, codex rollouts, zcode, kimi), workspace-dir filtering, session summaries and excerpt previews, resumability flags, and the reply workflow that resumes an existing session via headless CLI.",
+        "seedPaths": [
+          "apps/console/src/app/api/sessions",
+          "apps/console/src/core/sessions/claude.ts",
+          "apps/console/src/core/sessions/codex.ts",
+          "apps/console/src/core/sessions/kimi.ts",
+          "apps/console/src/core/sessions/zcode.ts",
+          "docs/sessions.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "All session data is read from runtime-owned files; the console keeps no session store of its own - listSessions/getSession return summaries/excerpts and the on-disk file path stays authoritative.",
+          "Workspace filtering maps workspace dirs to runtime-specific slug schemes (e.g. claudeProjectSlug: /Users/x/proj → -Users-x-proj); empty dirs list = all sessions.",
+          "replyCommand(sessionId, text) spawns a headless resume in the session's cwd when known; only runtimes with replyCommand render the reply UI (resumable flag)."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "d8d043af-37bd-4ec2-b05d-26972e492815",
+        "path": "/openwiki/architecture/skills-plugins.md",
+        "title": "Навыки, skills.sh и плагины-бандлы",
+        "purpose": "Skill and plugin management: three-level skill toggle semantics (useGlobal → per-skill defaults → runtime overrides, overlays never touching runtime files), harness skill discovery, skills.sh integration (find/search/detail with SSRF-guarded HTTP fallbacks, install jobs via bunx skills add with SSE streaming and stdin input, removal with fallback, headless skill creation), and plugin bundles that contribute MCP servers (and advertised skills) from builtin catalog and marketplace manifests.",
+        "seedPaths": [
+          "apps/console/src/app/api/plugins",
+          "apps/console/src/app/api/skills-sh",
+          "apps/console/src/core/installJobs.ts",
+          "apps/console/src/core/plugins.ts",
+          "apps/console/src/core/skillRemove.ts",
+          "apps/console/src/core/skills.ts",
+          "apps/console/src/core/skillsFind.ts",
+          "apps/console/src/core/skillsSh.ts",
+          "docs/plugins.md",
+          "docs/skills.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "All server-side HTTP fetching is SSRF-restricted: http/https only, hostname allowlist (skills.sh, github.com, deepwiki.com), localhost/private/reserved ranges forbidden, timeouts and response-size limits.",
+          "Enabled plugin = its MCP servers enter the global registry (and sync to runtimes); disabling removes them - plugin state and MCP state must stay consistent.",
+          "Skill toggles live only in console state (state.skills.*); runtime skill files are never modified or deleted by the console - effective(item, runtime) = runtimeOverrides ?? defaults ?? useGlobal.",
+          "skills.sh package ids validated by isValidSkillPackage (owner/repo, name, or https://skills.sh/p/ pack URL; no '..'); install spawns literal 'bunx skills add <pkg> -y' without a shell.",
+          "skills.sh public API requires a Vercel OIDC token - descriptions are scraped via page fallbacks (registry → skills.sh → GitHub → DeepWiki); keep that fallback chain when touching detail fetching."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "41867238-7970-4a01-9390-283756ae5933",
+        "path": "/openwiki/architecture/tools.md",
+        "title": "Инструменты экономии контекста: реестр и жизненный цикл",
+        "purpose": "Context-saving tools subsystem (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, OpenWiki): ToolDef plugin structure, per-runtime install matrix and params, lifecycle actions (install/uninstall/reinstall/toggle with dryRun preview), diagnostics with headless fix prompts, dashboard autostart/instances (Serena:24282, Headroom:8787), project init/reinit/update chains per workspace, usage statistics, and mirroring into tooling/scripts/tool.sh + tools.env.",
+        "seedPaths": [
+          "apps/console/src/core/dashboards.ts",
+          "apps/console/src/core/toolActions.ts",
+          "apps/console/src/core/toolDiagnostics.ts",
+          "apps/console/src/core/toolJobs.ts",
+          "apps/console/src/core/tools",
+          "apps/console/src/core/tools.ts",
+          "apps/console/src/core/toolsUsage.ts",
+          "docs/tools-dev.md",
+          "docs/tools.md",
+          "tooling/scripts/tool.sh"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Per-runtime unsupported matrices are declarative in core/tools.ts (e.g. CodeGraph has no kimi/zcode; RTK has no zcode/codex) - consult them before wiring an integration.",
+          "RTK project-scope uninstall requires programmatic cleanup of marker blocks in CLAUDE.md/AGENTS.md and files like .rtk/filters.toml - do not assume the tool can uninstall itself.",
+          "Same-commit rule (AGENTS.md §10): a new external tool must be added to core/tools.ts, core/tools/<id>.ts, tooling/scripts/tool.sh, tooling/scripts/setup.sh and docs/tools.md in the same commit series.",
+          "Tool jobs run steps sequentially without a shell; output and status are duplicated to .agents/console/tool-jobs/<id>.log/.json because dev-mode route bundles have separate module instances - SSE routes must read files, not the in-memory Map (HMR-invariant).",
+          "detached steps (proxies/servers) complete immediately without waiting for process exit; interactive installers get stdin via /api/tools/job/input."
+        ],
+        "status": "skipped"
+      },
+      {
+        "id": "2b88ff06-0e88-4de5-83de-03a3b9b8cfa5",
+        "path": "/openwiki/concepts/console-state.md",
+        "title": "Состояние консоли và мутационные инварианты",
+        "purpose": "Console state discipline: full state.json schema (mcp, skills overlays, defaultRuntime ★, taskRuntimes, plugins, workspaces incl. openwiki/graphify/docs subsets, tools, openwikiLlm, lastMcpSync), atomic write/read-with-merge behavior, ~ path expansion, validation rules (mandatory workspace, subset pruning), sibling service files (package-manager.json, tools.env, tools-usage.json, dashboards.json, tool-jobs/, runs/), the zustand client store (hydration, persist of UI prefs, tabCache TTL), and the dashboard micro-cache with TTL+dedup and mutation-driven invalidation.",
+        "seedPaths": [
+          "apps/console/src/components/StoreHydrator.tsx",
+          "apps/console/src/core/__tests__/state.test.ts",
+          "apps/console/src/core/cache.ts",
+          "apps/console/src/core/state.ts",
+          "apps/console/src/store/console.ts"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Include a mermaid diagram of the mutation flow: client action → API route → mutate ConsoleState → saveState (tmp+rename) → invalidateDashboardCache → response → store set().",
+          "Workspaces: exactly one mandatory dir (default repo root; replaceable, not deletable); openwiki/graphify/docs are subsets pruned silently when a dir leaves the list; paths accept ~ and are expanded to absolute (expandHome) at load/validation.",
+          "Writes are atomic: state.json.tmp + rename; every mutating route saves the file before responding and calls invalidateDashboardCache(); the client store updates only after server success.",
+          "state.json lives in .agents/console/ (fully git-ignored, machine-local paths); missing or corrupt file is not an error - console starts from defaults merged field-by-field.",
+          "tabCache makes tab switches instant: fresh data served from memory, stale refreshed in background, failures fall back to stale cache rather than blank UI."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "cc73056e-32bf-4262-b944-ca9f08868b68",
+        "path": "/openwiki/concepts/security-model.md",
+        "title": "Модель безопасности: guard, спавны, SSRF, доступ к файлам",
+        "purpose": "Cross-cutting security model: repo guard policy engine (.agents/runtime/guard.mjs contract, exit 0/2, Instead: hints), console-side guards for child processes (literal commands + arg arrays, no shell, prompt sanitization, strict regexes for names/packages - no spawn wrapper functions because Mimosa pre-commit blocks them), SSRF filtering for all server fetches, filesystem read allowlists, and what the console is allowed to write (only .agents/console/, MCP configs via managed names; never skill files).",
+        "seedPaths": [
+          ".agents/runtime/guard.mjs",
+          "AGENTS.md",
+          "apps/console/src/core/installJobs.ts",
+          "apps/console/src/core/memory.ts",
+          "apps/console/src/core/prompts.ts",
+          "apps/console/src/core/skillsSh.ts",
+          "docs/architecture.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Allowed literal commands include bunx, claude, codex, kimi, opencode, node, open, sh, git, openwiki, graphify; extend deliberately and document.",
+          "Guard blocks editing the guard itself and warns on structural .agents/ edits - agents must escalate to the user rather than bypass.",
+          "Server fetch allowlists: skills.sh/github.com/deepwiki.com for skill metadata; marketplace manifests allow public hosts but forbid localhost/private/reserved ranges; git clone from the console is https-only with the same SSRF host filter.",
+          "Spawn pattern is literal command + argv array without a shell; prompts sanitized (NUL stripped, 32 KB cap, leading '-' escaped). Do NOT introduce wrapper functions around spawn - the Mimosa pre-commit scanner blocks them as injection-prone; follow the inline-switch-with-literals pattern from core/prompts.ts and core/installJobs.ts."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "05223e0b-972b-4374-8bf2-77ebcb6ac28a",
+        "path": "/openwiki/operations/setup-tooling.md",
+        "title": "Эксплуатация: setup.sh, tool.sh и системные зависимости",
+        "purpose": "Operations reference for machines running harness: setup.sh flow (system status → bun/npm global-package-manager choice persisted to package-manager.json → tool installs with download-to-.agents/.tmp-then-run policy), required vs optional system tools (bun, node ≥22, uv, openwiki, serena, qmd, codegraph, graphify, rtk, headroom), the tool.sh dispatcher contract for agents (status/exit 3 semantics, tools.env from the console), and the verify command ladder from AGENTS.md §7.",
+        "seedPaths": [
+          ".agents/runtime/config.json",
+          "AGENTS.md",
+          "apps/console/src/core/dashboards.ts",
+          "tooling/scripts/pre-commit-tools.sh",
+          "tooling/scripts/setup.sh",
+          "tooling/scripts/tool.sh"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Agent runtimes themselves (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode) are NOT installed by setup.sh - users install them; the console only does per-runtime configuration of optional tools.",
+          "Verification ladder: tooling/scripts/src/verify.ts verify-fast after each change, verify-integration before merge, verify-security before release/secrets work, verify-e2e for acceptance; if tooling is absent in a slice, tell the user what could not be run.",
+          "setup.sh never pipes remote installers straight into a shell: it curl-downloads them into .agents/.tmp/setup/ and runs them as reviewable local files.",
+          "tool.sh exit 3 + 'TOOL_UNAVAILABLE <id>' on stderr means: work normally (grep/read files) and do not install anything without asking the user."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "ececa112-327c-4cda-b194-9b88c6e22010",
+        "path": "/openwiki/testing/overview.md",
+        "title": "Тестирование консоли",
+        "purpose": "How the console is tested: bun test layout, what the existing unit suites pin down (state merge/atomicity, activity classification, registry probing, memory path allowlists, tools registry/matrices, dashboards, graphify, toml helpers, module import hygiene), test seams (ProbeContext.fs fsSignals injection, ps cache reset, CLI-detection caches), and guidance for where new tests must be added when extending core modules.",
+        "seedPaths": [
+          "apps/console/README.md",
+          "apps/console/package.json",
+          "apps/console/src/core/__tests__",
+          "apps/console/src/lib/__tests__/toml.test.ts"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Core modules expose reset*Cache functions specifically for tests - use them instead of module reloads.",
+          "Security-critical boundaries (checkReadPath allowlist, SSRF assertSafeUrl, name/package regexes, prompt sanitization, state merge defaults) must gain tests in the same change that touches them.",
+          "Tests run with bun test (bun run console:test); no test framework beyond bun:test."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "440a41d2-8f06-4753-bb37-61919f0dc07b",
+        "path": "/openwiki/workflows/adding-extensions.md",
+        "title": "Как добавить: рантайм, навык, MCP-сервер, инструмент, плагин",
+        "purpose": "The extension cookbook: step-by-step checklists for adding a new runtime (vendor config + adapter + ADAPTERS registration + optional UI plugin), installing/creating/removing skills, adding an MCP server or preset (with bun/npm manager adaptation), adding a context tool (five-place same-commit rule), and defining/marketplace plugins - pointing at the exact files and invariants each change must respect.",
+        "seedPaths": [
+          "apps/console/src/core/plugins.ts",
+          "apps/console/src/core/tools.ts",
+          "apps/console/src/plugins/runtimes",
+          "apps/console/src/runtimes/index.ts",
+          "docs/mcp.md",
+          "docs/plugins.md",
+          "docs/runtimes.md",
+          "docs/tools-dev.md",
+          "tooling/scripts/setup.sh",
+          "tooling/scripts/tool.sh"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "New runtime: (1) .agents/runtime/<id>/config.json - generic card appears automatically; (2) src/runtimes/<id>.ts adapter implementing optional hooks; (3) register in ADAPTERS - nothing else hardcodes runtimes.",
+          "New tool must reuse the literal-spawn and job-file (tool-jobs/) patterns; dryRun preview support expected for lifecycle actions.",
+          "New tool: ToolDef in core/tools/<id>.ts with install matrix/params/diagnose + registry entry + tool.sh spec + setup.sh install path + docs/tools.md - one commit series.",
+          "UI runtime plugins under src/plugins/runtimes/ are presentation-only (monograms/colors); all data comes from the server."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "107b2921-58d0-40fa-b3c5-5a35da98747c",
+        "path": "/openwiki/workflows/headless-prompts.md",
+        "title": "Сквозной флоу: промпты, \"Исправить\" и headless-запуски",
+        "purpose": "End-to-end workflow of running prompts: runtime resolution chain (explicit → taskRuntimes.promptExecution → defaultRuntime ★), adapter.runCommand per runtime, detached process spawn with logs in .agents/console/runs/, the Diagnostics 'Исправить' button building fix prompts from Issues (buildFixPrompt) and routing through the same /api/prompts/run endpoint, plus tool-diagnostics fix prompts and headless skill creation.",
+        "seedPaths": [
+          "apps/console/src/app/api/prompts",
+          "apps/console/src/app/api/skills/create",
+          "apps/console/src/core/prompts.ts",
+          "apps/console/src/core/state.ts",
+          "apps/console/src/core/toolDiagnostics.ts",
+          "docs/operations.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Fix prompts must instruct the agent to obey AGENTS.md and the guard policy, make minimal edits, and not delete others' config entries.",
+          "If the effective runtime cannot be resolved or lacks runCommand, the UI blocks the action with a hint - never silently fall back to another runtime.",
+          "Include a mermaid sequence diagram: UI (prompt or issue) → /api/prompts/run → resolveTaskRuntime → adapter.runCommand → sanitize → detached spawn → runs/<ts>-<runtime>.log → session appears in runtime session list."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "1cc19572-99e8-4dc2-b20d-80ef4fa8ed52",
+        "path": "/openwiki/workflows/process-control.md",
+        "title": "Сквозной флоу: управление процессами рантаймов",
+        "purpose": "End-to-end workflow of the Processes tab: ps snapshot filtering by adapter processPattern, app vs cli classification (.app/ in path), stop action (SIGTERM → up to 3s grace → SIGKILL) with fresh ps re-verification of PID before signaling, and restart available only for .app bundles via open -a.",
+        "seedPaths": [
+          "apps/console/src/app/api/processes",
+          "apps/console/src/components/ProcessTable.tsx",
+          "apps/console/src/core/processes.ts",
+          "apps/console/src/lib/signals/processes.ts",
+          "docs/operations.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Before any signal, re-scan ps fresh (bypassing the 2s TTL cache) and verify the PID still matches the expected command - protection against PID reuse.",
+          "CLI processes are never restarted from the console; only the user starts them."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "c2c387e6-beea-4f92-8776-7958b3e9b796",
+        "path": "/openwiki/workflows/workspaces-memory-builds.md",
+        "title": "Сквозной флоу: рабочие папки и сборки памяти",
+        "purpose": "End-to-end workflow of workspace management and memory builds: adding/validating workspace dirs (absolute, exists, no dupes; sources/ clone via https-only git job), toggling openwiki/graphify/docs subsets, then triggering OpenWiki/Graphify builds and visualizer/graph publishing, and reading rendered markdown in the Docs/Memory tabs.",
+        "seedPaths": [
+          "apps/console/src/app/api/workspaces",
+          "apps/console/src/app/memory/page.tsx",
+          "apps/console/src/app/workspaces",
+          "apps/console/src/core/graphify.ts",
+          "apps/console/src/core/memory.ts",
+          "docs/operations.md"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Build buttons are only enabled when the folder toggle is on and the CLI is detected; builds are detached processes whose status the UI polls via the .console-build.json/.console-build.log files.",
+          "The sources/ directory holds git clones of external projects and is git-ignored; clone jobs validate https scheme and reject private-network hosts."
+        ],
+        "status": "pending"
+      },
+      {
+        "id": "7cd0c374-8047-4c0d-b8c5-00d619b1198e",
+        "path": "/openwiki/quickstart.md",
+        "title": "Quickstart: карта репозитория harness",
+        "purpose": "Entry point that orients a coding agent in the harness repository: what the repo is (Agentic OS: Bun-workspace, Next.js 15 console app in apps/console + harness runtime/guard policy layer in .agents/ + shell tooling in tooling/), how to run/build/test the console, and a task-routing map linking every wiki page so readers always know which page to consult for a given change.",
+        "seedPaths": [
+          "AGENTS.md",
+          "apps/console/README.md",
+          "apps/console/package.json",
+          "docs/README.md",
+          "package.json",
+          "tooling/scripts/setup.sh"
+        ],
+        "relatedPages": [],
+        "instructions": [
+          "Guard policy (AGENTS.md §3, .agents/runtime/guard.mjs) applies to any agent operating in this repo: no recursive deletion outside .agents/.tmp/, /tmp, node_modules/; never read/write secrets (.env*, *.pem, id_rsa, secrets/); never force-push; structural edits under .agents/ require explicit user approval.",
+          "Repository language note: canonical docs and code comments are in Russian; keep quoted identifiers/commands verbatim, prose may be English.",
+          "Route tasks: runtime adapters/statuses → architecture/runtime-adapters.md; MCP registry & sync → architecture/mcp-sync.md; skills/skills.sh/plugins → architecture/skills-plugins.md; prompt runs / 'Исправить' / session reply → workflows/headless-prompts.md; processes stop/restart → workflows/process-control.md; memory/OpenWiki/Graphify tabs → architecture/memory.md; context-saving tools lifecycle → architecture/tools.md + operations/setup-tooling.md; console state invariants → concepts/console-state.md; security constraints → concepts/security-model.md; adding anything new → workflows/adding-extensions.md; tests → testing/overview.md.",
+          "Run/build/test commands: bun install; bun run console (dev), bun run console:build, bun run console:test (bun test); system deps via bun run setup (tooling/scripts/setup.sh)."
+        ],
+        "status": "pending"
+      }
+    ],
+    "deletePages": []
+  }
+}

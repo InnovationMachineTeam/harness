@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/api-registry.md": {
+      "pageVersion": "sha256:c6d667c193b37d9c3af87fbfc6b86b99aa73f36247cd19e178679fb89de0a336",
+      "completedBy": "openwiki/0.5.1",
+      "completedRunId": "8a7eb972-592a-45d2-b8af-0b1630f6fd33",
+      "gitHead": "735c2e6ec821daf2ec36017505274f0341ab7653",
+      "sourceFingerprint": "sha256:9b38596c9e2ada69eafc76d82c9dd1a20762150549eec8a48bba7cffbf451202"
+    }
+  }
+}

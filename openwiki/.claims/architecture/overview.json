@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:73caae140dab23bbee768b8294a476eb731ed8e608cd03970e17b510579cdee1",
+  "claims": [
+    {
+      "id": "claim_ccbc9db960af4442bfdd39db0651f35e",
+      "statement": "The Agentic OS Console is a Next.js 15 App Router application (package @harness/console) inside the repository's Bun workspace (apps/*), started from the repo root via bun run console; its runtime dependencies are limited to next/react/zustand, react-markdown/remark-gfm, and lucide-react, and server code uses only node:* builtins (child_process, fs, os, path) - no new server runtime dependencies.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/package.json",
+          "version": "repo-file-v1:sha256:5467db3f741b48ef7d1aff9b6313c92748122711667cf607262e0501ea8526ed"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L8-L20",
+          "version": "repo-lines-v1:sha256:b7778439f74cb49e51b4c5edb9bf7873f8324a746ce9576d87b22ce3953fa45e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3MDc2MWNmNTAxMjNlMTgzYmQyMjZjNzA5YWQ3MWFhYWIyZTU0MjgyZDQ2OTZiOWQ4MDEwNDJhYjk2OGYxNzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkYWYyOTllYzcxMWQxODk0OGU0MzNhOWFkZDllYTU1NmNhN2Y2YjE0ZmQ3ZTYzODM0MDFkZDFmYTZhZTIzZTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhhNzUzZWM5YzBiZWVjNjk3Yzc5MWU1ZTdjMzA3NGJlYjM3ODk5ZDhmOGFkZjAyYjk4ZGQwZGI2MGZhNGY4NzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyOGJhMGI4MDk1MTE3ZDExOTRjOGQyMDA2ODk0Mzk2NWMxNjI1ZDhkZjIwNThkZDE4YmZjNGZhY2IyNTc1M2MifQ"
+        },
+        {
+          "resource": "repo://package.json",
+          "version": "repo-file-v1:sha256:ed3d3d8e7187b4223c90fa65d1faed8611c20454c5258bf925e2df0ad90e2e19"
+        }
+      ]
+    },
+    {
+      "id": "claim_74abaa56cdcb46a8a013445bb3ac5233",
+      "statement": "The console is layered as pages/components/zustand store → fetch (RSC payload / JSON / SSE) → API routes (src/app/api) → src/core modules → src/runtimes adapters → machine touchpoints (filesystem reads, ps snapshot + signals, headless agent CLIs); API routes build a ServerContext (repoRoot + loaded state + ADAPTERS + saveState) via src/lib/server-context.ts rather than touching the FS or spawning directly, and adapters receive a ProbeContext (repoRoot, home, workspaces, FsSignalHelpers) so they never access the filesystem directly.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/types.ts#L59-L100",
+          "version": "repo-lines-v1:sha256:ef23e20acd699375584e1ea215c3e7c43f27e1dbc4211cec3a7b5087814c19ea:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE3NzJhMmZiZjAxOTg4ZDUwMjBkZjMyMmQ3MzZkZDYwYTM2ZmNjZjI4M2I4YjQ3Y2U4ZmQ3YTcwODk3Nzg2MWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2OWI3NTZjYWRlMDY2NjA0ZWJiZTBlZWJiNGNiMTJlYTUwYTYxMDcxMzFkMWE2OTE1OTNhNzE0NzcxZjEzNjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5YTg0MTA4ZDM2OWRhOTM5YmQ1MWFmNzVmZjdhY2NlOTk1NzNjMzYwMDFjOGQ1ZGFiMmIyYjczNDA4Y2ZjYTYifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/lib/server-context.ts#L6-L27",
+          "version": "repo-lines-v1:sha256:2b5c58d93d86742fb8a12bdaa944bbd0303b33adda37af88f4382b3e659f166f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzYzE5Yjg1MjIyODM1ZjgyYTljMzhmYTI1NjU4NzQ3OGQ0NTUxNjg2Y2ZiNzJiZmY0Y2VmMWNkYWI3MWMzODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkMTFjMjEwMDk4OTEyNTg2MTQwMDExYWU0MTJiNWYzYjM5OTNhYzMzZjhmZjFlNTJiNzRjOTNmNjIwOWVmNTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L22-L45",
+          "version": "repo-lines-v1:sha256:d58a85cd527f0b275df1d8446b832df66b64945120a813277f4bbbed14c4b922:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmMjNlYWMyNDcxZDdiZTg1YjE0ZmE2MGI1NmJhMzY1YjliZDNkNmZhOWEyNTRjZjdkMjM4MzBhYzZjNTM0YzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YzA2YzU2MWQ1YzMyNzM0MzY4NTI2OGE0NmIzMzkxZjM5OThlZWU4OTBkMmJlNTFmMGQyMWNjNGE1M2FlNmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFmMGM5ZTM1MWNhYzRjOWJiMjNlMDhkYzdjMDc3ZjJiNzliODg3NmQyOTI1MDY1NzM4NTJiZjAzNzc5ZGZiMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUxMDRmMzBiNDlhM2Q1MDU2NmY5ZDgyOGRjZWY0NmE4OGJlMDEyNmI1YmM1ZDAwNTM5MmQxZGQ5YjJhM2E4YjEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0c6e8a38f6754f2db176126a27c36eaf",
+      "statement": "The source of truth for the runtime list is .agents/runtime/<vendor>/config.json on disk: loadVendorConfigs() scans that directory and skips folders without a valid config.json, and a new harness vendor appears on the dashboard automatically; the UI never hardcodes runtime lists because GET /api/runtimes/list feeds the client store and src/plugins/runtimes/ supplies only cosmetic monogram/color styling.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/README.md#L196-L209",
+          "version": "repo-lines-v1:sha256:5f576e9d2fd05dd0e737be4037c780719021f95a3e124eb0243d88f3c0523ce3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxOTMwMmVlMGQwMzgzOTM1YTIxZDM0MzgwMjlmODMwZmVlZjkyMmEyOGQ4MGU2ZDAxMDcwNTc0Zjk0Y2NjZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhYzYyNzQ4YzU4ODdlYmRmNjAyNzczMzViOTk5NDMzMGI4NzViYjBkMjBlMzM2ZjA4MmQyYzk5OTZjZDM3MjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM3NGFiOWQ1ZjQ2MTYzZjVhNzcyYTE4MDBhNDFjMTFiYmQ3NDI2N2QzYTVkMzAzYTYyMzJmM2E2ODE1ZDI3YzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkYjhlOWE4MjA4OTIwMDhmYmU3ZTEzOWY5NTM3OWViZWRjZjA4ZmQzMTU4NTFlOGM3YjBhNGJmYzc1MTJlY2UifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/runtimes/list/route.ts#L12-L22",
+          "version": "repo-lines-v1:sha256:7f55df38beea12fe0f7fa69e004c1704df8696a673cd0e132da2ec2944bbfdcc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NGFhYTE3YjkyYjY2ODE2Nzg3Nzk0MjBjZWMyZDVkYTdmMTE4YzZhY2I5NjE0MjAzOTZmZGVhYjBmNDE1YTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVlNjY4MjQzZDgwZWYzNjU1ZDgzNTA5MmY0OTI3NzYxMjA4ZjUzNTlkN2YxZDNhNDRkOTk1N2Y1OWZhNWI1ODgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/registry.ts#L42-L64",
+          "version": "repo-lines-v1:sha256:2f38c22bda915808a91a5b85eb64ea9d65b3b04829513c94f07a2af91bf4621a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5Y2ZjMzA5ZDkwNjdiZGZhZDQxOWQzNWJkNjIwMmM5MjM3NzZmMDBhY2U3NmQyY2UwOTg5OGU4NmQ0ZmY3ZTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4ZjkwNjY1NzE4NTNlZGE1MDMwOWQ4NTcyMjFhYzM2ZTc0NjQyM2YwZmUwZjcyYjM0M2M4NTZjZjg4ZTNlNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5NzY4MWJkNTEzNzRiMTNmZjg1ZjYwNjY1N2QwMjgxZDI2ZTNhYmY0YzkzNTNkMGYyYTY4NGEzZjZhOTlmZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5e617b9e10ec4384b5d978329b406af1",
+      "statement": "Live runtime behavior is provided by optional RuntimeAdapter implementations in src/runtimes/<id>.ts (claude, codex, zcode, cursor, kimi, opencode) registered at the single ADAPTERS point in src/runtimes/index.ts; without an adapter a card still renders from the vendor config with status unknown, and a throwing adapter sets probeError but never crashes the dashboard probe.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/registry.ts#L111-L223",
+          "version": "repo-lines-v1:sha256:6d9b261b59b28cb70365eba599a0018d60744771366946474c62813df1f51279:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzNDFlNmNhZmFjZDc0MDhkOWJhMDE2MzdhY2IzMGEzZjg5NzAxNzg3ZWJjMjBkODYzMjY5ZjY2ZDhmNzk1YWNmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0ZjEwNDQ2NmZjNjNiYTkyN2EyMjY4MGIxMWU0MjFmNGM1MTJmZGRiMmYyYTBhYjc1YmFlMjhiZDgwY2QyYTUzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJkMDE4MjhhZmRlN2FkMTk2NzExODU3M2E1YTZjY2FiZjZkNzhhMzUwYTlmYWVkYjQzNWZiODI5YzJjZTVlZGQ4In0"
+        },
+        {
+          "resource": "repo://apps/console/src/core/types.ts#L71-L100",
+          "version": "repo-lines-v1:sha256:80216580986ff1b8157b7720b94f7823f68bd3d26602188f85674970750691c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2ZWQyZTljOGQ4ODk1MzZmYjliMzIzNzhmYjJhYTJiNTRmOTMxNjk5NzM0YmNlOWVjMTkwOWUyNjVmNjMyNTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1YTFkMmFhZmMwZTk3NDYwMjliMDAwN2E5OWU5M2RiNjE1NGI1N2ZhMGU1NGRiNmY5NGUxZGMyMzljZGNjNTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5YTg0MTA4ZDM2OWRhOTM5YmQ1MWFmNzVmZjdhY2NlOTk1NzNjMzYwMDFjOGQ1ZGFiMmIyYjczNDA4Y2ZjYTYifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/runtimes/index.ts#L18-L22",
+          "version": "repo-lines-v1:sha256:a10fa98c04ad4408f63c87bb89e9cb744fbe12bb1184d96c474be3805bf6982d:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWZhOTMwNWNmMzYzNGQ4NTZmNjI0ZTRlZmNhY2YwZTc4NzdlZmM4MjRiYjNlOGQ0NTkzZjQ5OTU4OGNmZmRkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGYwMDlmNTE0NDk3Njc4YWZlNjNmMzk0Mzg1NGI5MDkyNjBmMjgzNDE2MGQyOTgzZDUyZTIzMmM5NGMwMDg1MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTRjYzU1ODg0N2Y2Mzc4YTM3Y2NjMGQ3ZTE5ZmNhMzQ2MWI0OGFmMTc4N2VjNmNiYTQ0ZjU3NmIxZGRjMzA2OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dcb3c16f1b134c0680d6588385fb5f4d",
+      "statement": "probeRuntimes() merges adapter signals, ps process scan, shared + adapter diagnostics, and awaiting-input heuristics, then classifies activity with the pure classifyActivity() (active-now ≤ 5 minutes, recently-active within the selected window, inactive beyond, disabled when isInstalled is false); probes run in parallel and accept only: [id] so the /runtime/[id] space page probes one runtime instead of all six.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/runtime/%5Bid%5D/page.tsx#L14-L16",
+          "version": "repo-lines-v1:sha256:db9c0bdaf37dfe9a42df36b4dba4a773f3e266abfbdd7a54b64bfb4daca610f9:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzQ3ZjRjMDYxODFiOWFhYTc0M2M1MmYxMWIxOWFhNzM5OGQwYmExNzAwYmY5YWU5MDI0NGE3OGMyMDM5NzUxZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGNmNmMwYTQ1MTljNWEyYmQyZWJkNGJmMmVlMmYyOTgzZjE3ZDVlZjhiNTNlN2JkYmE3MDc0YmIwZjE4ZTRiOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODk0NzBlMGMzN2RjZjM0OGVlNjc4NmU3YTg2NjhkODQ5MThlYTUxYWI5YjIyZmQxYzIyZjdhNDQ0MjM1ZTFkZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2U2OWQ0N2NkM2YxMDQzYmZhMmNkYWFmNTJkNGEyNTU5NDM0OWY3ODA3NmZlMDI0NWFhODEyMGIwZTMxNTliZCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/activity.ts#L1-L38",
+          "version": "repo-lines-v1:sha256:a7bfb25cb722953f775823140dcbf5f1b37eb020d7044226f6536461f5a79390:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhZjZmYjY1ZjYxODgzMzgwNWIyNTFhZDlmMzUwN2M3M2EzYmJjNDI0MmYyZjdlNWRjMTc1Yjc0MDUzMTgxMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMWQxYTYzMzkwMjI5Yzc5ODM0N2U4M2EwNDA1NDQxYzk0MDAwMzUyODRhZDE2OGMxYmY2Y2RmMWQ3MGEzNzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/registry.ts#L111-L223",
+          "version": "repo-lines-v1:sha256:6d9b261b59b28cb70365eba599a0018d60744771366946474c62813df1f51279:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEzLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIzNDFlNmNhZmFjZDc0MDhkOWJhMDE2MzdhY2IzMGEzZjg5NzAxNzg3ZWJjMjBkODYzMjY5ZjY2ZDhmNzk1YWNmIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI0ZjEwNDQ2NmZjNjNiYTkyN2EyMjY4MGIxMWU0MjFmNGM1MTJmZGRiMmYyYTBhYjc1YmFlMjhiZDgwY2QyYTUzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJkMDE4MjhhZmRlN2FkMTk2NzExODU3M2E1YTZjY2FiZjZkNzhhMzUwYTlmYWVkYjQzNWZiODI5YzJjZTVlZGQ4In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_2293ebf5b0c84cfa9b47b0cbf35535f5",
+      "statement": "Console state persists in .agents/console/state.json (outside Git, overridable via HARNESS_CONSOLE_STATE): it holds the MCP registry, skill overlays (useGlobal/defaults/runtimeOverrides), defaultRuntime, taskRuntimes, plugins, workspaces with openwiki/graphify/docs subsets, installed tools, and lastMcpSync results; loadConsoleState merges onto defaults so a missing or corrupt file starts the console with defaults, and saveConsoleState writes atomically via state.json.tmp + rename.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/state.ts#L127-L183",
+          "version": "repo-lines-v1:sha256:5cd63bf99c7aa724e00cf86cd1936303aa85a5a197414c9cd1ed59c5fb27141b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyMDYxYjJkMTdjODZmMjRhNWRkZTg4ZWI0MWU5YmZmYWE5M2MxYTYwYTY4ZjJjN2U4ZDRiM2QwYWFkMmRmMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhNTc0OWZkY2ZkMTQ3MWFlNzA1MThmMzBiOTBlYjQ4ZjIwMDY2YmZjMzhjYTJjYTc2MDQxMjVjOTQyMTYxMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQyNjE0MWRiN2JiZmQ2ZGVmMmMxYTQwNTYwZTg4NmYxNmU2MDMyN2M5MGUwOTA1MzFmOTkwOWExZDMwNjgxNDkifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/state.ts#L36-L117",
+          "version": "repo-lines-v1:sha256:91b8eea0e52f0072a8c1d992401743bcf76a4a4f72010841cac4f4a0fd6365b4:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhZmYxZWFmYjE1NTAyYTAxNjYzNDVmYmUyYzY5MjJkOGNkNmVhNDU2NjY3ZjRkODdhY2IxYTU4Njk0MjkyNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwOWJkYTM0ODQ1OWNiYmM2ZjI0OTc2ZDRkNmJjZGNmMTk4MGE4Yzk0Yjc3NWFjODEwMTdjNjZjZjIyNGNiNDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJmNjY4OWVjNWVhNjkwN2Y5NDlkZjQ5OTVmZDQzZGNkYWFiZmZkZjdiMDVkMDVhMTY4YWUxMTdlMzczMTYzZGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiNDYxZjhkMjAxZmRhMDcxY2Y4NjAwN2ZhYTk4NGUzNTVjMTA2NDNiODU0NzAxN2I5MTVhYjkzZjBiZWI1ODQifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L104-L124",
+          "version": "repo-lines-v1:sha256:b43ed62e4d61249b29115e66a9a8c3ae308d19c6e6d8285c84d54656b559257d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxMjc1ZTRkMjQzMzRkZTlhYjgwOWZkNTc1NWQyMzgyMmUxYWRjMjM4Y2MxNWNjMTcwMWFmMzA3N2JkMzU4NzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiYWU4MWJmNmNiM2YxNGQzYWYxNzk1MGRjZjE4ZTI3ODljMDU0NDQxZmM3NjUzZjAyYjYxOTg5NzdlMWZiOWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4M2FkNGJlOWYzMTA1OTViNWRiOGQ3MDA3ZDFmNjZiYjVmNGI3NWJhMTE1ZmRmYzI3NmU0MGEwMDE4MTVkZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEzMGYwOGYzYTZmZTk0ZWM0MTlmYjgwNWRmNzM2YWY0OGFjYTkzZmI5ZDExZWZhZjZlNDA2NGNiODFjMTE1MzIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d93a2b343e34c3bbbc665fabcdb1de9",
+      "statement": "Every mutating API route follows the chain: mutate state → await saveState() → respond → client store updates only after server confirmation → invalidateDashboardCache(); the zustand store (src/store/console.ts) mirrors this by calling set() only after a successful PATCH/PUT, so the client store never leads the file, and only UI preferences (windowKey, autoRefresh) are persisted to localStorage via partialize.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/runtimes/route.ts#L27-L38",
+          "version": "repo-lines-v1:sha256:8f28fcda78bbf52cb61c22eb0a2591ad3f507684565160e837199c3a9892b8ad:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0Yzg0M2YzMTc5NjAzY2RhZWIyYzNmNGExNGIyMDQyOWFkYmQzYTdiYjJhYzhlMzU5OWUxN2JjOTY1ZTM4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg4OGYwMTBjYzJjNmYxNGVjNjYwNmQyNjUwZWU4ZTViZWIwMGRjZWUzZTExNGQ5OWQxNzBlZTA3YjFjYzJjNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/skills/route.ts#L53-L85",
+          "version": "repo-lines-v1:sha256:62a6badee08d486573ad26463e33398c9e4b75ac0670c3b18d8f8948ac2ea7e5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmNjFkNGU5ZjhkYTJkNzViNzgwN2EzMTlkYTg1OGJmYmZkNzY1MzllNzE2MGQxZjc5NmVjNjdlZmM4ZTA1MTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkMGYyZDNhM2FhZGEyNzU4NjQ1NzhkMGE0MzkxNTYzOGQ1NDNmZWNhMmM5NDg1OGRiOTQxMjExZTg2Y2VmMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/store/console.ts#L126-L170",
+          "version": "repo-lines-v1:sha256:792222fe7fbaf83f327eb71252652e6e33a59e69ebb98d6a62164819f0bacd4b:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1MWUxMTM1OWViODNlY2VjNmFkNWMxZmJkZjg0M2UzY2U2YTQ5NDI1NTE1MzQ0MTZkZDExZmFjMTkxNWUxZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwMTk5NWYyYTNlNGEzYTcwZjJlYzZlZWVjZjdiODE2YmQ2OTI3OGQ0ZTNhNjc2YTlmZjQ5MTk0NDBiYWM3MmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwYmQ1Y2JiNGEwMzdhZDFhNDk5MjViYjNhYzhlMmZkYzU4OGU0YjBlNWNkNmYxNzg5NDQyOWQ2YWE3NWNjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIzZjNjYzRlMmIxMDEwMDdlYjdkYTA4YTA5YTEzNjIxMmZkZTA4NmQ2MmY4NDg2OWM3NzI0YTUwNTYxZGI0ZjAifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L137-L139",
+          "version": "repo-lines-v1:sha256:358c1e7d9592b4c47a53c7f758212e2ff28bf3ebe38e7ff280e8fa1ebfcc30c0:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGIxYjc0NDA1NTQ2NjE0ZjE4MzlhYTRhYTU3MDllODA3Y2M3NzVmYWZkMTkwZTQzYmEwMGM4ZWVmM2YzODYwOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY5NDVhYjE5ZTFjMzE0YjI3ZDQ3MzcxNDMxNjk1MWM3ZWJlODRlNjU0NzU0YWRlNTczYzI4M2Q4MzhjYjgzZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWE3YTczY2MyM2JkN2NmM2RmYjc2OTI3YTRmN2I0NzYxOWRjMjAwZjlmYWZmYzBmMWZjMTc1ZDRmZGE2YmIzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjQ5YTZmOGQ0Zjc1YjhhMGM5NDZlNGU1ZjYzNmMyNGZkZjE1MmU1ZTkwYThmYTBkYzY5YzY1ZTVlOWY0MjhkZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d328b5da27e24a968c57aa9df34c1d5d",
+      "statement": "The dashboard micro-cache (src/core/cache.ts) applies a 5-second TTL plus inflight dedup of concurrent recomputes keyed by repoRoot|window, is shared by the RSC page (src/app/page.tsx) and GET /api/runtimes, and is cleared via invalidateDashboardCache() by all mutating routes (mcp, plugins, runtimes, settings, skills, skills-sh/install, tools/action, tools/dashboard, workspaces).",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/runtimes/route.ts#L13-L25",
+          "version": "repo-lines-v1:sha256:f3cd07cecc69d24610bf4944f6bd2abcc5b96e42e1b8243b29e854b7bb912195:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYwNmI0NDVlOWU2ZjI0MTM1MDM3M2VmNTk4YjEwNDk5ODFlODFjMGIwNmFhNTAzY2ZkODZhYWFhNmM0ZDE2ZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjMGVkZDRiN2MxMjAxZmE5NmEzY2EzOTU1N2NmN2I3YjhiNWQ5MGU0MjNlZWU1NjBkYzlkMGZlN2FhNjAyNDMifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/page.tsx#L10-L19",
+          "version": "repo-lines-v1:sha256:f1c2df93cf33597bdabf7bd101c164933374e3200a425872c92acded6704a34b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4NzY0ZjQ4ZmJlOTVjZWMwYTgzM2MyNTdmZmQ5ZTgwODBlYjNmNjVkMGU4ZmM2Y2RkZWNjOGY0MDA3OTdkMTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzYTYxM2ZhNDEyMDUyM2M3ZDY4YjMyZjYwMzkyNTY5NWEyZTdjZTUxYmZlMmFkMmEwOTY5MjU4NDY3OTkwMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/cache.ts#L9-L47",
+          "version": "repo-lines-v1:sha256:d47bcbadac482ff8dbd4fa2718fce3ca1dbbd0b2e644154d4363c53b03c384e9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyZWQ4ZDgxNTk3MGI4ZmYzYjk1YzFiYzVmMDNiODk3YTI4N2E3YjVjMjU1MzExYmQ0NjgyOGRkYmMxMDJkY2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5ZjNhYTMyOWNiNjJkODFiZjE4MjI4NGNmZDY3ZDA3ZjQ0OWI4NDZmYThhODZhYzE4MjIxYWUzZGQxMjEzNWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_12ec9cdcdec14637a5093ee1a7bee1a0",
+      "statement": "Process handling uses a single cached ps snapshot per probe cycle (2 s TTL in src/lib/signals/processes.ts); before any signal, stopProcess/restartProcess re-verify the PID with a fresh (cache-bypassing) ps slice against the runtime's processPattern, stop escalates SIGTERM → up to 3 s grace → SIGKILL, and restart is limited to macOS .app bundles via open -a.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/processes.ts#L24-L83",
+          "version": "repo-lines-v1:sha256:2a6364ab47d3fcd9c6f0e5775fdeaac02f6aac5abd488b95198d9317e53ffca7:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/lib/signals/processes.ts#L18-L37",
+          "version": "repo-lines-v1:sha256:07232ff7a1b9d2a6e8653467426d9d2e2a15699d174b2c7738908ce4e17d0ec9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1ZTcxM2E4YWEyMzY3MDlmN2Q3MzZiZTc2OTcxY2Y3NzBmZGI3OTZhM2RmYmM3NTU0YThlMTNkNjgxZjhiYWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY3NTI1YTg3MmE2ODI3MTUxZDE5ODcxNTM4NWQ4YzVlNzgxM2U0OWM4NzM0MmM5NDdmZTcyNGNiY2E1OWRkZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE4NTZhM2FlM2M4Mjk4ZDBmZmQ0NDA1ODdkOGFiZmFkYzk0MjBmZGEwN2FkMDk3MDU2MTU0ZGEwOTE4YmEyNmYifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/lib/signals/processes.ts#L82-L85",
+          "version": "repo-lines-v1:sha256:f8553902562b0148cc7f7ce4e6d3039e4f719548a466ac9754f2cb25990cb171:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGMyZTFjZjdjMWYxOTY2MzFjMmI0MjMwOWEyOGQzMzA0OGY3ZWRlOTE0ODExMTE2NzQ1MzhkYWIzNzY0YTY3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWUwNDgyNzFkYjc4ODkyYjdkNWE4ODI3ZTRhNjk0Mjc3Y2M1MzA1NjU2NDAwMDY3ZDQ1Y2QyYjRhNTQ3MWIyOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_15e7d30f7f0f491c978a9921d3c1a956",
+      "statement": "The API surface is a registry of force-dynamic routes under src/app/api/**/route.ts covering runtimes, mcp (+catalog), skills (+installed/create/remove), skills-sh (search/detail/install/SSE/input), plugins (+marketplace), processes (+action), sessions (+reply), prompts/run, settings, tools (action/diagnose/dashboard/job SSE/usage), workspaces (+clone), memory (docs/openwiki/graphify/runtimes/file/visualizer/llm), plus the GET /dashboard/* Headroom embed proxy with literal upstream http://127.0.0.1:8787/dashboard.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/mcp/route.ts",
+          "version": "repo-file-v1:sha256:61a05755ba863ed87f220a37bd1d656a558522df5f790d7478c20ec294c1e887"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/memory/graphify/route.ts#L48-L57",
+          "version": "repo-lines-v1:sha256:f08393cf54b1e7b1535013f6907035e281ce54dd809a1c2588bbbe6e8d8b8d60:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZmMyOGViNzUwMTFmYWY0N2QxYjQxMThkMGRiNTdmMzczNzVmMzk0YjhlNGZkOGMxZDU4Y2M4YzE1MzM4MTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExNjU4M2VhYmJiYTYxOTlmNGExOTNiY2VjMTVkZjI5NDZiNDhjYjAzOGIwODZjN2Y2NDM5OGU1MjRiZmJjMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/skills-sh/install/route.ts#L8-L17",
+          "version": "repo-lines-v1:sha256:1605e5394335f1a7dfdb189f07d572c639169de7f1abeb55bfa1efaacadbd373:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiMzA2YzVjYjdkNThlMjQ3YTZlMzUyOTJhYjY1OGIyZWRhZGI5MjljMWY2OThlOTYwMTU2ZDBlYTQ1NDViZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwNjkzYjhjNDQ4YzUxNTEzYzhiNmFmYzg1NTAwNTdiZGFlN2JlMmI4NDc3YzVmNTU1Yjg5Nzg1ZjVkOWYyNzUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/tools/job/route.ts#L8-L15",
+          "version": "repo-lines-v1:sha256:27008bb6d54a9d3c33af0d60719c516827545d596d586170875712bd5f3f2fe2:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTllNmFlOTdjZmMzMzZmNTYwOTk5NDY4NjBlYjhjNmE5NGIwNzBlMDNmNmEzOWZjMzcyMDVhMWU5NTViMjc3OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWJkOGEwZTVjYTMxNDlhZGQxY2M3YmY0ODE2NTRlZjg1ZjZlNmIwOTQ4ZDU1ZDQ4OGIwZDI0YWYyZmMxZDRhZiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/workspaces/clone/route.ts#L34-L38",
+          "version": "repo-lines-v1:sha256:b1d4fdd091cb0527e0f7d0d37f158cbec851cd0d333e830fa86fc8dab5ecb7fd:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZmI1ODBlOTY0ZjgzYTQ3M2Y0M2Q0NDM4NDYyOTQ5ZDY4YjU2MDBmZGE3ODdmMTYzNzQ1ZDAwZGU4OWNiZjM2YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzAzZWY4YzM2ZmExNmRhZjY3N2RiYTdjMjgyYTllMDU2ZGQ5NTI1YWQ0NWViYjBmZWJiZTgyZjU2MmY5NmEwYyJ9"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L57-L102",
+          "version": "repo-lines-v1:sha256:df3557f5aa6f49774f86faf424700c235d7c71ddf63e5d76e00017f91e6a18a1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImExYjYzNDNlZTFjNTk0NGEyYjkzNjA3MmU5MzljY2IxYmFiOWYxMGQ0MWRkNmYwMGU0NWYzNzFkNGZjZmEyM2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkYzdjZGZmYTQxYTZmYjk3MGVlNjg5ZWQ4NDAzY2JmZGE1NDA5M2M1Yjk1N2FjZjRiYjc0ZWMwMDkwMzQyYjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNmEyMDE2ZDE1YWQ0MGVkOTM4NDZiNmVhODc5NTNjZWFkMTNmNjc1ZTM1MzQ0YTdiYjMxYWYxYWFlOTU0ZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkZWU1MTA5Mjc2MzQ2MjkzNzUzZGU4NmU1ODkwNWQ4ODU1MGI0MjFjMzk0MTdhYzQyZmZmYjAyOTBlYjdhZmYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e3c01e105dc04320aa85b9fc0293ee78",
+      "statement": "Long-running installs stream to the UI as SSE jobs: skills-sh installs use the in-memory job manager (core/installJobs.ts) while tool jobs (core/toolJobs.ts) duplicate output into file logs (.agents/console/tool-jobs/jobs.log + jobs-meta.jsonl with id-tab-prefixed lines) that the SSE route polls, making the stream invariant to Next.js HMR and per-route module copies; jobId is used only as a line-prefix filter, never in file paths.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/tools/job/route.ts#L8-L100",
+          "version": "repo-lines-v1:sha256:8a32d579d070cbde5e49efd3fe1f9ead52dc8e063d2f0ada7cb999656833d57e:eyJzZWxlY3RlZExpbmVDb3VudCI6OTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/installJobs.ts#L36-L106",
+          "version": "repo-lines-v1:sha256:489d5e55a7e814f077cdd20aa7b7714ce31f96f5acddedae22ff0656adda6a4c:eyJzZWxlY3RlZExpbmVDb3VudCI6NzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiMmQyMjE1ZGNjMzVlZThkNGEwNWIxMzNlZGVkNGM2ZGQxYmM1ZmZkMGQ4NTYwYmQ3OGUxNzZlNTk5NzM5MGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkNGU4MmY2NDAwYjAxNWQ2OGQ1M2E5YjgzMzZhZTBiODgwYjFhNTQ3OGM1N2RlNmM0MzNiYmQ4YWJjY2RjYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/toolJobs.ts#L1-L72",
+          "version": "repo-lines-v1:sha256:170a9a00d23593fc720447ebd826e83f9f8eae0e409e022b93fa3679b3283e60:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1ZjliOTk2MDNjN2QxOWI2MTVmZThiNGI2ZDNlYjY4ZWFhMjdjNjRjMDIzZDZlMjU3NDJjYzQ0NDgxZjQ0YzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4OTE4ZjczZDM2N2I1MjZjNzk0MTA5MWIxOWViNDI0N2E5ZGY4NjQ3NmY2ODgzNjU2MzQxY2MzYzJiN2IxMjMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9827f037b63e43f6b5b484298f352c97",
+      "statement": "All process spawns use literal commands (bunx, claude, codex, kimi, opencode, node, open, sh) with argument arrays and no shell; prompts are sanitized (NUL stripped, 32 kB cap, leading-dash disarmed), MCP and skill-package names pass strict regexes, and wrapper functions around spawn are deliberately avoided because the Mimosa pre-commit scanner would block them - the accepted pattern is an inline switch over literals.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/installJobs.ts#L25-L28",
+          "version": "repo-lines-v1:sha256:76672f6a5081dd2c2e1ffd378729578ab2c099252f98c6bdc84a39f00ebb2d88:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzlmYjMyNTU3MDFjYjQ4YjMwZDUyNmMzMWNkN2RiOTFmMTYwNGQwYTY1ZDAwODgyMmYxNzljMWU2Y2U3ODBkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjE2OWM2ZGYyZDVkMGM0MzUwZjc2NDk2OWIxNzYzZjcwNmYzNTk5M2M1OWNjMzRkMDM5MTJhYzljMDQ3M2UwYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGI1ZTg0OWQwOGNmMWRiM2FiOGFiZTc4MDZhZmUzNDBmYTA3ODQxMWMzNjM0YTMxNmM0N2QwZTA4MjUyYmY4MyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L19-L22",
+          "version": "repo-lines-v1:sha256:5095db9e7df43beb844bf178419f3b5c3ea79ceb54319817c837d967ffa86968:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmZjMTNlNzk0NTY2ZmQ5YzU5NmJmNWZkZGEyZGVhYWM1ODJhMjQ4MmI3OTc3NTA1ZGVhNTQwY2NiY2NkZWM1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmY3MWQzNDNlOGQ1MTNmY2Q2YWVmNDNmNjM2YzU0YTVkODM3MzkxNGMzYTI1MWYxNmM0MDE4OWZmMTk0Y2Q5YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGJkMjc3MTU2Yjc3NzM0OTM5N2U2OGRhYjczMjExYTUwYzg5OTA1MmI1YTIxODkxNjFlYzJlNmRiNjZjMWM1MSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L14-L28",
+          "version": "repo-lines-v1:sha256:8d79179b18501e9171dde439061ff0d665b505edc4bbe7f174bd305e813b2e2d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxNWUzZGZhMTExMDZhNTI5MjAzYjU1YTI3NjA4OWU0ZGNjZjIwY2Q4NzdiMjYxODU2NmZiMDFiZWQ3NDJjNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVmMTE3NjhhZTI1YjA3ODdkZTA3ZDFmMTlkMzU1MjI5MzA3NzBmZWU2ZjMxYWM3YmIwNTM3N2JmNTcyM2RjNzYifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L91-L126",
+          "version": "repo-lines-v1:sha256:f3a5efee5b681733ec86fbe6313c12d6063a9a97df9424fd4940aa94d1acf7cd:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjYTVhNTFiOTlkOWNlYmYwZjkyODRlZDM3ODI2Mzg1ZTAzMWYzMzk2NjRkNmNiYWZlNjg0M2FmOTFmMmFkODQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0YTk5ODk5YTUxZDY5ODc2ZmIzZGQ3MWFhYjdiMzYxYWUyZTM3Y2ZlMjA5ZjQ0MTk2Mjg1ZTJlY2E5MjdmOWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI5MWE2ZTU5YjRkOWI5YTAxN2U2ZmEyOTJlZjZjYTc2NTgwMTM5YmEyOTlkNGIxODdiNjZiNDYzNjFiMmMwODAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJmNTI4NmM5ZjRjNjIyMmY5M2EzNjQzNzUwOWI3YmEyOGU5NjNmZjhkYjRkZDQ2NGFkNmRlZTA4NzIwNjQzODUifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L157-L163",
+          "version": "repo-lines-v1:sha256:9785666ea46a8c11f25a8026296977c38997d07237d40cfdf8e15799bc5b01d9:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjc5OGYxZTY5MDYxMTEwYjIyY2JmODMzNmNkZGFkYWU2ZmMyMmE0Y2E0N2I4ZjY0MDlhYzk5NzU4ZTFmODMwZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDkwMzEzNzk1MmE5NDYzODRlZTIyYjZmMDU5MWE1ZTgzZTcyMWYwMmNlODMxYTEyNGZhYjEwNWMxZjExMmYxNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYjUyMmVlZjdmZWY5YjZjMDZjMTg2MDlhNTZmYjNiZjlhOWU0MTUyYzRlNGUzMjczNDMwMjc2ZTIzYWRkNDAzOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGY5YzY0YjM3MTZmNjZhZmI4ZWJjZTIyYTUxZGE2Y2RhODZhNzMxZGNjMzlkYjQzNTI1MGFjYTY5MDhiODdmMSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f755323ceb274df98d65a17cca129d4b",
+      "statement": "Server-side outbound requests are SSRF-guarded: skill metadata fetches allow only http/https to skills.sh/github.com/deepwiki.com with private-range rejection, timeouts, and response caps; git clone accepts only https URLs whose host is not localhost/private and confines the target directory inside sources/.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/workspaces/clone/route.ts#L9-L76",
+          "version": "repo-lines-v1:sha256:e010b0bab2c7a4fe711774c2dcb7567664a42d4d89f1289a6ef47d3174c7c2de:eyJzZWxlY3RlZExpbmVDb3VudCI6NjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmNmY2ZGE3MmNmMmQ2NjQzZGNhOGY0ODBlOWZiZWZlMDRhZTAzYzQzODZlNjZlYjNjYTBiMjdiZWZlYzZjY2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjNDUxYWY2ODAyZmU2ODRiNzI4MzJhYjZlYjMzZWEyN2IzMDhmZDY1OGExMDk0NDFiNTg2YjkzNGQzYzQwNDgifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/skillsSh.ts#L1-L62",
+          "version": "repo-lines-v1:sha256:83d961edb261868340137c7f0261fe986bc6cce5e76b74d8ea0ffcd13ded9cb4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlZjU1NzQxNjBjZGUzN2UyYWU4ZmM0YTVjNWJiYTg2MGU4ZGM0MzBhZmU5MzdmZTlmMTJhNDljNmZmYmZlMjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkYTQxMjNjZmRkOGJmYmQ1MmZlNTA4MmUyNTg4YWQwNWVhZjg0MDkwMjRmNjM2ODc0YzM1MWIxZWQxYzBjNjkifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L153-L157",
+          "version": "repo-lines-v1:sha256:8b87aa14835b7333d237c066792beceb59dad5fb56f22a91046b582875b7990f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNjc5OGYxZTY5MDYxMTEwYjIyY2JmODMzNmNkZGFkYWU2ZmMyMmE0Y2E0N2I4ZjY0MDlhYzk5NzU4ZTFmODMwZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTdmYTNjNmJiN2RkZDZkZWIwZTE3MmYzOTBiNmU4ZjFlNzM0NzI0MmI4NTBmZTk1YmU2NGU5ZjczNTFmNzExOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWVjZjdjZTAwMjgxNjdlNDMyNTZjOGUzMDBkYzhmNDQxYmE1NGUwNzgzYWI2NmVmZDk5ZWE5ODJiMmU0NjBkZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_9991252889ba423d920409d6ee652640",
+      "statement": "GET /api/memory/file reads files only through checkReadPath()'s allowlist policy: markdown files inside workspace roots, non-hidden files inside <dir>/openwiki/ and runtime memory directories, and single global files (~/.claude/CLAUDE.md), enforced by lexical path equality, realpath containment (symlink escape rejected), hidden-component rejection, and a size cap.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L477-L540",
+          "version": "repo-lines-v1:sha256:7d0632e64c306f3800c7863d16b9cc102f3bc8e64d45b0ace5bebb10cac87e9b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzZDk3MWRhMGJlMWQ0ZGVjZWUxNmU3MmRlMzhlNmU2MGZmYzZlYjU4MWI1MzJjN2Y1M2ViYjA1YjE2YTE1ZGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYyZjdiODUwOWE2YWU1YzcwM2U0Njk1OGRkOTU2OWIzNmQwNzQ2ZGQ3YzY2NmVhOWVlYmY2MDI4NDY5Y2YwYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2M2JlMDNkZDQzOWM1ZDc5MTI4NGEwYzM5ZGJiOTJiZjExYTJiNzJjYzhkMDA1MzJmOTViNDVhMDNiODI3NDcifQ"
+        },
+        {
+          "resource": "repo://docs/architecture.md#L164-L168",
+          "version": "repo-lines-v1:sha256:af49c55b375a8867cc4fbda3bf76712a90422380882da6d79ab1b1805ca83f07:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTQ0MGRiNGZkZmU5NzczOGQ3NTU1YjU1ZDM2YjkyMDFmM2U5OWZjZjhmM2EwOTcyNTZkOWRmOGJiMzNhNThmZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmE2YzVkZmM2MjY5NDg4NTc0MjQ1MjBiMTkxY2Q0MzZjNDQ0MzliMjE4MjBjM2FkNGRhOTM3ZmFmYTBmYzQ1OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWFhNzM3MmE0ZmQ0OGVmZjQ2YWY3ZGJmMmNkMGM5YWIyMDgxMzY3NDRkZTA5ODY3Zjc5NzI5YTBjNGU1NTU3MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOThhODFhYmUxNTRlYzY2OTRjZTI4MmVhM2FhYzM3MTRiYzQ0NTk5ZDQ5MTUyODZiYjExMzhiZDkwZWZiMTU5OCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_00c772821523405f875b92d225db65e6",
+      "statement": "MCP sync gives each target ownership of exactly the names from the console registry minus what it wrote last sync - foreign entries in runtime config files are never touched; the project .mcp.json receives globally enabled servers while per-runtime user configs apply final = runtimeOverride ?? enabled, and the Codex target is edited by the sectional TOML editor in src/lib/toml.ts.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/README.md#L83-L104",
+          "version": "repo-lines-v1:sha256:b1dddf8cad4e2c9b388b98b977ac5b0902db2cb2b6f823749ea479c0d37ccf8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMDNiMzJjYzYyZDJmMDYyNGE2ZWRlZmVmZWY3MTliYTFjN2MwM2MyOGJmMzdkMGQ0OWQ4YTM4OGVlYTk1YTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA5M2FhMDQxOTRlODNjMzI0ODBlMjFlNjAxNDMzZTI2ZDU2MDk2ZDllMGE5NjAzMjI2NzdkZDBmOTEzMGYyMDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdhNzcyNDhkZGFmYTAwYTNhM2E4OGRlZTlhOWFmY2I5NGQ1NGNlNGVjM2NjNmM4OGFmYzY3MGVjMTU2OWZkNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAyODkxYWE5Y2JiYWI0Y2EyYjk2NDQxNjFmZGQ0MjY1M2ViMzczY2M5ODBmMGM4NWE0OGNlZTE5ZTdlZmQ2NjcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L111-L140",
+          "version": "repo-lines-v1:sha256:9d7d7be541e81b7b5220b7732c1818d23a2e54245a04eb8dea735f5c7a8b642f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1YmVkMDExZjk3MDFhOGNhOWQxYWIzMWVmODYyNDgzNmI3YzBjM2ZmMThjZGM4NmEyZGU2OGUxMjdhMGMwMzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMTFmMjM5YWM2NWM5ZmVjZDRmNzk3NWQ0ZWUwYzY3N2I1OGE4ZWE2Nzg1MmVhMjVkMjc5MjM5MjUxOGQyZjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4NmJiMjE3YTNkNGY0NDhkY2FiYTU0NzQ5NTIwMmE5ZDZkOTZkNDkyYjc4MDI5ZTc5YzcxNTAxMmRiMzFjNGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2ZTdiYTcwMDAyYmFhZmY3YjBiNGU5ODdkZDBlZGMxOTdiMzIyMWExYTYzYTk1NjM2MjA5Y2MwMGZiNDk4ZGQifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/mcp/sync.ts#L9-L52",
+          "version": "repo-lines-v1:sha256:d5439d1831c87c78a0247fb6a646846450b3c18e4bf43be61ee8b07bfb1a7e0f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzZTU2OWI1ZTY5NDM0MDZkOTk1MjE2ZDhjYzk5Yzg1NTJiMDllMWE2YTg1NGM5ZDRhNDFlMDEwYzAyOGFiZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0OGVlZWFkMjY0YWIxNGIxYmQzMjU1MDUyNDNiMjk2ZjVjMGIzMGQyNWZhNmY5MTNmZDE2ZDQwMDMzMmFiZWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a798c015fe7a42afae2994281ea891b9",
+      "statement": "Session replies and prompt runs are headless CLI integrations driven by adapter replyCommand/runCommand: POST /api/sessions/reply spawns resume commands (claude -p --resume, codex exec resume, ...) with a 120 s timeout and capped output, while POST /api/prompts/run and buildFixPrompt launch new detached sessions whose output goes to .agents/console/runs/<ts>-<runtime>.log.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/sessions/reply/route.ts#L7-L68",
+          "version": "repo-lines-v1:sha256:51a6f6bd821d6cdecbfde521d8d31225348df38eb4b4ccfe4f26212dbfed3deb:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5M2FhZmMxZjQ3MGZjNmU1MWMwM2FmZWYzYjc5Yzc3Y2JiOTgwNGRjMzEyOTM3Yjg3N2FhMGRjNzU0ZDY3ZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L29-L133",
+          "version": "repo-lines-v1:sha256:99396d357f40e231757a16a005f6ce404afdb2de7f76b4f914a27d018c8e7408:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA1LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlMjNkYjU5NjUyY2MzNDQwZjQ2ZmJiNWNlNWFhNzE3YWZhYWI3ZTIzOThlZWQ3MDlhNTYwZWY1Y2JjOTUwYzBkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI4ZDMzMmViYTQ3NTRiZWVjMTU1ZWEyYTA1ZTNmZmQ4NTJiNzdkNTY4MjlkYzk0OTFlMWFmYTIzMDk5YjdjMjhjIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        },
+        {
+          "resource": "repo://apps/console/src/runtimes/claude.ts#L70-L71",
+          "version": "repo-lines-v1:sha256:92a9226f280d13bec574740fee380634d683dd13439100ea28603c4a337538b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWQ5OGI4NjU5YTNlMTdlYjc4NjE0ZDFhZjRlNmI1NjdhMDMzODFhY2U4OWQ3MGJkY2U2Y2UxNTI1NTVlNGNiYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGU1ODdiYzhkMjM1Y2I2MzhjNWYwNDg2MWIyM2JiZjc2YmQ5NWQzNGQzYzdiYzE4NjE1ODIzY2QwMmI4YjZjOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDUxNDY5OTJkZjdmMDVhNWYxMmU0YjI5MDM5ZTdmZTUzYjBjMzM0Y2FmZTRjZmYzYmVkNmQ1NzRkMWI4YWY4MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjEsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWExZDFhNjMzOTAyMjljNzk4MzQ3ZTgzYTA0MDU0NDFjOTQwMDAzNTI4NGFkMTY4YzFiZjZjZGYxZDcwYTM3MCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_78385ad74da94302906a498e1c951932",
+      "statement": "Extension points: adding a runtime requires (1) .agents/runtime/<id>/config.json, (2) a src/runtimes/<id>.ts adapter plus one ADAPTERS line, and (3) an optional src/plugins/runtimes/<id>.ts UI plugin; adding a context-saving tool means registering a ToolDef in src/core/tools.ts plus same-commit updates to tooling/scripts/tool.sh, setup.sh, and docs/tools.md - TOOL_RUNTIMES in core/tools.ts is the deliberate documented exception to the no-hardcoded-runtime-lists rule.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/README.md#L253-L277",
+          "version": "repo-lines-v1:sha256:ca235b097a354789c1e97a2f9c3bdfe2ff92af8cb9f3b1f362df4414a22d500b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxOTMwMmVlMGQwMzgzOTM1YTIxZDM0MzgwMjlmODMwZmVlZjkyMmEyOGQ4MGU2ZDAxMDcwNTc0Zjk0Y2NjZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYzliYTNhNmIzMGNhYzVlNzUyODlhNjJmNDJhYjhlMDcxNTY4MzQ5YzNlOTM2OWFmMTEyMWU4MmE3NGNiMmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiOTNjY2RkY2RlZDRiOTc3MjRhMzM5MzM5ZTViNWZmZmFlMGFkMjUzMzI3OGIwN2Q1ZjVkNjVjNzMzZmZlZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmNzlkMTQxYmNkOGFiNDJjODMxOWUxOWUwZTkzY2ZhNzg5OTM2ODAxODY0MTI4ZTJmZDcyYzRkOTA4YjBmZGUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/tools.ts#L17-L31",
+          "version": "repo-lines-v1:sha256:646e453e44cf7eb65a1281cc9d9d5f6cc93b37c9dcb7df6efab500e0d0f365cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMmE2NmViNDE2ZWFkMGMyMDU2NDcxZWM0MmVkOTY5YzIzMTQzZGJhMTlkMGEzMGVhNWEzOWYyZWQzMDkxYzAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3ZTIzMzNmZTA0ZjUyMmUxZTU3YThiYWM5YjIzMWZiZWUwNjU5YzY2MmM4NmI3MmJmNWRhZmYyZDY0NDQ3OGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwZDhjNmEzNWMzYmU5ZGFiMTRmOTkxMWE2NmVmOTVjMDNkMjFhNDQyOTJmZTFmZTRmNjNhNjdhZjIxZDdjZmIifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/runtimes/index.ts#L9-L20",
+          "version": "repo-lines-v1:sha256:e179d822329c4bf2571997de86d2fa1727cdd1c4efb461b24bbbaaee9e9807d3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OTY3ZWMxZWQzODM2ZjhlYjE3YWZmMTcyYjViZmVmN2RlNjA0ODVhNDM5YzZjYTExYzU5MWUxNzU1NzM5YWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzZjI0ODgzZDRkN2JkZWE3MWMyZWZhZGY3YzY1MWI1MDE5OTY4YmQ2YjNlOGY3ZmIzZjEyNjVhNTUxNWZiMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY5ZDgxMTg1YmQ1NTJiZGVmMzQ2MWU4NWY4MWE4Mzg4ZTRkNjg1M2Q5MDAwZTY5ZGMxYzQ2OTVjM2U0YTZjMDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_17be9c7c3c394414b6775161c6e31029",
+      "statement": "Focused bun test suites cover the architecture's core contracts with pure functions and fixtures: activity classification boundaries, vendor-config discovery and probe DTO behavior (adapter-less → unknown, broken configs skipped), state load-merge/atomic-save/workspace validation, memory read-path allowlist policy, and the sectional TOML editor used by the Codex sync target.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/__tests__/activity.test.ts",
+          "version": "repo-file-v1:sha256:f8124034dad9fe35ce594184e43ed310397271994df54c33fecc4ee0f1dfbff3"
+        },
+        {
+          "resource": "repo://apps/console/src/core/__tests__/memory.test.ts",
+          "version": "repo-file-v1:sha256:b0fcdcb3e26cd1cd6abeeae2092d32437db651bb03625e25bcb241d4321f5193"
+        },
+        {
+          "resource": "repo://apps/console/src/core/__tests__/registry.test.ts#L49-L80",
+          "version": "repo-lines-v1:sha256:5682ba15bab30e36a55179efdf02afc1f7786cd2178d17b844eabf94ff5c5fda:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5YmJiZTZiZmRiNGZhNWQ4Y2ZmNTk4OThiY2JjNDMzNjgzNzc5NTU5N2IyYzNkNWZmNzgyODY1MmQzY2U1NTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkZWVjMjA4NTczOTNlZGI4ZTIxM2I0NGViOGNhMTQyN2JkMzU0MzlkMmUxYmNlNGRiNTZjMmM0NmY2MzU4ZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc0MzZiNTU1YTBhYzMxYzgwY2Q3YWU4MmE0NmM4MTExOGQwMGQ0NzRlY2MwM2QzZjdmMzdiMDVhNDE5Y2NkY2QifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/__tests__/state.test.ts",
+          "version": "repo-file-v1:sha256:4b0ffb7b86aeb2821cceafb10b0964ea4281253c14e72c22c00a75472fc235bf"
+        },
+        {
+          "resource": "repo://apps/console/src/lib/__tests__/toml.test.ts",
+          "version": "repo-file-v1:sha256:42bb72acf446fd51c48789932be86fba89ed4e0291b68bbf10142a8c04bce3d7"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.1",
+    "at": "2026-09-30T23:26:29.291Z"
+  }
+}

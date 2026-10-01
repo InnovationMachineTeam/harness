@@ -1,0 +1,13 @@
+# Kimi Code не читает проектные файлы хуков: скопируйте блок [[hooks]] ниже в
+# ~/.kimi-code/config.toml (или добавьте к существующим записям). Хуки Kimi
+# запускаются с cwd = каталогу проекта: обёртка sh -c проверяет наличие
+# guard.mjs, чтобы в чужих проектах (без harness) хук молча разрешал вызов.
+# Проверка после зеркалирования:
+#   echo '{"tool_name":"Bash","tool_input":{"command":"rm -rf /"}}' | node .agents/runtime/guard.mjs
+# ожидание: exit 2 и причина в stderr.
+
+[[hooks]]
+event = "PreToolUse"
+matcher = "Bash|Write|Edit|Read|Grep|Glob"
+command = "sh -c 'if [ -f .agents/runtime/guard.mjs ]; then AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json node .agents/runtime/guard.mjs; else exit 0; fi'"
+timeout = 30

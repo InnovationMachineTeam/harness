@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "pages": {
+    "/openwiki/architecture/mcp-sync.md": {
+      "gitHead": "e362b2a9670c26b38a3f1c5259627ac4f4ebd71c",
+      "sourceFingerprint": "sha256:3a184090e9bd8f6898ba6fdac692986097611ac9d42a8d793bd0d70b010bab78",
+      "pageVersion": "sha256:e6dccc554e5ab616439123ef8d55c75938c7a6783b9354e23ea6bc9b9d8b991b",
+      "completedBy": "openwiki/0.5.1",
+      "completedRunId": "5d8e4ac3-d8c5-4312-83cd-ed413adb7271"
+    },
+    "/openwiki/architecture/overview.md": {
+      "pageVersion": "sha256:73caae140dab23bbee768b8294a476eb731ed8e608cd03970e17b510579cdee1",
+      "completedBy": "openwiki/0.5.1",
+      "completedRunId": "5d8e4ac3-d8c5-4312-83cd-ed413adb7271",
+      "gitHead": "e362b2a9670c26b38a3f1c5259627ac4f4ebd71c",
+      "sourceFingerprint": "sha256:3a184090e9bd8f6898ba6fdac692986097611ac9d42a8d793bd0d70b010bab78"
+    }
+  }
+}
