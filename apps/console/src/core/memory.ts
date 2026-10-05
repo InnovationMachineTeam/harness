@@ -4,7 +4,9 @@ import { copyFile, mkdir, open, readdir, readFile, realpath, rm, stat, writeFile
 import path from "node:path";
 import { loadVendorConfigs } from "@/core/registry";
 import { claudeProjectSlug } from "@/core/sessions/claude";
+import { saveTaskMeta } from "@/core/tasks";
 import type { FileEntry, FsSignalHelpers, RuntimeAdapter } from "@/core/types";
+import { launchAgentWikiBuild } from "@/core/prompts";
 
 /**
  * Память консоли: документы рабочих папок (вкладка Docs), вики OpenWiki
@@ -63,9 +65,31 @@ export function buildNavTree(root: string, files: FileEntry[]): NavNode[] {
 
 export const DOC_MATCH = (name: string): boolean => /\.(md|markdown|mdx)$/i.test(name);
 
-/** Markdown-документы рабочей папки в глубину (walk пропускает скрытые/node_modules). */
-export async function collectDocFiles(fs: FsSignalHelpers, dir: string): Promise<FileEntry[]> {
-  return fs.collectFiles(dir, { match: DOC_MATCH, maxDepth: 8, limit: 500, scanLimit: 5000 });
+/**
+ * Markdown-документы рабочей папки в глубину (walk пропускает скрытые/node_modules).
+ * excludeRel - предикат исключённого поддерева по относительному пути.
+ */
+export async function collectDocFiles(
+  fs: FsSignalHelpers,
+  dir: string,
+  excludeRel?: (relPath: string) => boolean,
+): Promise<FileEntry[]> {
+  return fs.collectFiles(dir, { match: DOC_MATCH, maxDepth: 8, limit: 500, scanLimit: 5000, exclude: excludeRel });
+}
+
+/**
+ * Предикат исключения вложенных рабочих папок: папка, являющаяся самостоятельной
+ * рабочей папкой (docs/ внутри корня репозитория), не дублируется в дереве
+ * родителя - её файлы показываются в собственной группе.
+ */
+export function nestedWorkspaceExcluder(rootDir: string, allDirs: string[]): ((relPath: string) => boolean) | undefined {
+  const nested = allDirs
+    .filter((dir) => dir !== rootDir)
+    .map((dir) => path.relative(rootDir, dir))
+    .filter((rel) => rel && !rel.startsWith("..") && !path.isAbsolute(rel));
+  if (nested.length === 0) return undefined;
+  return (relPath: string) =>
+    nested.some((nestedRel) => relPath === nestedRel || relPath.startsWith(`${nestedRel}/`));
 }
 
 /* ----------------------------- память рантаймов ----------------------------- */
@@ -286,29 +310,95 @@ export interface WikiBuildResult {
   detail: string;
 }
 
+export interface WikiLastUpdateMeta {
+  status?: string;
+  command?: string;
+  language?: string;
+}
+
+/** Метка генерации openwiki (.last-update.json) или null. */
+async function readLastUpdateMeta(root: string): Promise<WikiLastUpdateMeta | null> {
+  try {
+    const raw = JSON.parse(await readFile(path.join(root, ".last-update.json"), "utf8")) as WikiLastUpdateMeta;
+    return typeof raw === "object" && raw !== null ? raw : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface WikiBuildPlan {
+  mode: "init" | "update";
+  language: string;
+  /** Пояснение о resume прерванной сборки (пусто - обычный запуск). */
+  resumeNote: string;
+}
+
+/**
+ * План сборки вики. Целевой язык - русский (AGENTS.md §10). Прерванная сборка
+ * блокирует смену языка: CLI требует resume в том же режиме и языке, поэтому
+ * при неснятом .run.json и статусе interrupted сборка продолжается в языке
+ * прерванной; следующий запуск "Обновить" перейдёт на целевой язык.
+ */
+export function wikiBuildPlan(opts: {
+  indexMdExists: boolean;
+  interrupted: WikiLastUpdateMeta | null;
+  resumableState: boolean;
+}): WikiBuildPlan {
+  const target = "ru";
+  let mode: WikiBuildPlan["mode"] = opts.indexMdExists ? "update" : "init";
+  let language = target;
+  let resumeNote = "";
+  const interrupted = opts.interrupted;
+  if (interrupted?.status === "interrupted" && opts.resumableState) {
+    if (interrupted.command === "init" || interrupted.command === "update") mode = interrupted.command;
+    if (interrupted.language && interrupted.language !== target) {
+      language = interrupted.language;
+      resumeNote = `; в папке прерванная сборка (язык ${language}) - она будет завершена, затем запустите обновление для перехода на ${target}`;
+    }
+  }
+  return { mode, language, resumeNote };
+}
+
+/** План сборки по фактическому состоянию папки (индекс, run-state, метка openwiki). */
+export async function resolveWikiBuildPlan(workspaceDir: string): Promise<WikiBuildPlan> {
+  const root = wikiDir(workspaceDir);
+  const indexMdExists = await stat(path.join(root, "index.md")).then(
+    (s) => s.isFile(),
+    () => false,
+  );
+  const resumableState = await stat(path.join(root, ".run.json")).then(
+    () => true,
+    () => false,
+  );
+  return wikiBuildPlan({
+    indexMdExists,
+    interrupted: await readLastUpdateMeta(root),
+    resumableState,
+  });
+}
+
 /**
  * Запустить сборку вики в папке: `openwiki --init` (нет openwiki/index.md)
  * или `--update`. Процесс отвязанный, вывод - в openwiki/.console-build.log,
  * pid/режим - в openwiki/.console-build.json. Оболочка не привлекается,
  * пользовательский ввод в команду не попадает. extraEnv - переменные
  * LLM-провайдера (state.openwikiLlm → core/openwikiLlm.ts).
+ *
+ * Прерванная сборка блокирует смену языка: CLI требует завершить её resume-ом
+ * в том же режиме и языке (план - wikiBuildPlan).
  */
 export async function startWikiBuild(
   workspaceDir: string,
   extraEnv: Record<string, string> = {},
+  task?: { model: string | null; repoRoot: string },
 ): Promise<WikiBuildResult> {
   const root = wikiDir(workspaceDir);
-  let mode: WikiBuildMeta["mode"] = "init";
-  try {
-    if ((await stat(path.join(root, "index.md"))).isFile()) mode = "update";
-  } catch {
-    /* index.md нет - инициализируем */
-  }
+  const { mode, language, resumeNote } = await resolveWikiBuildPlan(workspaceDir);
   await mkdir(root, { recursive: true });
   const logFile = path.join(root, ".console-build.log");
   const fh = await open(logFile, "a");
   // вики harness ведётся на русском: флаг языка + инструкция модели
-  const args = ["--language", "ru", mode === "init" ? "--init" : "--update", "Веди вики на русском языке."];
+  const args = ["--language", language, mode === "init" ? "--init" : "--update", "Веди вики на русском языке."];
   const child = spawn("openwiki", args, {
     cwd: workspaceDir,
     env: { ...process.env, ...extraEnv },
@@ -322,7 +412,75 @@ export async function startWikiBuild(
   const meta: WikiBuildMeta = { pid: child.pid ?? -1, startedAt: new Date().toISOString(), mode };
   await writeFile(path.join(root, ".console-build.json"), `${JSON.stringify(meta, null, 2)}\n`, "utf8");
   await fh.close();
-  return { ok: true, mode, detail: `сборка ${mode} запущена (PID ${child.pid ?? "?"}); лог: ${logFile}` };
+  // реестр задач (Мониторинг → Задачи): процесс с pid, финализация ленивая
+  if (task) {
+    await saveTaskMeta(task.repoRoot, {
+      kind: "openwiki-build",
+      title: `Сборка вики OpenWiki (${mode})`,
+      executor: { type: "tool", id: "openwiki" },
+      model: task.model ?? null,
+      pid: child.pid ?? null,
+      sessionRuntime: null,
+      logFile,
+      detail: workspaceDir,
+    }).catch(() => undefined);
+  }
+  return { ok: true, mode, detail: `сборка ${mode} запущена (PID ${child.pid ?? "?"}); лог: ${logFile}${resumeNote}` };
+}
+
+/* ---------------------- агентский режим сборки вики ------------------------ */
+
+/** Каталог проектного скилла openwiki по рантайму; null - интеграции нет. */
+export function wikiIntegrationDir(repoRoot: string, runtimeId: string): string | null {
+  const dirs: Record<string, string> = {
+    claude: path.join(repoRoot, ".claude", "skills", "openwiki"),
+    codex: path.join(repoRoot, ".agents", "skills", "openwiki"),
+    opencode: path.join(repoRoot, ".opencode", "skills", "openwiki"),
+    cursor: path.join(repoRoot, ".cursor", "skills", "openwiki"),
+  };
+  return dirs[runtimeId] ?? null;
+}
+
+/**
+ * Агентская сборка вики: headless-сессия рантайма с интеграцией openwiki
+ * (скилл + MCP-инструменты жизненного цикла) пишет страницы сама, своей
+ * моделью; OpenWiki владеет состоянием (.run.json, claims). Рантайм и план
+ * (режим/язык/resume) вычисляет роут (wikiBuildPlan), сюда приходит готовый
+ * запуск. Мета .console-build.json/log - те же, что у CLI-режима: вкладка
+ * OpenWiki показывает "сборка…", хвост лога, per-folder конфликт.
+ */
+export async function startWikiBuildViaAgent(
+  workspaceDir: string,
+  opts: {
+    repoRoot: string;
+    adapter: RuntimeAdapter;
+    runtimeId: string;
+    plan: WikiBuildPlan;
+  },
+): Promise<WikiBuildResult & { runtime: string }> {
+  const root = wikiDir(workspaceDir);
+  await mkdir(root, { recursive: true });
+  const logFile = path.join(root, ".console-build.log");
+  const launch = await launchAgentWikiBuild({
+    repoRoot: opts.repoRoot,
+    workspaceDir,
+    adapter: opts.adapter,
+    runtimeId: opts.runtimeId,
+    mode: opts.plan.mode,
+    language: opts.plan.language,
+    logFile,
+  });
+  if (!launch.ok) {
+    return { ok: false, mode: opts.plan.mode, runtime: opts.runtimeId, detail: launch.detail };
+  }
+  const meta: WikiBuildMeta = { pid: launch.pid ?? -1, startedAt: new Date().toISOString(), mode: opts.plan.mode };
+  await writeFile(path.join(root, ".console-build.json"), `${JSON.stringify(meta, null, 2)}\n`, "utf8");
+  return {
+    ok: true,
+    mode: opts.plan.mode,
+    runtime: opts.runtimeId,
+    detail: `агентская сборка (${opts.plan.mode}) запущена в сессии ${opts.runtimeId} (PID ${launch.pid ?? "?"}); лог: ${logFile}${opts.plan.resumeNote}`,
+  };
 }
 
 /* ------------------------------- визуализатор ------------------------------- */
@@ -478,16 +636,17 @@ export type ReadCheck = { ok: true } | { ok: false; reason: string };
 
 /**
  * Политика чтения для текущего состояния: доки (*.md) рабочих папок, их вики
- * openwiki/, memory-каталоги рантаймов и одиночные глобальные файлы.
+ * openwiki/, memory-каталоги рантаймов, одиночные глобальные файлы и
+ * дополнительные открытые корни (wiki-каталоги хранилища Graphify).
  */
-export function readPolicy(home: string, dirs: string[]): ReadPolicy {
+export function readPolicy(home: string, dirs: string[], extraOpenRoots: string[] = []): ReadPolicy {
   const memoryRoots = [
     ...dirs.map((dir) => path.join(home, ".claude", "projects", claudeProjectSlug(dir), "memory")),
     path.join(home, ".codex", "memories"),
   ];
   return {
     markdownRoots: dirs,
-    openRoots: [...dirs.map((dir) => wikiDir(dir)), ...memoryRoots],
+    openRoots: [...dirs.map((dir) => wikiDir(dir)), ...memoryRoots, ...extraOpenRoots],
     extraFiles: [path.join(home, ".claude", "CLAUDE.md")],
   };
 }

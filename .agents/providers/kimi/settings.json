@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.moonshot.ai/v1",
+  "models": {
+    "fast": "kimi-k2.7-turbo",
+    "standard": "kimi-k3",
+    "strong": "kimi-k3",
+    "subagents": "kimi-k2.7-code"
+  }
+}

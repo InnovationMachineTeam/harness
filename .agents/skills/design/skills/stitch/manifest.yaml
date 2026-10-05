@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: stitch
+title: stitch
+description: "Use when the user invokes /stitch, turns an existing app or codebase into Stitch designs, captures or uploads screens, generates screens or variants, edits screens, extracts or uploads DESIGN.md, manages design systems, reviews a running app against DESIGN.md, or runs stitch CLI commands."
+source:
+  version: 0.11.0
+  hash: stitch-cli-0.11.0
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [design, ui, stitch, brand]

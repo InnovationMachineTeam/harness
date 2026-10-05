@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { NextResponse } from "next/server";
 import { buildFixPrompt, launchPromptRun } from "@/core/prompts";
+import { parseTaskProviderId } from "@/core/providers";
+import { launchProviderRun } from "@/core/providerRun";
 import { resolveTaskRuntime } from "@/core/state";
 import type { Issue } from "@/core/types";
 import { serverContext } from "@/lib/server-context";
@@ -44,9 +46,9 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const adapter = ctx.adapters[runtimeId];
-  if (!adapter) return NextResponse.json({ error: `неизвестный рантайм: ${runtimeId}` }, { status: 400 });
 
+  // значение "provider:<id>" - промт уходит провайдеру из реестра консоли
+  const providerId = parseTaskProviderId(runtimeId);
   let prompt = body?.prompt?.trim();
   if (!prompt && body?.issue) {
     prompt = buildFixPrompt(body.issue, body.issueRuntime ?? runtimeId, ctx.repoRoot);
@@ -57,6 +59,20 @@ export async function POST(request: Request) {
   if (prompt.length > 32_000) {
     return NextResponse.json({ error: "промт слишком длинный (макс. 32000 символов)" }, { status: 400 });
   }
+
+  if (providerId !== null) {
+    const result = await launchProviderRun({
+      repoRoot: ctx.repoRoot,
+      state: ctx.state,
+      providerId,
+      prompt,
+      taskKind: "prompt-run",
+    });
+    return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+  }
+
+  const adapter = ctx.adapters[runtimeId];
+  if (!adapter) return NextResponse.json({ error: `неизвестный рантайм: ${runtimeId}` }, { status: 400 });
 
   const result = await launchPromptRun({
     repoRoot: ctx.repoRoot,

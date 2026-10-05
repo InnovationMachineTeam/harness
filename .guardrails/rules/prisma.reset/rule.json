@@ -1,0 +1,19 @@
+{
+  "id": "prisma.reset",
+  "title": "Prisma reset",
+  "description": "Блокирует сброс базы Prisma.",
+  "category": "database",
+  "severity": "high",
+  "effect": "block",
+  "threats": [
+    "database"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Используйте bunx prisma migrate dev.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

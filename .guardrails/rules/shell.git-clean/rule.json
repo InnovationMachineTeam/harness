@@ -1,0 +1,19 @@
+{
+  "id": "shell.git-clean",
+  "title": "Удаление untracked",
+  "description": "Предупреждает о необратимом git clean -f.",
+  "category": "git",
+  "severity": "high",
+  "effect": "warn",
+  "threats": [
+    "git"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Сначала выполните git clean -nd.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: codebase-research
+title: Codebase research
+description: Используй этот навык, когда нужно исследовать кодовую базу, восстановить поведение или зависимости и подготовить проверяемые выводы по документации, исходникам, тестам, локальным индексам и истории Git.
+source:
+  version: 1.1.0
+  hash: builtin-codebase-research-2
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [research, codebase, code, documentation, tests, evidence, investigation, исследование]

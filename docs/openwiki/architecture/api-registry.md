@@ -1,7 +1,7 @@
 ---
 type: API reference
 title: HTTP API Route Registry
-description: Domain-grouped registry of every documented Agentic OS Console HTTP route - runtime probes, MCP sync, skills and skills.sh installs, plugins, processes, sessions, prompts, settings, tools, workspaces, memory, and the /dashboard/* Headroom embed proxy - marking which routes mutate console state and which stream install jobs over SSE.
+description: Domain-grouped registry of every documented Harness Console HTTP route - runtime probes, MCP sync, skills and skills.sh installs, plugins, processes, sessions, prompts, settings, tools, workspaces, memory, and the /dashboard/* Headroom embed proxy - marking which routes mutate console state and which stream install jobs over SSE.
 tags: [api, http-routes, sse, state-mutations, ssrf, security, dashboard-proxy]
 verified:
   - by: openwiki/0.5.1

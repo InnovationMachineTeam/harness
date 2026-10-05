@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-git filter-repo --",
+    "tool": "Bash",
+    "input": {
+      "command": "git filter-repo --path secret"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-git rebase main",
+    "tool": "Bash",
+    "input": {
+      "command": "git rebase main"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-git filter-branch ",
+    "tool": "Bash",
+    "input": {
+      "command": "git filter-branch -- --all"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

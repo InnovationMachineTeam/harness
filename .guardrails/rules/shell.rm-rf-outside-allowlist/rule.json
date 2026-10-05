@@ -1,0 +1,19 @@
+{
+  "id": "shell.rm-rf-outside-allowlist",
+  "title": "Удаление вне allowlist",
+  "description": "Ограничивает рекурсивное удаление временными каталогами.",
+  "category": "filesystem",
+  "severity": "high",
+  "effect": "block",
+  "threats": [
+    "filesystem"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Удалите отдельные файлы или используйте .agents/.tmp/.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

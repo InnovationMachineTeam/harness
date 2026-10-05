@@ -1,7 +1,7 @@
 ---
 version: alpha
 name: Graphite Light
-description: "Светлая тема консоли Agentic OS: белые панели на светло-сером фоне, тёмный графитовый текст"
+description: "Светлая тема консоли Harness: белые панели на светло-сером фоне, тёмный графитовый текст"
 colors:
   primary: "{colors.accent}"
   page: "#f4f4f5"

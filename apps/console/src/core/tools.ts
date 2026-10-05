@@ -5,6 +5,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import type { ConsoleState, InstalledTool, PackageManager, ToolInstallParams } from "./state";
 import { workspaceDirs } from "./state";
+import { graphifyWorkspaceNames } from "./graphify";
 import type { McpTransport } from "./types";
 import { serenaTool } from "./tools/serena";
 import { qmdTool } from "./tools/qmd";
@@ -13,13 +14,17 @@ import { graphifyTool } from "./tools/graphify";
 import { rtkTool } from "./tools/rtk";
 import { headroomTool } from "./tools/headroom";
 import { openwikiTool } from "./tools/openwiki";
+import { nxTool } from "./tools/nx";
+import { openDesignTool } from "./tools/open-design";
+import { agentplaneTool } from "./tools/agentplane";
+import { codeburnTool } from "./tools/codeburn";
 
 /**
  * Реестр инструментов экономии контекста (Serena, qmd, CodeGraph, Graphify,
- * RTK, Headroom, OpenWiki). Управление - раздел "Настройки → Инструменты"
- * (API /api/tools/*): установка/удаление per-runtime, вкл/выкл, переустановка.
- * Системные пакеты ставятся выбранным менеджером (bun add -g / npm i -g -
- * выбор в setup.sh, файл .agents/console/package-manager.json).
+ * RTK, Headroom, OpenWiki, Open Design). Управление - раздел "Настройки →
+ * Инструменты" (API /api/tools/*): установка/удаление per-runtime, вкл/выкл,
+ * переустановка. Системные пакеты ставятся выбранным менеджером (bun add -g /
+ * npm i -g - выбор в setup.sh, файл .agents/console/package-manager.json).
  *
  * Правило поддержки (AGENTS.md §10): новый внешний инструмент - добавить
  * сюда, в tooling/scripts/tool.sh, setup.sh и docs/tools.md той же серией
@@ -45,23 +50,28 @@ export interface ToolParamDef {
  * install-цепочке и обновление в husky pre-commit. Команды строятся
  * для КАЖДОЙ рабочей папки (dir) - общий контекст из всех директорий;
  * cwd шага = папка, артефакты пишутся в <dir>/… и не перезатирают друг друга.
+ * Аргументы: dir - рабочая папка, repoRoot - корень репозитория консоли,
+ * workspaceName - имя воркспейса папки в хранилище (graphify:
+ * <repoRoot>/graphify/<workspaceName>; остальные инструменты игнорируют).
  */
 export interface ToolProjectInit {
   /** Первая инициализация папки (создаёт индекс/конфиг). */
-  init(dir: string): string[][];
+  init(dir: string, repoRoot: string, workspaceName: string): string[][];
   /**
    * Переинициализация поверх существующей (пересборка индекса/графа).
    * Если не задана - после init кнопка не показывается.
    */
-  reinit(dir: string): string[][];
+  reinit(dir: string, repoRoot: string, workspaceName: string): string[][];
   /** Быстрое обновление (husky pre-commit; секунды, не минуты). */
-  update(dir: string): string[][];
+  update(dir: string, repoRoot: string, workspaceName: string): string[][];
   /** Артефакт инициализации внутри папки. */
-  initMarker(dir: string): string | null;
+  initMarker(dir: string, repoRoot: string, workspaceName: string): string | null;
 }
 
 export interface ToolPerRuntime {
   supported: ToolRuntimeId[];
+  /** Проверка capability CLI перед построением native install-команд. */
+  available?(): boolean;
   installCommand(runtime: ToolRuntimeId, params: ToolInstallParams): string[];
   uninstallCommand(runtime: ToolRuntimeId): string[];
   /**
@@ -86,9 +96,11 @@ export interface ToolDef {
   /** 1-2 строки для карточки настроек. */
   description: string;
   docsUrl?: string;
-  category: "code" | "graph" | "search" | "context";
+  category: "code" | "graph" | "search" | "context" | "design";
   /** CLI-бинарник для детекта (`which`). */
   bin: string;
+  /** Хуки жизненного цикла (install/remove/enable/disable); cwd - обязательная рабочая папка. */
+  hooks?: import("./lifecycleHooks").LifecycleHooks;
   /** Системный пакет; PM-зависимые учитывают packageManager. null - только вручную. */
   systemInstall(pm: PackageManager, platform: NodeJS.Platform): string[] | null;
   /** Системная зависимость (ставится перед основным пакетом, если нет). */
@@ -169,10 +181,20 @@ export const TOOLS: ToolDef[] = [
   rtkTool,
   headroomTool,
   openwikiTool,
+  nxTool,
+  openDesignTool,
+  agentplaneTool,
+  codeburnTool,
 ];
 
 export function toolById(id: string): ToolDef | undefined {
   return TOOLS.find((tool) => tool.id === id);
+}
+
+/** Имя воркспейса рабочей папки (graphify: basename, при коллизии - суффикс). */
+function projectInitName(state: ConsoleState, dir: string): string {
+  const dirs = workspaceDirs(state);
+  return graphifyWorkspaceNames(dirs).get(dir) ?? path.basename(dir);
 }
 
 /* -------------------------------- детекция ---------------------------------- */
@@ -189,7 +211,11 @@ export function detectToolCli(bin: string): { installed: boolean; version: strin
   const cached = cliCache.get(bin);
   if (cached && Date.now() - cached.at < 60_000) return { installed: cached.installed, version: cached.version };
   const which = spawnSync("which", [bin], { encoding: "utf8", timeout: 3000 });
-  const installed = which.status === 0 && which.stdout.trim().length > 0;
+  let installed = which.status === 0 && which.stdout.trim().length > 0;
+  if (installed && bin === "od") {
+    const capability = spawnSync("od", ["mcp", "--help"], { encoding: "utf8", timeout: 3000 });
+    installed = capability.status === 0 && `${capability.stdout}\n${capability.stderr}`.includes("--daemon-url");
+  }
   const version = installed ? toolVersion(bin) : null;
   cliCache.set(bin, { at: Date.now(), installed, version });
   return { installed, version };
@@ -211,36 +237,55 @@ function toolVersion(bin: string): string | null {
         return spawnSync("rtk", ["--version"], { encoding: "utf8", timeout: 3000 });
       case "headroom":
         return spawnSync("headroom", ["--version"], { encoding: "utf8", timeout: 3000 });
+      case "nx":
+        return spawnSync("nx", ["--version"], { encoding: "utf8", timeout: 3000 });
+      case "agentplane":
+        return spawnSync("agentplane", ["--version"], { encoding: "utf8", timeout: 3000 });
+      case "codeburn":
+        return spawnSync("codeburn", ["--version"], { encoding: "utf8", timeout: 3000 });
       default:
         return null; // openwiki: --version нет, версия читается из package.json ниже
     }
   })();
+  if (bin === "nx" && res && res.status === 0) {
+    // nx --version печатает многострочный блок; версия - строка "- Local: v…"
+    const local = res.stdout.match(/Local:\s*(\S+)/);
+    if (local) return local[1];
+  }
   if (res && res.status === 0 && res.stdout.trim()) return res.stdout.trim().split("\n")[0];
   if (bin === "openwiki") return openwikiVersionFromPackageJson();
   return null;
 }
 
 /**
- * Версия openwiki из package.json глобальной установки (у CLI нет --version):
- * npm root -g → <dir>/openwiki/package.json, фолбэк - глобальный bun.
+ * Версия npm-пакета из глобальной установки: npm root -g → <dir>/<pkg>/package.json,
+ * фолбэк - глобальный bun (~/.bun/install/global/node_modules). null - пакет не найден.
  */
-function openwikiVersionFromPackageJson(): string | null {
+export function globalPackageVersion(pkg: string): string | null {
   const candidates: string[] = [];
   const npmRoot = spawnSync("npm", ["root", "-g"], { encoding: "utf8", timeout: 3000 });
   if (npmRoot.status === 0 && npmRoot.stdout.trim()) {
-    candidates.push(path.join(npmRoot.stdout.trim(), "openwiki", "package.json"));
+    candidates.push(path.join(npmRoot.stdout.trim(), pkg, "package.json"));
   }
-  candidates.push(path.join(homedir(), ".bun", "install", "global", "node_modules", "openwiki", "package.json"));
+  candidates.push(path.join(homedir(), ".bun", "install", "global", "node_modules", pkg, "package.json"));
   for (const file of candidates) {
     try {
       if (!existsSync(file)) continue;
-      const pkg = JSON.parse(readFileSync(file, "utf8")) as { version?: unknown };
-      if (typeof pkg.version === "string" && pkg.version) return `openwiki ${pkg.version}`;
+      const manifest = JSON.parse(readFileSync(file, "utf8")) as { version?: unknown };
+      if (typeof manifest.version === "string" && manifest.version) return manifest.version;
     } catch {
       /* следующий кандидат */
     }
   }
   return null;
+}
+
+/**
+ * Версия openwiki (у CLI нет --version) из package.json глобальной установки.
+ */
+function openwikiVersionFromPackageJson(): string | null {
+  const version = globalPackageVersion("openwiki");
+  return version ? `openwiki ${version}` : null;
 }
 
 /** Установлена ли per-runtime интеграция (консольная запись или файловый маркер). */
@@ -335,6 +380,9 @@ export interface ToolStatusDTO {
     dirs: { dir: string; initialized: boolean }[];
   };
   installedRecord: InstalledTool | null;
+  /** Хуки жизненного цикла из ToolDef - для окна последствий в UI. */
+  hooks?: { install: string[]; remove: string[]; enable: string[]; disable: string[] };
+  uninstallStopsDashboard?: boolean;
   dashboard?: {
     url: string;
     label: string;
@@ -415,19 +463,20 @@ export async function toolsStatus(
           ? { registered: false, enabled: false }
           : null,
       hasModes: def.hasModes ?? false,
+      hooks: def.hooks,
+      uninstallStopsDashboard: def.uninstallStopsDashboard,
       projectInit: def.projectInit
         ? (() => {
-            const dirs = workspaceDirs(state).map((dir) => ({
-              dir,
-              initialized: (() => {
-                const marker = def.projectInit!.initMarker(dir);
-                return marker ? existsSync(marker) : false;
-              })(),
-            }));
+            const dirs = workspaceDirs(state).map((dir) => {
+              const marker = def.projectInit!.initMarker(dir, repoRoot, projectInitName(state, dir));
+              return { dir, initialized: marker ? existsSync(marker) : false };
+            });
+            const first = workspaceDirs(state)[0] ?? repoRoot;
+            const firstName = projectInitName(state, first);
             return {
               initialized: dirs.length > 0 && dirs.every((d) => d.initialized),
-              initCommands: def.projectInit.init(dirs[0]?.dir ?? repoRoot),
-              reinitCommands: def.projectInit.reinit?.(dirs[0]?.dir ?? repoRoot) ?? [],
+              initCommands: def.projectInit.init(first, repoRoot, firstName),
+              reinitCommands: def.projectInit.reinit?.(first, repoRoot, firstName) ?? [],
               dirs,
             };
           })()

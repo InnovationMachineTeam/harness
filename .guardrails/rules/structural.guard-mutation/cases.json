@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-Edit-.agents/runtime/guard.mjs",
+    "tool": "Edit",
+    "input": {
+      "file_path": ".agents/runtime/guard.mjs"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-Edit-docs/runtimes.md",
+    "tool": "Edit",
+    "input": {
+      "file_path": "docs/runtimes.md"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Write-.guardrails/src/rules.ts",
+    "tool": "Write",
+    "input": {
+      "file_path": ".guardrails/src/rules.ts"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

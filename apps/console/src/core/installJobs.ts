@@ -1,10 +1,14 @@
 import { spawn, type ChildProcess } from "node:child_process";
+import { loadConsoleState } from "./state";
+import { runSkillHook } from "./skillHooks";
+import { syncSkillLinks } from "./skillLinks";
 
 /**
  * Job-менеджер установки навыков через `bunx skills add <pkg> -y`
  * (cwd = корень репозитория; CLI кладёт навык в .agents/skills/<name>,
  * делает симлинки в найденные каталоги агентов и пишет skills-lock.json).
  * Вывод стримится в UI (SSE), ввод можно передать в stdin процесса.
+ * После успешной установки выполняется hook install из манифеста навыка.
  */
 
 export interface InstallJob {
@@ -64,6 +68,24 @@ export function startInstallJob(repoRoot: string, pkg: string): InstallJob | { e
     job.done = true;
     job.exitCode = code;
     push(job, code === 0 ? "── установка завершена ──" : `── процесс завершился с кодом ${code} ──`);
+    if (code === 0) {
+      const name = pkg.includes("@") ? pkg.split("@").at(-1)! : pkg.split("/").at(-1)!;
+      void (async () => {
+        const hookResult = await runSkillHook(repoRoot, "harness:" + name, "install");
+        for (const line of [...hookResult.done, ...hookResult.errors]) push(job, line);
+        // канонический каталог - .agents/skills; симлинки рантаймов - по тогглам
+        try {
+          const state = await loadConsoleState(repoRoot);
+          const reports = await syncSkillLinks(repoRoot, state);
+          for (const report of reports) {
+            for (const linked of report.linked) push(job, `симлинк ${report.relDir}/${linked}`);
+            for (const error of report.errors) push(job, `симлинки ${report.runtime}: ${error}`);
+          }
+        } catch {
+          /* симлинки не блокируют установку - статус покажет расхождение */
+        }
+      })();
+    }
     for (const listener of job.listeners) listener("");
   });
   child.on("error", (err) => {

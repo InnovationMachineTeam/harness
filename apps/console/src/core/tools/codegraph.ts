@@ -1,4 +1,25 @@
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { globalInstallCommand, type ToolDef } from "../tools";
+
+// Обёртка C-4: init и index не открывают базу при живом writer.pid.
+// Путь вычисляется лениво: import.meta.dir существует только в Bun (тесты,
+// прямой запуск) и отсутствует в Node - модульный путь ломает next build.
+// В собранной консоли база - cwd (apps/console при bun run start или корень
+// репозитория); на этапе сборке путь не вычисляется.
+let wrapperPath: string | null = null;
+function codegraphWrapper(): string {
+  if (wrapperPath) return wrapperPath;
+  const meta = import.meta as { dir?: string };
+  const candidates = meta.dir
+    ? [resolve(meta.dir, "..", "..", "..", "..", "..", "tooling", "mcp", "codegraph.ts")]
+    : [
+        resolve(process.cwd(), "..", "..", "tooling", "mcp", "codegraph.ts"),
+        resolve(process.cwd(), "tooling", "mcp", "codegraph.ts"),
+      ];
+  wrapperPath = candidates.find((candidate) => existsSync(candidate)) ?? candidates[candidates.length - 1];
+  return wrapperPath;
+}
 
 /** Плагин инструмента CodeGraph: knowledge graph кода в SQLite. */
 export const codegraphTool: ToolDef = {
@@ -13,9 +34,10 @@ export const codegraphTool: ToolDef = {
   mcpPreset: () => ({ type: "stdio", command: "codegraph", args: ["serve", "--mcp"] }),
   projectInit: {
     // init строит начальный индекс; index - полная пересборка; sync -q -
-    // быстрый догон (для git hooks)
-    init: (dir) => [["codegraph", "init"]],
-    reinit: (dir) => [["codegraph", "index"]],
+    // быстрый догон (для git hooks). init/index идут через обёртку
+    // tooling/mcp/codegraph.ts - база не открывается при живом writer.pid
+    init: (dir) => [["bun", codegraphWrapper(), "init"]],
+    reinit: (dir) => [["bun", codegraphWrapper(), "index"]],
     update: (dir) => [["codegraph", "sync", "-q"]],
     initMarker: (dir) => `${dir}/.codegraph/codegraph.db`,
   },

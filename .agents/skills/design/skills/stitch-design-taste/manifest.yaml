@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: stitch-design-taste
+title: stitch-design-taste
+description: "Semantic Design System Skill for Google Stitch. Generates agent-friendly DESIGN.md files that enforce premium, anti-generic UI standards — strict typography, calibrated color, asymmetric layouts, perpetual micro-motion, and hardware-accelerated performance."
+source:
+  version: 1.0.0
+  hash: design-group-stitch-design-taste
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [design, ui, ux, brand]

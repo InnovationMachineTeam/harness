@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
 
 /*
  * Дизайн-токены консоли. Канонический источник значений - DESIGN.md (тёмная)
@@ -89,3 +90,67 @@ html[data-theme="light"] {
   --design-radius-xl: 12px;
 }
 /* design-tokens:end */
+
+/*
+ * Подсветка синтаксиса (highlight.js): цветовые классы hljs привязаны к
+ * дизайн-токенам, поэтому тема следует за DESIGN.md/DESIGN.light.md
+ * (используется подсвеченным редактором markdown и код-блоками предпросмотра).
+ */
+.hljs {
+  color: var(--design-fg);
+}
+.hljs-comment,
+.hljs-quote {
+  color: var(--design-fg-faint);
+  font-style: italic;
+}
+.hljs-strong {
+  color: var(--design-fg);
+  font-weight: 600;
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-section,
+.hljs-name,
+.hljs-tag {
+  color: var(--design-accent);
+  font-weight: 600;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-type,
+.hljs-doctag {
+  color: var(--design-swatch-2);
+  font-weight: 600;
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition {
+  color: var(--design-warning);
+}
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link,
+.hljs-variable,
+.hljs-template-variable {
+  color: var(--design-swatch-1);
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-code {
+  color: var(--design-swatch-3);
+}
+.hljs-title,
+.hljs-built_in,
+.hljs-class {
+  color: var(--design-info);
+}
+.hljs-meta {
+  color: var(--design-fg-muted);
+}
+.hljs-deletion {
+  color: var(--design-danger);
+}

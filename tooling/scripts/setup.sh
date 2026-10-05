@@ -7,7 +7,7 @@
 # поставить и его), Linux - официальный инсталлер bun и NodeSource для node.
 # Отдельно спрашивается пакетный менеджер глобальных npm-пакетов (Bun/NPM)
 # и предлагается блок опциональных инструментов консоли (Serena, qmd,
-# CodeGraph, Graphify, RTK, Headroom - экономия токенов агентов).
+# CodeGraph, Graphify, RTK, Headroom, Open Design - экономия токенов агентов).
 # Системные POSIX-утилиты (ps, sh, which, open, git) только проверяются.
 # Рантаймы агентов (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode)
 # в установку НЕ входят - их ставит пользователь самостоятельно.
@@ -48,10 +48,10 @@ usage() {
   --help,  -h  эта справка
 
 Проверяет bun (+bunx), node (≥ 22), openwiki и опциональные инструменты
-консоли (Serena, qmd, CodeGraph, Graphify, RTK, Headroom), устанавливает
-недостающее (macOS - Homebrew, Linux - официальные инсталлеры; npm-пакеты -
-выбранным менеджером Bun/NPM). Рантаймы агентов (Claude Code, Codex, ZCode,
-Cursor, Kimi, OpenCode) не устанавливаются.
+консоли (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, Open Design),
+устанавливает недостающее (macOS - Homebrew, Linux - официальные инсталлеры;
+npm-пакеты - выбранным менеджером Bun/NPM). Рантаймы агентов (Claude Code,
+Codex, ZCode, Cursor, Kimi, OpenCode) не устанавливаются.
 EOF
 }
 for arg in "$@"; do
@@ -263,7 +263,7 @@ fi
 
 printf '\nОПЦИОНАЛЬНЫЕ ИНСТРУМЕНТЫ КОНСОЛИ (экономия токенов; per-runtime настройка - в консоли)\n\n'
 
-OPT_ACTIONS=()      # serena | qmd | codegraph | graphify | rtk | headroom | uv
+OPT_ACTIONS=()      # serena | qmd | codegraph | graphify | rtk | headroom | nx | open-design | agentplane | codeburn | uv
 OPT_DESC=()
 
 opt_status() { # $1 - bin, $2 - подпись, $3 - действие, $4 - описание шага
@@ -293,6 +293,25 @@ else
 fi
 opt_status "headroom" "headroom ${C_DIM}- сжатие контекста перед LLM (прокси/MCP)${C_R}" \
   "headroom" "headroom - uv tool install --python 3.13 headroom-ai[all]"
+opt_status "nx" "nx ${C_DIM}- оркестратор задач с кешем (nx.json, verify)${C_R}" \
+  "nx" "nx - $(npm_global) nx"
+opt_status "agentplane" "agentplane ${C_DIM}- lifecycle задач, verification и ACR${C_R}" \
+  "agentplane" "agentplane - $(npm_global) agentplane"
+opt_status "codeburn" "codeburn ${C_DIM}- анализ расхода AI-токенов (отчёт CodeBurn)${C_R}" \
+  "codeburn" "codeburn - $(npm_global) codeburn"
+# od из Open Design проверяется отдельно: `which od` находит системный
+# octal-dump (/usr/bin/od) - установленность определяем по выводу od --help
+# или по наличию desktop-приложения.
+has_od() {
+  command -v od >/dev/null 2>&1 && od mcp --help 2>/dev/null | grep -q -- "--daemon-url"
+}
+if has_od || [ -d "/Applications/Open Design.app" ]; then
+  ok "open-design ${C_DIM}- дизайн-воркспейс с MCP (desktop-приложение, CLI od)${C_R}"
+else
+  miss "open-design ${C_DIM}- дизайн-воркспейс с MCP (desktop-приложение, CLI od)${C_R} - НЕ НАЙДЕН"
+  OPT_ACTIONS+=("open-design")
+  OPT_DESC+=("open-design - desktop-приложение (DMG GitHub Releases) + обёртка od в ~/.local/bin")
+fi
 
 # uv нужен python-инструментам; rtk не зависит от uv
 NEEDS_UV=0
@@ -588,6 +607,75 @@ if [ "${#OPT_ACTIONS[@]}" -gt 0 ]; then
           else
             warn "headroom не установлен."
             MANUAL+=("headroom: uv tool install --python 3.13 \"headroom-ai[all]\"")
+          fi
+          ;;
+        nx)
+          if ! has npm && [ "$PM" = "npm" ]; then
+            MANUAL+=("nx: $(npm_global) nx (после появления npm)")
+            continue
+          fi
+          # shellcheck disable=SC2046
+          if run_step "Установка nx…" $(npm_global_cmd) nx; then
+            INSTALLED+=("nx")
+          else
+            warn "nx не установлен."
+            MANUAL+=("nx: $(npm_global) nx")
+          fi
+          ;;
+        agentplane)
+          if ! has npm && [ "$PM" = "npm" ]; then
+            MANUAL+=("agentplane: $(npm_global) agentplane (после появления npm)")
+            continue
+          fi
+          # shellcheck disable=SC2046
+          if run_step "Установка agentplane…" $(npm_global_cmd) agentplane; then
+            INSTALLED+=("agentplane")
+          else
+            warn "agentplane не установлен; Harness продолжит со встроенным task adapter."
+            MANUAL+=("agentplane: $(npm_global) agentplane")
+          fi
+          ;;
+        codeburn)
+          if ! has npm && [ "$PM" = "npm" ]; then
+            MANUAL+=("codeburn: $(npm_global) codeburn (после появления npm)")
+            continue
+          fi
+          # shellcheck disable=SC2046
+          if run_step "Установка codeburn…" $(npm_global_cmd) codeburn; then
+            INSTALLED+=("codeburn")
+          else
+            warn "codeburn не установлен; отчёт CodeBurn (вкладка Оптимизация) недоступен."
+            MANUAL+=("codeburn: $(npm_global) codeburn")
+          fi
+          ;;
+        open-design)
+          if [ "$OS" != "Darwin" ]; then
+            MANUAL+=("open-design: desktop-приложение с open-design.ai (Linux - сборка из исходников, README проекта)")
+            continue
+          fi
+          # Версия зафиксирована; при новом релизе обновите OD_VERSION.
+          OD_VERSION="0.24.1"
+          case "$(uname -m)" in arm64) OD_ARCH="arm64" ;; *) OD_ARCH="x64" ;; esac
+          OD_DMG="open-design-${OD_VERSION}-mac-${OD_ARCH}.dmg"
+          OD_URL="https://github.com/nexu-io/open-design/releases/download/open-design-v${OD_VERSION}/${OD_DMG}"
+          OD_MNT="$TMP_DIR/od-mnt"
+          mkdir -p "$OD_MNT"
+          if fetch_installer "open-design" "$OD_URL" "$TMP_DIR/$OD_DMG" \
+             && run_step "Монтирование образа Open Design…" hdiutil attach -nobrowse -readonly -mountpoint "$OD_MNT" "$TMP_DIR/$OD_DMG" \
+             && run_step "Копирование Open Design.app в /Applications…" ditto "$OD_MNT/Open Design.app" "/Applications/Open Design.app" \
+             && run_step "Отключение образа…" hdiutil detach "$OD_MNT"; then
+            mkdir -p "$HOME/.local/bin"
+            if printf '#!/bin/sh\n# od CLI из состава Open Design (desktop-приложение)\nexec node "/Applications/Open Design.app/Contents/Resources/app/prebundled/daemon/daemon-cli.mjs" "$@"\n' > "$HOME/.local/bin/od" \
+               && chmod +x "$HOME/.local/bin/od"; then
+              INSTALLED+=("open-design")
+              INSTALLED+=("open-design: od в ~/.local/bin; MCP подключается через od mcp --daemon-url")
+            else
+              warn "open-design установлен, обёртка od не создана."
+              MANUAL+=("open-design: od CLI - \"/Applications/Open Design.app/Contents/Resources/app/prebundled/daemon/daemon-cli.mjs\"")
+            fi
+          else
+            warn "open-design не установлен."
+            MANUAL+=("open-design: приложение с open-design.ai или GitHub Releases (nexu-io/open-design)")
           fi
           ;;
       esac

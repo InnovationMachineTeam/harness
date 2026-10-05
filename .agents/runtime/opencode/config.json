@@ -3,10 +3,10 @@
   "id": "opencode",
   "vendorAdapter": "opencode.json + .opencode/plugins/agentos-guard.ts",
   "guard": {
-    "command": "node .agents/runtime/guard.mjs",
+    "command": "bun .guardrails/src/cli.ts evaluate",
     "hooksSupport": "native",
-    "notes": "OpenCode has no declarative hooks key in opencode.json, so the adapter is a project plugin: .opencode/plugins/agentos-guard.ts subscribes to tool.execute.before, pipes {tool_name, tool_input} to .agents/runtime/guard.mjs with AGENT_RUNTIME=opencode and AGENT_RUNTIME_CONFIG=.agents/runtime/opencode/config.json, and throws on exit 2 - a thrown error denies the tool call, so the policy is enforced by the harness. warn-level hits go to the OpenCode log via client.app.log. The plugin runs under Bun; guard.mjs is spawned with node.",
-    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+    "notes": "OpenCode uses .opencode/plugins/agentos-guard.ts. The tool.execute.before hook sends {tool_name, tool_input} to bun .guardrails/src/cli.ts evaluate and denies the call on any nonzero exit. Warn results are written to the OpenCode log.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | bun .guardrails/src/cli.ts evaluate"
   },
   "capabilities": {
     "subagentSpawn": "unknown",

@@ -3,8 +3,9 @@ import type { ToolDef } from "../tools";
 /**
  * Плагин инструмента Headroom: сжатие контекста через локальный прокси.
  * Интеграция под рантайм = запуск общего прокси (detached); сами сессии -
- * `headroom wrap <runtime>` в терминале (wrap запускает CLI интерактивно
- * и в job невозможен). Альтернатива - MCP-сервер.
+ * `headroom wrap <runtime>` в терминале (wrap claude поддерживает headless:
+ * `headroom wrap claude -- -p "…"`; wrap zcode печатает настройки для ручной
+ * конфигурации). Альтернатива - MCP-сервер.
  */
 export const headroomTool: ToolDef = {
   id: "headroom",

@@ -1,0 +1,19 @@
+{
+  "id": "write.protected-path",
+  "title": "Запись в управляемый путь",
+  "description": "Блокирует прямую запись в .git, node_modules и lock-файлы.",
+  "category": "integrity",
+  "severity": "high",
+  "effect": "block",
+  "threats": [
+    "integrity"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Измените исходный файл и запустите владеющий инструмент.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

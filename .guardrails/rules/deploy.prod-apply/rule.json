@@ -1,0 +1,19 @@
+{
+  "id": "deploy.prod-apply",
+  "title": "Deploy в production",
+  "description": "Блокирует прямое применение в защищённую среду.",
+  "category": "deployment",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "deployment"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Используйте delivery workflow с approval gate.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

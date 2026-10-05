@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-deploy app product",
+    "tool": "Bash",
+    "input": {
+      "command": "deploy app production"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-deploy app staging",
+    "tool": "Bash",
+    "input": {
+      "command": "deploy app staging"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-release web live",
+    "tool": "Bash",
+    "input": {
+      "command": "release web live"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

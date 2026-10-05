@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "title", "description", "category", "severity", "effect", "status", "threats", "bundles", "failureMode", "remediation", "limitations", "owner", "implementation", "cases"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)+$" },
+    "title": { "type": "string", "minLength": 1 },
+    "description": { "type": "string", "minLength": 1 },
+    "category": { "type": "string" },
+    "severity": { "enum": ["low", "medium", "high", "critical"] },
+    "effect": { "enum": ["warn", "block", "sanitize", "require-approval"] },
+    "status": { "enum": ["planned", "enforced", "deprecated"] },
+    "threats": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "bundles": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "failureMode": { "enum": ["open", "closed"] },
+    "remediation": { "type": "string" },
+    "limitations": { "type": "array", "items": { "type": "string" } },
+    "owner": { "type": "string" },
+    "implementation": { "type": "string" },
+    "cases": { "type": "string" }
+  },
+  "additionalProperties": false
+}

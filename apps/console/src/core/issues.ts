@@ -52,11 +52,11 @@ export async function hookFileIssue(
       },
     ];
   }
-  if (!text.includes("guard.mjs")) {
+  if (!text.includes(".guardrails/src/cli.ts")) {
     issues.push({
       severity: "error",
       title: `Хук не ведёт в guard: ${file}`,
-      detail: "В файле адаптера нет ссылки на .agents/runtime/guard.mjs",
+      detail: "В файле адаптера нет ссылки на .guardrails/src/cli.ts",
     });
   }
   if (!text.includes(`AGENT_RUNTIME=${runtimeId}`)) {

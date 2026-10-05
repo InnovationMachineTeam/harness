@@ -1,0 +1,19 @@
+{
+  "id": "secrets.read",
+  "title": "Чтение секрета через shell",
+  "description": "Блокирует вывод секретных файлов в transcript.",
+  "category": "secrets",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "secrets"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Используйте файл-пример или запросите одно значение.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

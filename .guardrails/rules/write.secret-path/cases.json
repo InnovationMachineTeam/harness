@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-Write-.env",
+    "tool": "Write",
+    "input": {
+      "file_path": ".env"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-Write-.env.example",
+    "tool": "Write",
+    "input": {
+      "file_path": ".env.example"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Edit-secrets/token",
+    "tool": "Edit",
+    "input": {
+      "file_path": "secrets/token"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-bun run agents app",
+    "tool": "Bash",
+    "input": {
+      "command": "bun run agents approve run-1"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-bun run agents sta",
+    "tool": "Bash",
+    "input": {
+      "command": "bun run agents status run-1"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Write-agent-change/approval.md",
+    "tool": "Write",
+    "input": {
+      "file_path": "agent-change/approval.md"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "policyVersion", "defaultEffect", "criticalFailureMode", "audit"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "policyVersion": { "type": "string" },
+    "defaultEffect": { "const": "allow" },
+    "criticalFailureMode": { "enum": ["open", "closed"] },
+    "audit": { "type": "object" }
+  },
+  "additionalProperties": false
+}

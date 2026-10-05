@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.anthropic.com/v1",
+  "models": {
+    "fast": "claude-sonnet-5-5",
+    "standard": "claude-opus-5-5",
+    "strong": "claude-fable-5-1",
+    "subagents": "claude-sonnet-5-5"
+  }
+}

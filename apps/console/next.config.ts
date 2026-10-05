@@ -4,6 +4,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Корень трассировки - репозиторий, а не каталог приложения (workspaces).
   outputFileTracingRoot: path.resolve(import.meta.dirname, "../.."),
+  // TS-исходники workspace-пакета Guardrails компилируются Next.
+  transpilePackages: ["@harness/guardrails"],
 };
 
 export default nextConfig;

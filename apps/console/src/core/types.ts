@@ -41,6 +41,8 @@ export interface FsSignalHelpers {
       limit?: number;
       /** Потолок осмотренных файлов - защита от гигантских каталогов. */
       scanLimit?: number;
+      /** Поддерево исключено из обхода (относительный путь файла/каталога). */
+      exclude?: (relPath: string) => boolean;
     },
   ): Promise<FileEntry[]>;
   newestMtime(
@@ -97,6 +99,11 @@ export interface RuntimeAdapter {
   replyCommand?(sessionId: string, text: string): { command: string; args: string[] } | null;
   /** Команда запуска НОВОЙ headless-сессии с промтом (для "Исправить" и запуска промтов). */
   runCommand?(text: string): { command: string; args: string[] } | null;
+  /**
+   * CLI умеет `--output-format json`: headless-вызов workflow печатает конверт
+   * результата (текст, usage, стоимость), из которого движок извлекает статистику.
+   */
+  headlessJson?: boolean;
 }
 
 /** Навык/скрипт/агент, обнаруженный в рантайме (файлы не изменяются). */
@@ -124,6 +131,24 @@ export interface SessionSummary {
   turns?: number;
   /** Можно ли ответить в сессию из консоли (headless resume). */
   resumable: boolean;
+  /** Метрики из индекса сессий (sessions.sqlite); отсутствие - сессия ещё не собрана индексом. */
+  metrics?: SessionMetrics;
+}
+
+/** Накопленные метрики сессии из индекса (токены, стоимость, длительность). */
+export interface SessionMetrics {
+  inputTokens: number;
+  outputTokens: number;
+  cacheTokens: number;
+  /** Оценка стоимости по каталогу цен, USD. */
+  costUsd: number;
+  /** Доля токенов, покрытых ценой каталога (0..1). */
+  pricingCoverage: number;
+  /** last_activity_at - started_at; 0 при неизвестном начале. */
+  durationMs: number;
+  models: string[];
+  messageCount: number;
+  toolCount: number;
 }
 
 export interface SessionMessage {
@@ -165,6 +190,8 @@ export interface McpServerDef {
   enabled: boolean;
   /** Override для пользовательских конфигов конкретных рантаймов. */
   runtimeOverrides?: Record<string, boolean>;
+  /** Хуки жизненного цикла (install/remove/enable/disable); cwd - обязательная рабочая папка. */
+  hooks?: import("./lifecycleHooks").LifecycleHooks;
 }
 
 export interface TargetSyncResult {

@@ -1,4 +1,5 @@
 import path from "node:path";
+import { graphifyWorkspaceDir } from "../graphify";
 import { globalInstallCommand, type ToolDef, type ToolRuntimeId } from "../tools";
 
 /** Плагин инструмента Graphify: граф знаний кода и доков (skill/hooks). */
@@ -6,7 +7,7 @@ export const graphifyTool: ToolDef = {
   id: "graphify",
   title: "Graphify",
   description:
-    "Граф знаний кода и доков: graphify query возвращает подграф вместо чтения файлов. Ставит skill/hooks в каждый рантайм; граф - во вкладке \"Память\".",
+    "Граф знаний кода и доков: graphify query возвращает подграф вместо чтения файлов. Ставит skill/hooks в каждый рантайм; графы рабочих папок - в хранилище ./graphify/<имя>/graphify-out (вкладка \"Память\").",
   docsUrl: "https://github.com/safishamsi/graphify",
   category: "graph",
   bin: "graphify",
@@ -16,12 +17,16 @@ export const graphifyTool: ToolDef = {
     installCommand: (platform) => (platform === "darwin" ? ["brew", "install", "uv"] : null),
   },
   projectInit: {
+    // граф каждой рабочей папки - в хранилище воркспейсов консоли
+    // (<repoRoot>/graphify/<имя>/graphify-out), а не внутри папки.
     // --code-only: локальный AST без LLM-ключа (doc-файлы пропускаются;
-    // полный режим с доками требует API-ключ - см. вывод graphify extract)
-    init: (dir) => [["graphify", "extract", ".", "--code-only"]],
-    reinit: (dir) => [["graphify", "extract", ".", "--code-only"]],
-    update: (dir) => [["graphify", "update", ".", "--code-only"]],
-    initMarker: (dir) => `${dir}/graphify-out/graph.json`,
+    // полный режим с доками требует API-ключ - см. вывод graphify extract).
+    // extract инкрементален (manifest-гейт), поэтому и update идёт через него:
+    // `graphify update` пишет граф только внутри исходной папки.
+    init: (dir, repoRoot, name) => [graphifyExtractCommand(dir, repoRoot, name)],
+    reinit: (dir, repoRoot, name) => [graphifyExtractCommand(dir, repoRoot, name)],
+    update: (dir, repoRoot, name) => [graphifyExtractCommand(dir, repoRoot, name)],
+    initMarker: (dir, repoRoot, name) => path.join(graphifyWorkspaceDir(repoRoot, name), "graphify-out", "graph.json"),
   },
   perRuntime: {
     supported: ["claude", "codex", "cursor", "opencode", "kimi", "zcode"],
@@ -75,6 +80,11 @@ export const graphifyTool: ToolDef = {
     },
   },
 };
+
+/** Команда сборки графа папки в хранилище воркспейсов. */
+function graphifyExtractCommand(dir: string, repoRoot: string, name: string): string[] {
+  return ["graphify", "extract", dir, "--code-only", "--out", graphifyWorkspaceDir(repoRoot, name)];
+}
 
 /** Платформы graphify per runtime (zcode - generic agents). */
 const graphifyPlatform: Partial<Record<ToolRuntimeId, string>> = {

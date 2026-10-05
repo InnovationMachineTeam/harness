@@ -22,6 +22,10 @@ interface PluginDef {
 
 Хранение: `state.plugins.installed` (PluginDef + enabled) и `state.plugins.marketplaces`.
 
+## Хуки жизненного цикла
+
+Плагин может объявить `hooks: {install?, remove?, enable?, disable?}` (списки shell-команд; для marketplace-манифестов - поле `hooks`). Исполнение - общее с навыками и инструментами (`core/lifecycleHooks.ts`): guard-проверка репозитория, `bash -c`, cwd = обязательная рабочая папка, таймаут 60 с, лог `.agents/console/hooks/plugin.log`. Установка - hook install после включения и синка, включение/выключение - hook enable/disable, удаление - hook remove до удаления записи. Ошибки - в ответе роутов (`hookErrors`).
+
 ## Builtin-плагин: Chrome DevTools
 
 Единственный предустановленный плагин - `chrome-devtools` ([github.com/ChromeDevTools/chrome-devtools-mcp](https://github.com/ChromeDevTools/chrome-devtools-mcp)): MCP `chrome-devtools` = `npx -y chrome-devtools-mcp@latest`. Находится в builtin-каталоге (`BUILTIN_PLUGINS` в `core/plugins.ts`), устанавливается с вкладки "Плагины" одним кликом.

@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { dirname, join, relative } from "node:path";
+import { loadRuntimePaths, publicSkillDirs } from "./runtimePaths";
 import type { ConsoleState } from "./state";
 import type { FileEntry, ProbeContext, SkillItem } from "./types";
 
@@ -11,14 +12,22 @@ import type { FileEntry, ProbeContext, SkillItem } from "./types";
  *                          ?? useGlobal                (глобальный toggle)
  */
 
-export function skillEffective(state: ConsoleState, itemId: string, runtime: string): boolean {
+/**
+ * Структурное подмножество ConsoleState для тогглов: вызовы без полного state
+ * (раскрытие команд, тесты) передают только поле skills.
+ */
+export interface ConsoleStateLike {
+  skills: ConsoleState["skills"];
+}
+
+export function skillEffective(state: ConsoleStateLike, itemId: string, runtime: string): boolean {
   const override = state.skills.runtimeOverrides[itemId]?.[runtime];
   if (typeof override === "boolean") return override;
   return skillDefault(state, itemId);
 }
 
 /** Per-skill значение по умолчанию (установленные harness-навыки); отсутствует → глобальный toggle. */
-export function skillDefault(state: ConsoleState, itemId: string): boolean {
+export function skillDefault(state: ConsoleStateLike, itemId: string): boolean {
   const def = state.skills.defaults[itemId];
   if (typeof def === "boolean") return def;
   return state.skills.useGlobal;
@@ -78,29 +87,35 @@ export function toSkillItem(
 }
 
 /**
- * Harness-навыки: SKILL.md под <repoRoot>/.agents/skills (publicSkills-корень
- * из .agents/runtime/config.json). Сейчас в срезе репозитория каталога нет -
- * список будет пустым, но механизм готов.
+ * Публичные harness-навыки: SKILL.md в корнях publicSkills из .agents/runtime/config.json.
+ * Поддерево мастер-каталога (master/) и каталоги с manifest.yaml (внутренние навыки)
+ * в список не попадают - у них свой механизм раскрытия.
  */
 export async function collectHarnessSkills(ctx: ProbeContext): Promise<SkillItem[]> {
-  const files: FileEntry[] = await ctx.fs.collectFiles(join(ctx.repoRoot, ".agents", "skills"), {
-    match: (name) => name === "SKILL.md",
-    maxDepth: 4,
-    limit: 200,
-  });
+  const paths = await loadRuntimePaths(ctx.repoRoot);
   const items: SkillItem[] = [];
-  for (const f of files) {
-    const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
-    const item: SkillItem = {
-      id: `harness:${relDir}`,
-      runtime: "harness",
-      name: relDir.split("/").pop() ?? "skill",
-      kind: "skill",
-      origin: "harness",
-      source: `.agents/skills/${f.relPath}`,
-    };
-    item.description = await skillDescription(ctx, f.path);
-    items.push(item);
+  for (const root of publicSkillDirs(ctx.repoRoot, paths)) {
+    const files: FileEntry[] = await ctx.fs.collectFiles(root, {
+      match: (name) => name === "SKILL.md",
+      maxDepth: 4,
+      limit: 200,
+      exclude: (relPath) => relPath === "master" || relPath.startsWith("master/"),
+    });
+    for (const f of files) {
+      if (await ctx.fs.exists(join(dirname(f.path), "manifest.yaml"))) continue;
+      const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
+      const abs = join(root, f.relPath);
+      const item: SkillItem = {
+        id: `harness:${relDir}`,
+        runtime: "harness",
+        name: relDir.split("/").pop() ?? "skill",
+        kind: "skill",
+        origin: "harness",
+        source: relative(ctx.repoRoot, abs),
+      };
+      item.description = await skillDescription(ctx, f.path);
+      items.push(item);
+    }
   }
   return items;
 }

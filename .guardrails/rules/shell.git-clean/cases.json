@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-git clean -fd",
+    "tool": "Bash",
+    "input": {
+      "command": "git clean -fd"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-git clean -nd",
+    "tool": "Bash",
+    "input": {
+      "command": "git clean -nd"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-git clean -fx",
+    "tool": "Bash",
+    "input": {
+      "command": "git clean -fx"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

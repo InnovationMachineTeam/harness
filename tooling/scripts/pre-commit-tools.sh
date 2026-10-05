@@ -24,6 +24,10 @@ if has codegraph && [ -f .codegraph/codegraph.db ]; then
 fi
 
 # --- Graphify: догон графа (локальный tree-sitter, без LLM) ---
+# Обновляет только интеграционный граф САМОГО репозитория (graphify-out/ в
+# корне, создаёт setup.sh). Графы рабочих папок живут в хранилище консоли
+# graphify/<имя>/graphify-out/ и обновляются её сборками (graphify extract
+# --out, инкрементально); pre-commit их не трогает.
 if has graphify && [ -f graphify-out/graph.json ]; then
   echo "[tools] graphify update…"
   graphify update . || echo "[tools] graphify update не удался (не блокирует коммит)"

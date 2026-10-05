@@ -1,0 +1,335 @@
+{
+  "version": 1,
+  "updated": "2026-10-04T23:17:55.596Z",
+  "web": [
+    {
+      "name": "AgentActivityList",
+      "path": "apps/console/src/uikit/components/agent/AgentActivityList.tsx"
+    },
+    {
+      "name": "AgentMessage",
+      "path": "apps/console/src/uikit/components/agent/AgentMessage.tsx"
+    },
+    {
+      "name": "AgentPanel",
+      "path": "apps/console/src/uikit/components/agent/AgentPanel.tsx"
+    },
+    {
+      "name": "AgentWorkspace",
+      "path": "apps/console/src/uikit/components/agent/AgentWorkspace.tsx"
+    },
+    {
+      "name": "AiSdkPanel",
+      "path": "apps/console/src/uikit/components/settings/AiSdkPanel.tsx"
+    },
+    {
+      "name": "AuditChips",
+      "path": "apps/console/src/uikit/components/skillsSh/AuditChips.tsx"
+    },
+    {
+      "name": "BillingPanel",
+      "path": "apps/console/src/uikit/components/runtime/BillingPanel.tsx"
+    },
+    {
+      "name": "BrandEditor",
+      "path": "apps/console/src/uikit/components/design/BrandEditor.tsx"
+    },
+    {
+      "name": "CapabilityChips",
+      "path": "apps/console/src/uikit/components/CapabilityChips.tsx"
+    },
+    {
+      "name": "ComponentsManager",
+      "path": "apps/console/src/uikit/components/design/ComponentsManager.tsx"
+    },
+    {
+      "name": "CreateSkillModal",
+      "path": "apps/console/src/uikit/components/skillsSh/CreateSkillModal.tsx"
+    },
+    {
+      "name": "Dashboard",
+      "path": "apps/console/src/uikit/components/Dashboard.tsx"
+    },
+    {
+      "name": "DesignGuideEditor",
+      "path": "apps/console/src/uikit/components/design/DesignGuideEditor.tsx"
+    },
+    {
+      "name": "DesignPanel",
+      "path": "apps/console/src/uikit/components/design/DesignPanel.tsx"
+    },
+    {
+      "name": "DesignProvider",
+      "path": "apps/console/src/uikit/components/DesignProvider.tsx"
+    },
+    {
+      "name": "DesignSkillsPanel",
+      "path": "apps/console/src/uikit/components/design/DesignSkillsPanel.tsx"
+    },
+    {
+      "name": "DesignTokensEditor",
+      "path": "apps/console/src/uikit/components/design/DesignTokensEditor.tsx"
+    },
+    {
+      "name": "DesignWorkspace",
+      "path": "apps/console/src/uikit/components/design/DesignWorkspace.tsx"
+    },
+    {
+      "name": "DocsTab",
+      "path": "apps/console/src/uikit/components/memory/DocsTab.tsx"
+    },
+    {
+      "name": "FileBrowser",
+      "path": "apps/console/src/uikit/components/memory/FileBrowser.tsx"
+    },
+    {
+      "name": "FileViewer",
+      "path": "apps/console/src/uikit/components/memory/FileViewer.tsx"
+    },
+    {
+      "name": "GraphifyTab",
+      "path": "apps/console/src/uikit/components/memory/GraphifyTab.tsx"
+    },
+    {
+      "name": "GuardrailsPanel",
+      "path": "apps/console/src/uikit/components/settings/GuardrailsPanel.tsx"
+    },
+    {
+      "name": "InstallMcpModal",
+      "path": "apps/console/src/uikit/components/InstallMcpModal.tsx"
+    },
+    {
+      "name": "InstallSkillModal",
+      "path": "apps/console/src/uikit/components/skillsSh/InstallSkillModal.tsx"
+    },
+    {
+      "name": "InstallTerminal",
+      "path": "apps/console/src/uikit/components/skillsSh/InstallTerminal.tsx"
+    },
+    {
+      "name": "LifecycleInfoModal",
+      "path": "apps/console/src/uikit/components/common/LifecycleInfoModal.tsx"
+    },
+    {
+      "name": "LlmSettingsModal",
+      "path": "apps/console/src/uikit/components/tools/LlmSettingsModal.tsx"
+    },
+    {
+      "name": "MarkdownEditor",
+      "path": "apps/console/src/uikit/components/MarkdownEditor/index.tsx"
+    },
+    {
+      "name": "MarkdownSectionsEditor",
+      "path": "apps/console/src/uikit/components/design/MarkdownSectionsEditor.tsx"
+    },
+    {
+      "name": "MarkdownView",
+      "path": "apps/console/src/uikit/components/memory/MarkdownView.tsx"
+    },
+    {
+      "name": "McpPanel",
+      "path": "apps/console/src/uikit/components/McpPanel.tsx"
+    },
+    {
+      "name": "McpSettingsModal",
+      "path": "apps/console/src/uikit/components/McpSettingsModal.tsx"
+    },
+    {
+      "name": "McpSettingsPanel",
+      "path": "apps/console/src/uikit/components/settings/McpSettingsPanel.tsx"
+    },
+    {
+      "name": "MemoryNav",
+      "path": "apps/console/src/uikit/components/memory/MemoryNav.tsx"
+    },
+    {
+      "name": "ModelTable",
+      "path": "apps/console/src/uikit/components/ModelTable.tsx"
+    },
+    {
+      "name": "Nav",
+      "path": "apps/console/src/uikit/components/Nav.tsx"
+    },
+    {
+      "name": "NodeEditorModal",
+      "path": "apps/console/src/uikit/components/workflows/NodeEditorModal.tsx"
+    },
+    {
+      "name": "OpenWikiTab",
+      "path": "apps/console/src/uikit/components/memory/OpenWikiTab.tsx"
+    },
+    {
+      "name": "OptimizationPanel",
+      "path": "apps/console/src/uikit/components/settings/OptimizationPanel.tsx"
+    },
+    {
+      "name": "PaygDeposits",
+      "path": "apps/console/src/uikit/components/pricing/PaygDeposits.tsx"
+    },
+    {
+      "name": "PluginsPanel",
+      "path": "apps/console/src/uikit/components/settings/PluginsPanel.tsx"
+    },
+    {
+      "name": "PricingStamp",
+      "path": "apps/console/src/uikit/components/update/PricingStamp.tsx"
+    },
+    {
+      "name": "ProcessTable",
+      "path": "apps/console/src/uikit/components/ProcessTable.tsx"
+    },
+    {
+      "name": "PromptAutocomplete",
+      "path": "apps/console/src/uikit/components/agent/PromptAutocomplete.tsx"
+    },
+    {
+      "name": "ProviderBillingModal",
+      "path": "apps/console/src/uikit/components/pricing/ProviderBillingModal.tsx"
+    },
+    {
+      "name": "ProviderCard",
+      "path": "apps/console/src/uikit/components/providers/ProviderCard.tsx"
+    },
+    {
+      "name": "ProvidersPanel",
+      "path": "apps/console/src/uikit/components/providers/ProvidersPanel.tsx"
+    },
+    {
+      "name": "RoleEditorModal",
+      "path": "apps/console/src/uikit/components/workflows/RoleEditorModal.tsx"
+    },
+    {
+      "name": "RolesPanel",
+      "path": "apps/console/src/uikit/components/workflows/RolesPanel.tsx"
+    },
+    {
+      "name": "RunSections",
+      "path": "apps/console/src/uikit/components/workflows/RunSections.tsx"
+    },
+    {
+      "name": "RuntimeCard",
+      "path": "apps/console/src/uikit/components/RuntimeCard.tsx"
+    },
+    {
+      "name": "RuntimeMemoryPanel",
+      "path": "apps/console/src/uikit/components/memory/RuntimeMemoryPanel.tsx"
+    },
+    {
+      "name": "RuntimeSpace",
+      "path": "apps/console/src/uikit/components/RuntimeSpace.tsx"
+    },
+    {
+      "name": "RuntimesTab",
+      "path": "apps/console/src/uikit/components/memory/RuntimesTab.tsx"
+    },
+    {
+      "name": "RunViewer",
+      "path": "apps/console/src/uikit/components/workflows/RunViewer.tsx"
+    },
+    {
+      "name": "SessionMetricsLine",
+      "path": "apps/console/src/uikit/components/SessionMetricsLine.tsx"
+    },
+    {
+      "name": "SessionPanel",
+      "path": "apps/console/src/uikit/components/SessionPanel.tsx"
+    },
+    {
+      "name": "SkillSearchField",
+      "path": "apps/console/src/uikit/components/skillsSh/SkillSearchField.tsx"
+    },
+    {
+      "name": "SkillsPanel",
+      "path": "apps/console/src/uikit/components/SkillsPanel.tsx"
+    },
+    {
+      "name": "SkillsSettingsPanel",
+      "path": "apps/console/src/uikit/components/settings/SkillsSettingsPanel.tsx"
+    },
+    {
+      "name": "SkillsShSearch",
+      "path": "apps/console/src/uikit/components/skillsSh/SkillsShSearch.tsx"
+    },
+    {
+      "name": "StatsDrillModal",
+      "path": "apps/console/src/uikit/components/monitoring/StatsDrillModal.tsx"
+    },
+    {
+      "name": "StatsPanel",
+      "path": "apps/console/src/uikit/components/monitoring/StatsPanel.tsx"
+    },
+    {
+      "name": "StatusBadge",
+      "path": "apps/console/src/uikit/components/StatusBadge.tsx"
+    },
+    {
+      "name": "StoreHydrator",
+      "path": "apps/console/src/uikit/components/StoreHydrator.tsx"
+    },
+    {
+      "name": "SubscriptionPicker",
+      "path": "apps/console/src/uikit/components/pricing/SubscriptionPicker.tsx"
+    },
+    {
+      "name": "TasksBoard",
+      "path": "apps/console/src/uikit/components/workflows/TasksBoard.tsx"
+    },
+    {
+      "name": "TasksPanel",
+      "path": "apps/console/src/uikit/components/monitoring/TasksPanel.tsx"
+    },
+    {
+      "name": "ToolInstallModal",
+      "path": "apps/console/src/uikit/components/tools/ToolInstallModal.tsx"
+    },
+    {
+      "name": "ToolsPanel",
+      "path": "apps/console/src/uikit/components/tools/ToolsPanel.tsx"
+    },
+    {
+      "name": "UIKit",
+      "path": "apps/console/src/uikit/components/UIKit/index.tsx"
+    },
+    {
+      "name": "UiKitEditor",
+      "path": "apps/console/src/uikit/components/design/UiKitEditor.tsx"
+    },
+    {
+      "name": "UnifiedSkillsList",
+      "path": "apps/console/src/uikit/components/skills/UnifiedSkillsList.tsx"
+    },
+    {
+      "name": "UpdatePanel",
+      "path": "apps/console/src/uikit/components/update/UpdatePanel.tsx"
+    },
+    {
+      "name": "UsageBarChart",
+      "path": "apps/console/src/uikit/components/monitoring/UsageBarChart.tsx"
+    },
+    {
+      "name": "UsageHeatmap",
+      "path": "apps/console/src/uikit/components/monitoring/UsageHeatmap.tsx"
+    },
+    {
+      "name": "VirtualList",
+      "path": "apps/console/src/uikit/components/VirtualList/index.tsx"
+    },
+    {
+      "name": "WorkflowSettingsPanel",
+      "path": "apps/console/src/uikit/components/settings/WorkflowSettingsPanel.tsx"
+    },
+    {
+      "name": "WorkflowStudio",
+      "path": "apps/console/src/uikit/components/workflows/WorkflowStudio.tsx"
+    },
+    {
+      "name": "WorkspaceBar",
+      "path": "apps/console/src/uikit/components/agent/WorkspaceBar.tsx"
+    },
+    {
+      "name": "WorkspacesPanel",
+      "path": "apps/console/src/uikit/components/settings/WorkspacesPanel.tsx"
+    }
+  ],
+  "mobile": []
+}

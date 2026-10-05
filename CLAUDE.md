@@ -14,6 +14,19 @@ Rules:
 
 ## OpenWiki
 
-See [AGENTS.md](AGENTS.md) for OpenWiki agent instructions.
+@AGENTS.md
 
 <!-- OPENWIKI:END -->
+
+<!-- harness-design:start -->
+# Дизайн-контекст Harness (harness)
+
+Визуальная идентичность проекта: @DESIGN.md (формат @google/design.md: токены + гайд).
+Правила интерфейса: design/ui-kit.md. Реестр компонентов: design/components.json (web и mobile).
+
+Правила:
+- Код web и mobile ведётся по токенам DESIGN.md и примитивам кита проекта; хардкод цветов и радиусов не применяется.
+- Новые компоненты добавляются в кит проекта и в design/components.json (платформа web или mobile).
+- design/ui-kit.md старше этого блока не приоритетен: при расхождении источник истины - DESIGN.md.
+Дизайн-MCP этого проекта: open-design, figma (проектный .mcp.json).
+<!-- harness-design:end -->

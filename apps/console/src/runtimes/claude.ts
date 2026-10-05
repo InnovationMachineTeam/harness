@@ -41,17 +41,26 @@ export const claudeAdapter: RuntimeAdapter = {
   },
 
   async listSkills(ctx: ProbeContext): Promise<SkillItem[]> {
-    const files = await ctx.fs.collectFiles(join(ctx.home, ".claude", "skills"), {
-      match: (name) => name === "SKILL.md",
-      maxDepth: 3,
-      limit: 200,
-    });
+    // проектный каталог приоритетнее глобального: одноимённый навык из проекта
+    // затеняет глобальный (тот же порядок, что у нативного разрешения Claude Code)
+    const roots = [join(ctx.repoRoot, ".claude", "skills"), join(ctx.home, ".claude", "skills")];
     const items: SkillItem[] = [];
-    for (const f of files) {
-      const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
-      const item = toSkillItem(ctx, "claude", "skill", relDir.split("/").pop() ?? "skill", f.path, relDir);
-      item.description = await skillDescription(ctx, f.path);
-      items.push(item);
+    const seen = new Set<string>();
+    for (const root of roots) {
+      const files = await ctx.fs.collectFiles(root, {
+        match: (name) => name === "SKILL.md",
+        maxDepth: 3,
+        limit: 200,
+      });
+      for (const f of files) {
+        const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
+        const name = relDir.split("/").pop() ?? "skill";
+        if (seen.has(name)) continue;
+        seen.add(name);
+        const item = toSkillItem(ctx, "claude", "skill", name, f.path, relDir);
+        item.description = await skillDescription(ctx, f.path);
+        items.push(item);
+      }
     }
     return items;
   },
@@ -69,4 +78,5 @@ export const claudeAdapter: RuntimeAdapter = {
 
   replyCommand: (sessionId, text) => ({ command: "claude", args: ["-p", "--resume", sessionId, text] }),
   runCommand: (text) => ({ command: "claude", args: ["-p", text] }),
+  headlessJson: true,
 };

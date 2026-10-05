@@ -1,0 +1,19 @@
+{
+  "id": "shell.rm-rf-worktree",
+  "title": "Удаление worktree через rm",
+  "description": "Требует штатную команду удаления Git worktree.",
+  "category": "filesystem",
+  "severity": "high",
+  "effect": "block",
+  "threats": [
+    "filesystem"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Выполните bun run worktree:remove <slug>.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

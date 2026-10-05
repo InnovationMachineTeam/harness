@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { invalidateDashboardCache } from "@/core/cache";
 import { syncMcp } from "@/core/mcp/sync";
+import { runLifecycleHook } from "@/core/lifecycleHooks";
+import { mandatoryWorkspace } from "@/core/state";
 import {
   BUILTIN_PLUGINS,
   fetchMarketplacePlugins,
@@ -54,7 +56,15 @@ export async function POST(request: Request) {
   const results = await syncMcp(ctx.repoRoot, ctx.state);
   await ctx.saveState();
   invalidateDashboardCache();
-  return NextResponse.json({ ok: true, plugin: ctx.state.plugins.installed[raw.id], results: Object.values(results) });
+  const hooks = await runLifecycleHook({
+    repoRoot: ctx.repoRoot,
+    workspace: mandatoryWorkspace(ctx.state),
+    domain: "plugin",
+    name: found.id,
+    op: "install",
+    hooks: found.hooks,
+  });
+  return NextResponse.json({ ok: true, plugin: ctx.state.plugins.installed[raw.id], results: Object.values(results), hookErrors: hooks.errors.length ? hooks.errors : undefined });
 }
 
 /** PATCH /api/plugins {id, enabled} - включить/выключить (MCP в реестре). */
@@ -65,26 +75,46 @@ export async function PATCH(request: Request) {
   if (!id || typeof enabled !== "boolean") {
     return NextResponse.json({ error: "нужны id и enabled" }, { status: 400 });
   }
+  const plugin = ctx.state.plugins.installed[id];
   if (!setPluginEnabled(ctx.state, id, enabled)) {
     return NextResponse.json({ error: `плагин не найден: ${id}` }, { status: 404 });
   }
   const results = await syncMcp(ctx.repoRoot, ctx.state);
   await ctx.saveState();
   invalidateDashboardCache();
-  return NextResponse.json({ ok: true, results: Object.values(results) });
+  const hooks = await runLifecycleHook({
+    repoRoot: ctx.repoRoot,
+    workspace: mandatoryWorkspace(ctx.state),
+    domain: "plugin",
+    name: id,
+    op: enabled ? "enable" : "disable",
+    hooks: plugin?.hooks,
+  });
+  return NextResponse.json({ ok: true, results: Object.values(results), hookErrors: hooks.errors.length ? hooks.errors : undefined });
 }
 
 /** DELETE /api/plugins?id= - удалить (выключить и убрать запись). */
 export async function DELETE(request: Request) {
   const ctx = await serverContext();
   const id = new URL(request.url).searchParams.get("id") ?? "";
-  if (!uninstallPlugin(ctx.state, id)) {
+  const plugin = ctx.state.plugins.installed[id];
+  if (!plugin) {
     return NextResponse.json({ error: `плагин не найден: ${id}` }, { status: 404 });
   }
+  // hook remove - до удаления записи (команды могут ссылаться на плагин)
+  const hooks = await runLifecycleHook({
+    repoRoot: ctx.repoRoot,
+    workspace: mandatoryWorkspace(ctx.state),
+    domain: "plugin",
+    name: id,
+    op: "remove",
+    hooks: plugin.hooks,
+  });
+  uninstallPlugin(ctx.state, id);
   const results = await syncMcp(ctx.repoRoot, ctx.state);
   await ctx.saveState();
   invalidateDashboardCache();
-  return NextResponse.json({ ok: true, results: Object.values(results) });
+  return NextResponse.json({ ok: true, results: Object.values(results), hookErrors: hooks.errors.length ? hooks.errors : undefined });
 }
 
 async function findInCatalogs(state: ConsoleState, id: string): Promise<PluginDef | null> {

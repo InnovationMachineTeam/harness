@@ -1,0 +1,21 @@
+{
+  "$schema": "docs/pricing.md",
+  "$comment": "Зафиксированные источники цен. Добавляются при первом обнаружении и далее используются только они. format: html - при refresh проверяется доступность; json - цены парсятся и обновляются (сейчас: каталог моделей OpenRouter). status: ok | unavailable. Ручная правка значений prices/plans - в models.json и subscriptions.json.",
+  "recordedAt": "2026-10-03T12:00:00.000Z",
+  "sources": {
+    "api:openrouter": { "url": "https://openrouter.ai/api/v1/models", "kind": "api", "format": "json", "target": "openrouter", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "api:anthropic": { "url": "https://docs.anthropic.com/en/docs/about-claude/pricing", "kind": "api", "format": "html", "target": "anthropic", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "api:openai": { "url": "https://platform.openai.com/docs/pricing", "kind": "api", "format": "html", "target": "openai", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "api:google": { "url": "https://ai.google.dev/gemini-api/docs/pricing", "kind": "api", "format": "html", "target": "gemini", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "api:zai": { "url": "https://docs.z.ai/guides/overview/pricing", "kind": "api", "format": "html", "target": "zai", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "api:moonshot": { "url": "https://platform.moonshot.ai/docs/pricing", "kind": "api", "format": "html", "target": "kimi", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "api:deepseek": { "url": "https://api-docs.deepseek.com/quick_start/pricing", "kind": "api", "format": "html", "target": "deepseek", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:anthropic": { "url": "https://www.anthropic.com/pricing", "kind": "subscriptions", "format": "html", "target": "claude", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:openai": { "url": "https://openai.com/chatgpt/pricing", "kind": "subscriptions", "format": "html", "target": "codex", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:cursor": { "url": "https://cursor.com/pricing", "kind": "subscriptions", "format": "html", "target": "cursor", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:zai": { "url": "https://z.ai/subscribe", "kind": "subscriptions", "format": "html", "target": "zcode", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:moonshot": { "url": "https://www.kimi.com/membership", "kind": "subscriptions", "format": "html", "target": "kimi", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:opencode": { "url": "https://opencode.ai/zen", "kind": "subscriptions", "format": "html", "target": "opencode", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" },
+    "subscriptions:google": { "url": "https://one.google.com/about/ai-plans", "kind": "subscriptions", "format": "html", "target": "gemini", "status": "ok", "lastCheckedAt": null, "lastError": null, "discoveredAt": "2026-10-03T12:00:00.000Z" }
+  }
+}

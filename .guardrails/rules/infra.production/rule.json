@@ -1,0 +1,19 @@
+{
+  "id": "infra.production",
+  "title": "Разрушение инфраструктуры",
+  "description": "Блокирует apply/destroy и kubectl delete.",
+  "category": "infrastructure",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "infrastructure"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Используйте release-процесс с ручным gate.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

@@ -9,6 +9,14 @@
         "--path",
         "/Users/stanislavus/Developer/harness"
       ]
+    },
+    "openwiki": {
+      "command": "openwiki",
+      "args": [
+        "mcp",
+        "--host",
+        "cursor"
+      ]
     }
   }
 }

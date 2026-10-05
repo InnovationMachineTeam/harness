@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-bun run gate:answe",
+    "tool": "Bash",
+    "input": {
+      "command": "bun run gate:answer G-1 yes"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-bun run gate:statu",
+    "tool": "Bash",
+    "input": {
+      "command": "bun run gate:status G-1"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Write-runs/gate-answer.md",
+    "tool": "Write",
+    "input": {
+      "file_path": "runs/gate-answer.md"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

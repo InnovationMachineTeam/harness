@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://openrouter.ai/api/v1",
+  "models": {
+    "fast": "openrouter/auto",
+    "standard": "openrouter/auto",
+    "strong": "openrouter/auto",
+    "subagents": "openrouter/auto"
+  }
+}

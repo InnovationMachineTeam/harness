@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: minimalist-ui
+title: minimalist-ui
+description: "Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows."
+source:
+  version: 1.0.0
+  hash: design-group-minimalist-ui
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [design, ui, ux, brand]

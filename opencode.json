@@ -4,17 +4,14 @@
     "AGENTS.md"
   ],
   "mcp": {
-    "servers": {
-      "codegraph": {
-        "type": "local",
-        "command": [
-          "codegraph",
-          "serve",
-          "--mcp"
-        ],
-        "disabled": false,
-        "codemode": false
-      }
+    "codegraph": {
+      "type": "local",
+      "command": [
+        "codegraph",
+        "serve",
+        "--mcp"
+      ],
+      "enabled": true
     }
   }
 }

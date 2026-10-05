@@ -1,0 +1,19 @@
+{
+  "id": "approval.by-agent",
+  "title": "Самоодобрение изменения",
+  "description": "Не позволяет агенту выдать собственное одобрение.",
+  "category": "approval",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "approval"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Попросите пользователя выполнить команду approve.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

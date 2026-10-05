@@ -86,7 +86,7 @@ ${yaml}
 
 ## Overview
 
-${DESCRIPTIONS[preset.id] ?? preset.name}. ${modeLabel} тема-пресет консоли Agentic OS.
+${DESCRIPTIONS[preset.id] ?? preset.name}. ${modeLabel} тема-пресет консоли Harness.
 
 Файл-эталон: находится в \`themes/\`, читается лениво (GET /api/design/theme) и показывается
 на вкладке "Настройки → Design". Выбор пресета применяет токены к слоту; при сохранении

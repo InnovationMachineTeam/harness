@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: high-end-visual-design
+title: high-end-visual-design
+description: "Teaches the AI to design like a high-end agency. Defines the exact fonts, spacing, shadows, card structures, and animations that make a website feel expensive. Blocks all the common defaults that make AI designs look cheap or generic."
+source:
+  version: 1.0.0
+  hash: design-group-high-end-visual-design
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [design, ui, ux, brand]

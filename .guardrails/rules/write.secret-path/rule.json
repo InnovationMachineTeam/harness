@@ -1,0 +1,19 @@
+{
+  "id": "write.secret-path",
+  "title": "Запись секрета",
+  "description": "Блокирует запись в секретные пути.",
+  "category": "secrets",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "secrets"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Измените файл-пример и передайте инструкцию пользователю.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

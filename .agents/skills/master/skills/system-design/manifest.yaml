@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: system-design
+title: System design
+description: "Используй этот навык, когда нужно спроектировать систему или существенное изменение по утверждённым требованиям: определить границы, компоненты, API, данные, отказоустойчивость, безопасность, наблюдаемость, миграцию и архитектурные решения."
+source:
+  version: 1.1.0
+  hash: builtin-system-design-2
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [architecture, system-design, api, data-model, security, observability, migration, adr, архитектура]

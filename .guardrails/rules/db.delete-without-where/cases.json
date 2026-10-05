@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-psql -c 'DELETE FR",
+    "tool": "Bash",
+    "input": {
+      "command": "psql -c 'DELETE FROM users'"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-psql -c 'DELETE FR",
+    "tool": "Bash",
+    "input": {
+      "command": "psql -c 'DELETE FROM users WHERE id=1'"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-DELETE FROM audit;",
+    "tool": "Bash",
+    "input": {
+      "command": "DELETE FROM audit;"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

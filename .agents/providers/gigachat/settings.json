@@ -1,0 +1,10 @@
+{
+  "baseUrl": "https://api.giga.chat/v1",
+  "models": {
+    "fast": "GigaChat-2-Lite",
+    "standard": "GigaChat-2-Pro",
+    "strong": "GigaChat-2-Max",
+    "subagents": "GigaChat-2-Lite"
+  },
+  "authScope": "GIGACHAT_API_PERS"
+}

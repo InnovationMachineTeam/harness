@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: design-system
+title: design-system
+description: "Token architecture, component specifications, and slide generation. Three-layer tokens (primitive→semantic→component), CSS variables, spacing/typography scales, component specs, strategic slide creation. Use for design tokens, systematic design, brand-compliant presentations."
+source:
+  version: 1.0.0
+  hash: design-group-design-system
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [design, ui, ux, brand]

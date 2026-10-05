@@ -1,18 +1,89 @@
 ---
 type: system architecture overview
 title: "Console architecture: layers, API, data flows"
-description: "System overview of the Agentic OS Console (apps/console): Bun workspace layout, Next.js 15 layering (pages/components/zustand → API routes → src/core → src/runtimes adapters → FS/ps/headless CLI), the full API route registry, dashboard caching, and the cross-cutting invariants every other page relies on."
+description: "System overview of the Harness Console (apps/console): Bun workspace layout, Next.js 16 layering (pages/components/zustand → API routes → src/core → src/runtimes adapters → FS/ps/headless CLI), the full API route registry, dashboard caching, and the cross-cutting invariants every other page relies on."
 tags: [console, nextjs, architecture, runtime-adapters, api-routes, state, caching, bun]
-verified:
-  - by: openwiki/0.5.1
-    at: 2026-09-30T23:26:29.291Z
+sources:
+  - id: openwiki-source-f4db25cff09296978010365f
+    resource: repo://apps/console/package.json
+  - id: openwiki-source-21e410055792abc5c0f77c43
+    resource: repo://apps/console/src/app/api/mcp/route.ts
+  - id: openwiki-source-e64e929fe91e02b6c1878cbf
+    resource: repo://apps/console/src/app/api/monitoring/tasks/route.ts
+  - id: openwiki-source-67a509f170873a3837b43702
+    resource: repo://apps/console/src/app/api/prompts/run/route.ts
+  - id: openwiki-source-487e26d372e0991876385aa2
+    resource: repo://apps/console/src/app/api/runtimes/list/route.ts
+  - id: openwiki-source-6ec056658551dd28e0169823
+    resource: repo://apps/console/src/app/api/runtimes/route.ts
+  - id: openwiki-source-1ebabf92d6b07d4831b297cd
+    resource: repo://apps/console/src/app/api/sessions/reply/route.ts
+  - id: openwiki-source-facfed7fef816eb7fcf4cf3f
+    resource: repo://apps/console/src/app/api/skills/route.ts
+  - id: openwiki-source-2b243073347e2808b7cf73fa
+    resource: repo://apps/console/src/app/api/tools/job/route.ts
+  - id: openwiki-source-242ccbf633db74edcb1892f8
+    resource: repo://apps/console/src/app/api/update/route.ts
+  - id: openwiki-source-69fe9eba88ccbebce3e475eb
+    resource: repo://apps/console/src/app/api/workspaces/clone/route.ts
+  - id: openwiki-source-cebe464e7a69e9b37fa20d3e
+    resource: repo://apps/console/src/app/headroom-api/%5B%5B...path%5D%5D/route.ts
+  - id: openwiki-source-a3f21b34e95e77eb965c6c94
+    resource: repo://apps/console/src/app/page.tsx
+  - id: openwiki-source-dd2be140b9e08b34ee1d0850
+    resource: repo://apps/console/src/core/__tests__/activity.test.ts
+  - id: openwiki-source-7da8773aa5f6e7969d42dbb9
+    resource: repo://apps/console/src/core/__tests__/memory.test.ts
+  - id: openwiki-source-76a00ef84e082521e613bb7b
+    resource: repo://apps/console/src/core/__tests__/registry.test.ts
+  - id: openwiki-source-3e70f3aa6f79fde940e28af4
+    resource: repo://apps/console/src/core/__tests__/state.test.ts
+  - id: openwiki-source-826fcbb59a40ad6bbd02e751
+    resource: repo://apps/console/src/core/activity.ts
+  - id: openwiki-source-2053941372477e35a318cb9b
+    resource: repo://apps/console/src/core/cache.ts
+  - id: openwiki-source-cbd8d1f71e8086ce0879aec5
+    resource: repo://apps/console/src/core/installJobs.ts
+  - id: openwiki-source-0180d66a1b80614393eb42b2
+    resource: repo://apps/console/src/core/mcp/sync.ts
+  - id: openwiki-source-5e815fd31993c125b7b9662e
+    resource: repo://apps/console/src/core/memory.ts
+  - id: openwiki-source-c643fe0a3802922db51b0b23
+    resource: repo://apps/console/src/core/processes.ts
+  - id: openwiki-source-89702409219515a781c0ff96
+    resource: repo://apps/console/src/core/prompts.ts
+  - id: openwiki-source-449fdd650ff303b7fde3772c
+    resource: repo://apps/console/src/core/registry.ts
+  - id: openwiki-source-dc0993ff8fe929b7684199c6
+    resource: repo://apps/console/src/core/state.ts
+  - id: openwiki-source-55716ada8d99b74f8fe3304f
+    resource: repo://apps/console/src/core/toolJobs.ts
+  - id: openwiki-source-536fd1ee3bbb623e16a8c10f
+    resource: repo://apps/console/src/core/tools.ts
+  - id: openwiki-source-d868589fc8a72337e3a56636
+    resource: repo://apps/console/src/core/types.ts
+  - id: openwiki-source-2f8ecbb28ea3217a72e86c04
+    resource: repo://apps/console/src/lib/__tests__/toml.test.ts
+  - id: openwiki-source-73970308b3a927ef56a561de
+    resource: repo://apps/console/src/lib/server-context.ts
+  - id: openwiki-source-b7b5823be068d6652333bb0a
+    resource: repo://apps/console/src/lib/signals/processes.ts
+  - id: openwiki-source-acd8461adec428a7ad91a0aa
+    resource: repo://apps/console/src/lib/toml.ts
+  - id: openwiki-source-d66d6c32fc4a7e151fd3b05f
+    resource: repo://apps/console/src/runtimes/index.ts
+  - id: openwiki-source-31e129de817103b4fcfcaf41
+    resource: repo://apps/console/src/store/console.ts
+  - id: openwiki-source-5b54a58d1b51cd490b0e7162
+    resource: repo://package.json
+generated: { by: "claude-code", at: "2026-09-30T23:26:29.291Z" }
 ---
 
 # Console architecture: layers, API, data flows
 
-The **Agentic OS Console** (`apps/console`, package `@harness/console`) is a Next.js 15 application inside the repository's Bun workspace (`workspaces: ["apps/*"]`, root script `bun run console` → `next dev`). It manages the harness's agent runtimes (Claude Code, Codex CLI, ZCode, Cursor, Kimi Code, OpenCode) from a single dashboard: activity status, diagnostics, MCP registry + sync, skills, session history with headless replies, processes, workspaces, plugins, and context-saving tools.
+The **Harness Console** (`apps/console`, package `@harness/console`) is a Next.js 16 application inside the repository's Bun workspace (`workspaces: ["apps/*"]`, root script `bun run console` → `next dev`). It manages the harness's agent runtimes (Claude Code, Codex CLI, ZCode, Cursor, Kimi Code, OpenCode) from a single dashboard: activity status, diagnostics, MCP registry + sync, skills, session history with headless replies, processes, workspaces, plugins, and context-saving tools.
 
-**Stack contract**: Bun as package manager/runner, Next.js 15 App Router with RSC, React 19, Tailwind CSS v4, zustand (+persist) for client state, react-markdown/remark-gfm for the Memory tab. Server-side code uses **only `node:*` builtins** (`child_process`, `fs`, `os`, `path`) - no new server runtime dependencies; every interaction with the machine (probing, `ps`, spawn) goes through `src/core` modules.
+**Stack contract**: Bun as package manager/runner, Next.js 16 App Router with RSC, React 19, Tailwind CSS v4, zustand (+persist) for client state, react-markdown/remark-gfm for the Memory tab. Other runtime dependencies in `apps/console/package.json` are `lucide-react`, `yaml` and `@google/design.md`. Server-side code uses **only `node:*` builtins** (`child_process`, `fs`, `os`, `path`) for machine access; every interaction with the machine (probing, `ps`, spawn) goes through `src/core` modules.
 
 ## Layers and data flow
 
@@ -21,7 +92,7 @@ flowchart TD
     subgraph CLIENT["Client (browser)"]
         PAGES["Pages / /skills /mcp /plugins /workspaces /memory /settings /runtime-id"]
         COMPS["Components Dashboard, RuntimeSpace, SessionPanel, ProcessTable, SkillsPanel, modals"]
-        STORE["zustand store: defaultRuntime, taskRuntimes, useGlobal, runtimes, tabCache (localStorage persist: windowKey, autoRefresh)"]
+        STORE["zustand store: defaultRuntime, taskRuntimes, useGlobal, runtimes, tabCache (localStorage persist: windowKey, autoRefresh, theme)"]
         PAGES --> COMPS --> STORE
     end
     subgraph SERVER["Server (next dev, node builtins only)"]
@@ -77,7 +148,7 @@ Persistence contract (`src/core/state.ts`):
 4. the client store updates only after server confirmation,
 5. `invalidateDashboardCache()`.
 
-The canonical example is `PATCH /api/runtimes` (set ★ default runtime) and the comment in `PATCH /api/skills` states it explicitly: "мутация состояния → запись файла (saveState) → ответ клиенту (клиент обновляет store только после успешной записи)". On the client side, `src/store/console.ts` (zustand) implements the mirror rule - `setDefaultRuntime`, `saveTaskRuntimes`, `setUseGlobalSkills` all `set()` only after a successful PATCH/PUT. **The client store never leads the file.** Only UI preferences (`windowKey`, `autoRefresh`) are localStorage-persisted (`partialize`).
+The canonical example is `PATCH /api/runtimes` (set ★ default runtime) and the comment in `PATCH /api/skills` states it explicitly: "мутация состояния → запись файла (saveState) → ответ клиенту (клиент обновляет store только после успешной записи)". On the client side, `src/store/console.ts` (zustand) implements the mirror rule - `setDefaultRuntime`, `saveTaskRuntimes`, `setUseGlobalSkills` all `set()` only after a successful PATCH/PUT. **The client store never leads the file.** Only UI preferences (`windowKey`, `autoRefresh`, `theme`) are localStorage-persisted (`partialize`).
 
 ## Dashboard caching and performance
 
@@ -169,10 +240,20 @@ All routes are under `src/app/api/**/route.ts` (+ the `/dashboard/*` embed proxy
 | `GET /api/memory/runtimes?runtime=` | Runtime memory files (all or one runtime) |
 | `GET /api/memory/file?path=` | Read a file from allowed memory roots only |
 
+**Other routes**
+| Route | Purpose |
+|---|---|
+| `/api/design`, `/api/design/theme` | Design tokens and theme presets (see `docs/ui-kit.md`) |
+| `/api/providers`, `/api/providers/usage` | LLM provider registry and usage (see [Sessions, Skills and Providers](sessions-skills-providers.md)) |
+| `/api/update`, `/api/update/run` | Dependency and tool update registry and update runs |
+| `/api/monitoring/tasks` | Registry of console tasks (headless prompts, provider requests, OpenWiki and Graphify builds) |
+| `/api/memory/openwiki/workspaces` | OpenWiki wiki workspaces (see [Memory, OpenWiki and Workspaces](memory-and-openwiki.md)) |
+
 **Embed proxy**
 | Route | Purpose |
 |---|---|
 | `GET /dashboard/*` | Headroom dashboard embed proxy (literal upstream `http://127.0.0.1:8787/dashboard`, GET only, strips framing headers) |
+| `/headroom-api/*` | Companion proxy to the same Headroom upstream `http://127.0.0.1:8787` |
 
 ## Security and safety invariants
 

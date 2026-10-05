@@ -1,5 +1,5 @@
 {
-  "description": "Agent OS policy guard: pipes {tool_name, tool_input} to .agents/runtime/guard.mjs before tool calls; exit 2 blocks the call with the reason on stderr.",
+  "description": "Harness Guardrails: проверка вызовов до исполнения; exit 2 блокирует вызов.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,18 +7,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json node .agents/runtime/guard.mjs",
+            "command": "AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json GUARDRAILS_INTEGRATION=runtime:codex:PreToolUse bun .guardrails/src/cli.ts evaluate",
             "timeout": 30,
             "statusMessage": "Checking against repository policy"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "graphify hook-check"
           }
         ]
       }

@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:2d4c936aa7f866a0d9c1497a5c4eec1cce9204b0b9a68108b39ea587cc259750",
+  "claims": [
+    {
+      "id": "claim_e8a0d797016643a786eb93c56b126192",
+      "statement": "Skill effectiveness resolves as runtime override, then per-skill default, then the global useGlobal switch; the console stores these as overlays in state and does not edit skill files.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/skills.ts",
+          "version": "repo-file-v1:sha256:828227c728342529a3ba84b100fac32b2781c7baedf395bb24696165ec64ede6"
+        }
+      ]
+    },
+    {
+      "id": "claim_a82c6d657eec4acaa137da6a0d787659",
+      "statement": "POST /api/sessions/reply resumes a session in a separate headless process with a 120 second timeout.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/sessions/reply/route.ts",
+          "version": "repo-file-v1:sha256:ab0448ca348963a428c003290d51c30c125aa6f224398cfad35d9ffba3778d36"
+        }
+      ]
+    },
+    {
+      "id": "claim_9eed1e7746cf49b5b40f00c7419fb391",
+      "statement": "Session history modules exist for claude, codex, kimi and zcode.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/sessions/claude.ts",
+          "version": "repo-file-v1:sha256:2be37950f38c09aeb1a0c9715f8d1c88cd1c42fb54d037377478a1b17db1244f"
+        },
+        {
+          "resource": "repo://apps/console/src/core/sessions/codex.ts",
+          "version": "repo-file-v1:sha256:3dfd44bd51f4f876356873bfdd4ae7661f0c8dd43d1d9f2ed6acd479b4883bdc"
+        },
+        {
+          "resource": "repo://apps/console/src/core/sessions/kimi.ts",
+          "version": "repo-file-v1:sha256:ef6bfb9eadad6920601eee54ad404d875b5e237679f5fe5825d8c2d7ede762c5"
+        },
+        {
+          "resource": "repo://apps/console/src/core/sessions/zcode.ts",
+          "version": "repo-file-v1:sha256:70556aafacaa2bf975ac301a5ba957bb2bc945363f85eb1124f482a8406bf635"
+        }
+      ]
+    },
+    {
+      "id": "claim_2fd727c329f84f97b41422bef59aa90b",
+      "statement": "PROVIDER_PRESETS - фиксированный список из 12 онлайн-пресетов и 3 локальных (Ollama, LM Studio, vLLM); каждый провайдер сопоставляет четыре tiers (fast, standard, strong, subagents), а ProviderStatus принимает значения not-installed, not-running, empty, filled, error и active, причём для локальных пресетов состояние сервиса приоритетнее заполнения.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L11-L16",
+          "version": "repo-lines-v1:sha256:63648b8bc7fa04faaa117d194c285f3c5431464e18ec26b70b86a9efcc00431a:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzZiODU3YTk1ZjViNzE1MGMzMzg4N2FmMTYyMTk1NGYwNWE1NTRjZGMyZGU1MTM4YTNlNzc1ODk3MzM1OWI3YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU0ZDI5ZGM5NzU4Zjk3MmIyNDU3ODFiYjFkY2M5MjI4NDhkOGEwNWE2OWE2ODFlMzhkYzljNzRlMTVmZTQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjc3MTg1ZmIzYjVmMzIyMWM4ZTY2NWYyNDlhODk4ZWVjMDdjNWE3YzJlZDg2M2ZlYmExNzhjNjFhNDIzYjY1NyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2ViZTgxN2E3OTY1NTczOWM1MjlkNGRhZGQ4NzFkMWQxOTY5ODNhNWM5MTFiZTBjM2QwZWM5ODNmYTQ4NmY4OCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L137-L137",
+          "version": "repo-lines-v1:sha256:9cb8df4d55ebf2190a3c5f800dc55c7c132695582f0094aeb0d7dae5c6d697a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOWNiOGRmNGQ1NWViZjIxOTBhM2M1ZjgwMGRjNTVjN2MxMzI2OTU1ODJmMDA5NGFlYjBkN2RhZTVjNmQ2OTdhMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWNiOGRmNGQ1NWViZjIxOTBhM2M1ZjgwMGRjNTVjN2MxMzI2OTU1ODJmMDA5NGFlYjBkN2RhZTVjNmQ2OTdhMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGY2ZjJlMjQzMDlkYWRmY2Q0M2MxMGM3YzliOTc2NjQ0ODNlYTdiZDVlYTY0ODUzN2VkYjdmYmY5ZTZiYTkwMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjJmYTNlYTZlNjIwNTQ5ZmM5MGQwZjcyMmUxNDA1NDVlMjM3NmI1NDA1NWU2ZDg4YTVjMjE3ZTI5MjliOGNlNSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L174-L403",
+          "version": "repo-lines-v1:sha256:4dea79a32f3a1218e8835d778e9c9c3a26a5df210fd3802afc7d9a28400a9931:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMwLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhOGQ2OGMyOTdhOTQ5ZGE0MTM4ZTg2NmYyYWY5Mjk5NjEwNjA2ZTY3MTRlY2RlNDk1NjBkODlhY2RlOTZjZGJkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiMDJkMmMwZDZkYzVlNzRkOTJmYTE0YjkxZGJlYTI2NDA5MGJlYjM1ZmRiOTE4OGQ5YjM0MTE4MWRjZTlmNGNlIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzOGI3OTY0YmY5OWVmMzhjZGUyYWE2OTdjMjEyZTg1OTcyMGQ0YjM2MzhkOGVjNjk4MjRhZjY3ZWE2ZTlkY2M1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI5YWM1ZmNjMmFiNDdmNTZlMDhkZTU3MjU1NmRiNGY3OGQyY2MwMDUxZWE0OTU4ZjRjZTFhNTIwY2M0ZGIwNTlkIn0"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L462-L475",
+          "version": "repo-lines-v1:sha256:94a032d80e29563c61a14006dbaf4bd4ae6b7c41c8f630392c252d7c7cde7de8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmU5NTYzMGE3NzExNGM0M2YyMThhMWYzYjc2YjhjNWY0Y2MwZWI5M2M1ZjA2ZDQyNzE2NmVmODI0ZWIyOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMDQ5ZjljY2E5NTcyYjdiYjRmZDYxMjQ3OThkMzNhNWIzZmUwODk4ZmI3OGFlNWZlZDZkYmE1ZDA5M2M0ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFkN2UwNGI5ZWYwNmY2NTI2ODczNWVhMzk0NWNkN2U1Y2M4MTMwMzMxNTNmODUyODcyNDVhOTMyZmEwYjUwOWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_db056ffeaf3a48cd94dd09dda34852f8",
+      "statement": "OpenWiki and Graphify have their own preset lists, OPENWIKI_PRESETS and GRAPHIFY_PRESETS, in core/llmPresets.ts.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/llmPresets.ts",
+          "version": "repo-file-v1:sha256:f91c6a3619e800560825aef5c42aeb70e69453708fe1bec1fb6f9cef39ee5bc7"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e95d077a70a479fbde29c0fd21a3c36",
+      "statement": "Провайдер активен только после успешной проверки с заполненным ключом (isActiveProvider: verifiedAt плюс ключ, если пресет его требует); проверка - лёгкий GET списка моделей по механизму openai/anthropic/gemini, а изменение любого файла настроек сбрасывает verification.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/providers/route.ts#L140-L159",
+          "version": "repo-lines-v1:sha256:1539438dec43c2ffebbce7373c00bdc62329c430152f973fa0766a5d36576d76:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzM2Y1NTQ5N2U1NTIxNjgwMjRjMzZlNmY5NmE2Y2U0M2NmZjk2ODlhNGE3ODUwYjMxMWFlNzQ1ZmJjNjdiNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwZWJjYzBjMjkxM2IzMmM4ZjI3NjQxM2M5NTEyODNkY2Q1ODc3YzU3MWVjMDVlZDg5NDBjYzA0YjI1NmQ5MTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxNjZjY2M5MGFlZDc2ZmJmNWU0MDRlMjhlZGI2YzI0MGUzZGQwOTExNTIzOTM2YmY5ZGI0ZDM4MWJkOGZhM2IifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L482-L489",
+          "version": "repo-lines-v1:sha256:b071411a679151c9dc3a6d65b611ca5c6ac8fc03e6ecd241169eae0aaa377f91:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmY1ODQ4ZmI2NzViOTg0OGE4OGUwMzU4NWU4ZDA2NzE1NDMwM2M4MTZhYTM0MWFiZWI2NzVlNDZkZTdiZDA2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGY2MDFhYjE3MmE2ZDAxNjg2ZWI4NzhiZThhN2UyM2M0YTIxZjUyNTQ3ODlmN2FjZDU5OTQ5Y2VlMmQ2NTgyNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBhN2EyYWM3YTQ3YzFkZTY5ODhlZGIwZDhlYmEwMGVjZjliNzY5ZTVhYzcxNzllYmYxMWYxZTE5ODMxZmFkOSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L632-L677",
+          "version": "repo-lines-v1:sha256:1bdbaae1e2a813c13803e59c839b827a67f9cd73daef857c6f43a2c965e87960:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNkYzU2OTMwMDg4OWFiYmRmNDM1M2QxNjM1Mjk3ODllY2NhYzllODU3MzI5ZGNiMmNlMDc2ODdjZDhkNGI0OWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlOGI2ZDljMTY3YmU0OTE4MjM0ZGE5N2ViNzNhODVkNTVjODgwMmIyYzVlMDQyMTViNDI0MTAwMjY2ZDcwMjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViYzM3ZDdiNzU0YTJmNjFlODRkNDliYTllZGY0YjViMDlhY2UxOGQ1MTBhZmViZTI2YmEwZDNiNDg2ODg0YTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f27968d38764aa49b34c5920f6df9d3",
+      "statement": "PUT /api/settings принимает значения taskRuntimes вида provider:<id> только для активного провайдера (проверка isActiveProvider по записи из readProviderEntry) и defaultProvider для вкладки Агент; без выбора действует Ollama (FALLBACK_PROVIDER_ID = ollama).",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/settings/route.ts#L34-L76",
+          "version": "repo-lines-v1:sha256:b958076a7e31c81c7e9a9f2f7bcacade0e734a2ff7c4bf19ca0cf7543e0286ae:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiMDI5ZGE1OTVlNGRmMjAwOWQ2MmM5NWQ5MzI2ODI3YjUzNzU5YjRhZTczMzRiNmMyYzNhMDI1ZWIzZjYyNDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzYzRkNDczMGY1MTY0NTBhMTNmZTQ2ZWM3YTYyM2JlM2RhYmUxYjE1OTdkOGQ5YmQzYzE1NWFjNzBiZGVhMTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkMDI5M2RkYjkxZDZkMDUxMjEyMWI1OGNlYzY2OTI2ZGY3NjJjYTIyYzM0ODFjZTU3NGNkNmI3YjEzYjcyODQifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L16-L16",
+          "version": "repo-lines-v1:sha256:ae4d29dc9758f972b245781bb1dcc922848d8a05a69a681e38dc9c74e15fe413:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU0ZDI5ZGM5NzU4Zjk3MmIyNDU3ODFiYjFkY2M5MjI4NDhkOGEwNWE2OWE2ODFlMzhkYzljNzRlMTVmZTQxMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWU0ZDI5ZGM5NzU4Zjk3MmIyNDU3ODFiYjFkY2M5MjI4NDhkOGEwNWE2OWE2ODFlMzhkYzljNzRlMTVmZTQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzhhYTdhYWE2MzQ0MjRkZDY3NDQ4YTgzOTkzNGMxYTI0ZWEwMzVkMjM0ZTkyMzFiYjliNGRjZGZkMmQ4Mjc0YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2ViZTgxN2E3OTY1NTczOWM1MjlkNGRhZGQ4NzFkMWQxOTY5ODNhNWM5MTFiZTBjM2QwZWM5ODNmYTQ4NmY4OCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/state.ts#L114-L117",
+          "version": "repo-lines-v1:sha256:fe52f3a1abfe0f2338e56afddecafda9fd4a997ce5ef8cd77111286c051291a6:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBkZGIzMzU2MjA5MGExMzg3ZDA1NDBmNTllZWU5MzZiZDgyMTcwYmU3MzRlZTgxYzAyYmY4MGFhMWRjZGUwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Y2YzcyZmM4NDMwMzIwNzU3OGFkM2MwNjMyMTFiODQ1ZGI5ODkxMDFlOGU2NDJhODVmYzE3ZTExOWEyYjRhMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjAwMTIxNjQzNzEzMzhlODZmNzQ0ODg4NjM4YjRhOWJjNWUwMTUyYWJlNTIzOWRhMGUwNmNhYzE3ODI5YTU4NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5d3ec69c1669408288df925591befc97",
+      "statement": "Значение provider:<id> исполняет промты через core/providerRun.ts - один запрос к API провайдера (модель tier standard), ответ и ошибки пишутся в лог .agents/console/runs/<ts>-provider-<id>.log, задача регистрируется в реестре задач, usage уходит в статистику токенов.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/prompts/run/route.ts#L50-L72",
+          "version": "repo-lines-v1:sha256:324afafae2796da0f34b05f4672eda4e45d33bc50515f62cf109f3758bacdbcd:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0OTZmMjg1MTA1YWMwNWE0MWFlYWNlNmE5NTQyMTgyMjgzYTAzOGE0MjczYzNmYWFlM2Q5MmRhY2U0MWQxZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkYjNlN2NkMGMzYTYyMzA0NzY2ODE2MWQxMDRlOTlkODYyMDljYTNlNzc1NGEyNWIxMTlhNDkwNzg3ODA0MjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlkM2ViZTQ3YzQ1NTczNDAyZWNmOGJhYjE3NTA5MDNiOTQ5YjhkZmQ4NTBiNTQzNTJjYTQ3NmFmZDhiN2YxMGEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerRun.ts#L10-L17",
+          "version": "repo-lines-v1:sha256:89a6f8f38eaae5bcda2d15593982c13ea1f10e35bd4773795876d521d648d344:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWYzMjQwZWU5OGJmNGZmNjAzYTFlOGQwYjk5YTI3ZTdhNWJjOGU2YWIwYjVmZTI3NTQ3ZmU5OWJkMmIzMjY1MCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjZiNjRjMzEyZTA2ZDk0ZTdiMWNmODVhZGQ0MWQ2YmM4YjdkZDNmZjQxMDMwZmUwYmVjNGNiMTI0YTEyOWE0OCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerRun.ts#L179-L235",
+          "version": "repo-lines-v1:sha256:3b1b1a187b36d1bca5b1898a88c3f5b6cff79b44a5ea9fa4feff7b8fdfb17524:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzNTY0Mzc1NDliNjhkYTc3M2UyMmM3NDQ3MTRkZGRkYTIwZjhmMzk4M2VjMjU3MDc0ZWQ2ZTNhOTY1NjE2NDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmNjQ3NGRhZjE2ZDk0ZmIyMTFiOWUwMjViYjIwOWRmNzM5MjdlOGVkYTc3ZjliOTk0OWUzY2RmNDgxODY1OGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjMjY3ODE4ZDA3NmMxOThjZDc1YmU5NGY5NjRkOTYyODczNDI1M2M4NDViMzA4YmQ5OTBkZjdkMzgyNDU4YzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1YzcxNmRhYjdiZjQ3OWU2ZTZiOWE4ZWY0YzljYmRlNWU3YTFkZjhiZDg0OWI5MGM1OGI3NzM2MWE1Mzc4OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0e2f8cfe1ca24b2fb784b37caf8c5b55",
+      "statement": "POST /api/agent/chat с executor provider:<id> (или provider - провайдер по умолчанию) ведёт стриминговый диалог через AI SDK streamText + createOpenAICompatible только для OpenAI-совместимых пресетов; рантайм-исполнитель исполняет тот же диалог через headless-CLI с чтением лог-файла задачи.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L188-L242",
+          "version": "repo-lines-v1:sha256:38cd54a08246684761965683c09cdd13707f8c92ae92b9e072debca0907dabf2:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4NmU2ZjhhNzI4YWQwZDhlMDM1YzAyNzNkYTY1Y2YxZDkxMTBlMTJjOGNkNzU4ZDNhMDU2ODMyNGM4MzViMzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZDQyZmNkNWUxYTE5ZDZiNThkZTY3MmY3M2NkMDFkZmI1YjQ2MmY3MjE5YWJlNjViNDM0YzU0MTc1ZjQzNDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkMWYzYTM0NGEwYmJlZDhkYWI1NDdlZjQyOGI3MjFhZjRiZjg3NzlmMTZjODM2NjcyOTJjMWY3NDUyODgxMmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2YTIyYzVjYzMyNzNkYmNjZGQ4ZDUwOGViMTM1MDlmN2FjYTdjOWQ4ZGM2MjJjYjQ5ODY5YzliMWNiYTY3ZWUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L311-L343",
+          "version": "repo-lines-v1:sha256:c48df71cf26503c3030f8bdefac3483e442c76c929ce3f67149432cda8e5031f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2MTVhM2E4ODIxNTU1NjViYTQ1NjgxM2RmOThhNjg1MDBjZDZhYTNhOWQ3MGQ4YTEzNjY3Yzk0MDMzMzYwNTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMTgwZmMyY2Q1NDY4MTk3MTkxNWYzZDY2MWZkNWFhY2UzNjA0ZTZmMzU0OTc4NTkwOWRhNWRjMjk3OGRhZGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNzI0NGY2ZjE5YjQ4MDdjMmU0YWEwYWUxYWY1YWNhNTM5OTQ0MjI0OWZlYmFkZjA1M2Q2OWU2NGNiMDEzM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L33-L44",
+          "version": "repo-lines-v1:sha256:797632f6de1f730fafc8ee8b518f297a6a39d559d965ec0a5855df2556a369c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwZmRhZWExY2I0MTdhYzEyMGIxMTZjODE4NTBmZWM0MWY4YzA3ZTgxODIzODU2Y2I5YjdmOGMyZjc1NTIxMDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE1OTdmOWQ4NmVlMDljNjdjZmZlYjMwMTE3MzdkYzczYjlmNzA0OGRjZjkxMzA2NzliMjY2YTlmZmMyNWU0NjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYjQ5ZTVmNzdhMDNiOTBlOGFmYjQyYzA2MzY5NDZjNTBhYzUwMzUzMjkxNjgwNGExM2FkODg4Yzg0MTI2YWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c70b947953ca47efaa1de9276255a013",
+      "statement": "export-langgraph пишет активный провайдер со статическим ключом в .agents/console/langgraph.env (LANGGRAPH_PROVIDER, ключ под родной env-переменной, OPENAI_BASE_URL, LANGGRAPH_MODEL_* по tiers); пресеты с OAuth 2.0 экспорт не поддерживают (langgraphSupported = false).",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/providers/route.ts#L255-L272",
+          "version": "repo-lines-v1:sha256:993f5ff3d701c58b89c95215a6cee254c86c956aa84babf409e1066a8f10eae4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlODcyNTYxOWQwZmI5ODVjODVhYjI2MzlhOWU2NDUxYzM3MmFlMjljYjM1ZTZlMjMwNTRiN2VmYzUyNjlkODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmMmViYTZmY2VkZDdjNGQ3MzAxNDllYjBkZDk3MjU2MTU0Y2YwNzNkMjFhOTIzMjdlN2UwYWExMWRkM2ZmZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkZmFjOTk2OGU2NGFkY2IzOWRkMzdlNmVlOWE4ZjcwYzg0MDE2MjMzNTVkYzM5NzcxZjQwMDJjMTMwZTllN2UifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L506-L530",
+          "version": "repo-lines-v1:sha256:471bbbdc94edf58493533d85ad85dbd8daaf327ec507043866c0fdcf592461cb:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkMTQ0YTQ5OWNlMWJlNTFjNDQ0NGU2MGU2MWFlMjE1ZDg3Mjk1ODdmZmYyMzA1MTlhNGYxNjk0YWVjNjZkNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3YTFlNDhjYmI1ZmE1NzM3MzkxYzMzNDIyOWIwMGIxZWRmMjg3NDJmZTFlZTM3NmM2N2FlZTMxMDIyODU1YTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZjN2U4MWQ2MWNjOGQ3Mjc1NWY4N2JhMDczNWQ2MDg5NTgyYjBhMmQyMTVmN2MwNDg0NDVkZGVhM2UyNjgyNjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ce82ce07f463477f8557dc00ad2e3081",
+      "statement": "Настройки провайдеров - файлы .agents/providers/<id>/: settings.json версионируется, key.env и ca.pem вне git; результат проверки - машинное состояние в state.json; запись собирается readProviderEntry из файлов и результата проверки, недостающее - из пресета.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/providerSettings.ts#L149-L170",
+          "version": "repo-lines-v1:sha256:9d16cd296564858785e69d33c3ea4ff93d7036c73c52bb6c4a7eab2e8b2deac3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0MzU1MzA2Yzk2NGRjMDNkYjYxZDVmYThjZjMyNTJiNDllNDc0YzU2NzliOTc1ZjhmMDdkMTU3NDRhZTUxYjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRkYmQzNzUyMGVjZTZkZGYwMWJjODNjNzE3NzA2ODJmNTE0MzY3ODA4NTY3NGVjMzZjOGMwMjIxZGY0YzZkODEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjNTY0ZThiOTU4MGE0ZTQ5OGU5NGZmYWFhNDUxNTZlN2FkN2E2Y2U2MjdkZTBlZDU0NDJlYTg2MzQ0NTM0MzYifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerSettings.ts#L16-L26",
+          "version": "repo-lines-v1:sha256:5e5760d12f8bd0ab6e318657e1855ab30b76a650aa5eccaf12264afa43411dbd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3MmE0MjkzODJiMmUxNDcxOGUwZTM3YjA1NzBhOGExNzAyOTkxZmNkODQ5OGNkODQwNjBhOGJmNGYwNTAxN2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkMGZiNTc2MTU1ZWMwOWY0YjYxZDM5ZThhZWVhNjBhOGQ1NGVjODIxZGEzN2YwODcxZWEwMDFmNjYxODE5ODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg5M2VkNTgyMmQ3M2FiZGNhNzY0NDBlNmU5MDlkMmI1OTBkNDNiZDJjOGJkODM4ZTI0ZGNkNWU1OWNkZmM1NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L109-L115",
+          "version": "repo-lines-v1:sha256:1ff2d7dc8f91ced2e9aff9dc42db788449efca85ce1991b731efebfdadf64f8a:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTdlMjAyY2YzYTdlOTJlN2Y1MDZkZjNmNDYzNGZjM2M2ZGQzOTFlZTE0NzUwNjhlOWQ3MDZkYzc2NTkzNTY0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjBmODYwODRlMTg5OTUyYTE4N2NlNzRmYjM1NTQ4MTZmZjdmMmQzN2E3ZTU2YTVmM2MxMmQ4ZjMwZDhjZDI3MSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_6baad6647177444fbb7bbcf952e90e90",
+      "statement": "Пресет GigaChat со схемой auth.kind=oauth2 обменивает ключ на короткоживущий access-токен в providerAuth.ts: POST auth.tokenUrl с Basic-ключом и scope в form-urlencoded теле, токен кешируется в памяти процесса до истечения (запас 60 с), после HTTP 401 кеш сбрасывается и обмен повторяется один раз (withProviderAuth).",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/providerAuth.ts#L168-L185",
+          "version": "repo-lines-v1:sha256:7e34b09c102f2012fcde5ef33257b2c1fc4cd3da3b6091bdbc25dcfec6c931f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjYTU3NDVmYjYzYTQyZWRkYTliNDA3YmZiNWQzY2M0NjY5ZjczOWM3NjA4NjAyZWU3MTFjODEzZDY5NjIwNmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxMWIxMzJhODljYWZiNjVlNTQ4NTQ5NDljZDU2MzBiZTNiZWJhNDlhNDgzMDgyMjc0YWZlNmNmNWI5YmZjOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerAuth.ts#L6-L12",
+          "version": "repo-lines-v1:sha256:b7e6fb6d487037f857b5e2e24d7356e3716f71accbec8824205b7667f4c01d19:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGNmOGU4ZWE3NWI1YTM4ZThhYTUyYTBjOGIxZDllODE1YjcwZGY3YzFiMmEyY2QyZjAzZjFkNWRkN2Q4ZDY0MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjMzYTI0MDVlMDc4MjNkYTQxZmI5MmUwMTI2MjZlZTFmYmUwMzM3YTg3YmJkYWI0ZDM1MDYwMTRlN2E4Yjc5OSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerAuth.ts#L71-L120",
+          "version": "repo-lines-v1:sha256:2de593643139196bec31965229c046da42ca40508e04e598ef3629f409fec7f0:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0ZWY4MTc1NTA1MWFkOGRhOWE0YjhhYjM2ZDRlNWEwMzBmNDMyNDQyNjhjYTM3ZDU5ZTMwN2U4MGNmN2RjNmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4c8a2ba96c9c46c6b789caa680bf4ac7",
+      "statement": "Поток skills.sh: поиск bunx skills find с разбором ANSI-вывода и кешем 60 с (skillsFind), при меньше 3 результатов - HTTP-fallback на API skills.sh; детали - цепочка снапшот реестра -> страница skills.sh -> GitHub -> DeepWiki с аудитом и allowlist-хостами; установка - bunx skills add -y как job с SSE-стримом, удаление - bunx skills remove -y с ручной зачисткой.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/skills-sh/search/route.ts#L12-L48",
+          "version": "repo-lines-v1:sha256:a53fff85fdda01867e2a61d4e16ccde47bdcac131661bcf6ee38d922a0a99013:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNhM2U0NmY5NDI3NmI2ZjZmNGVkMWYwMmFmNzhiZWY2YTJlZTFjNDM5ZGQ1NTg0Yjk3Mzk0ODMxMzIxNGQyYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImYwM2YyYmZmZTFlMmExYjkwMDk3NjUwNjc4NTk0OWE0MDE4M2ZmNDg5NjFmMjBkNjRkOWRhNjczMjUxN2E5NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/installJobs.ts#L36-L76",
+          "version": "repo-lines-v1:sha256:73b50f09469300a1d6a0de06ed7b3158eab93270e41d8ee16932cc844398cdbf:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiMmQyMjE1ZGNjMzVlZThkNGEwNWIxMzNlZGVkNGM2ZGQxYmM1ZmZkMGQ4NTYwYmQ3OGUxNzZlNTk5NzM5MGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVkNGU4MmY2NDAwYjAxNWQ2OGQ1M2E5YjgzMzZhZTBiODgwYjFhNTQ3OGM1N2RlNmM0MzNiYmQ4YWJjY2RjYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg1ZTAzZDZkODViNTI5MDEzYjFjZGI4NzgzOTdkMjcyZWNjOGM4MmZmZDg4YTA0NTdmYTQ0Yjg4NDU1NmUwN2EifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/skillRemove.ts#L85-L106",
+          "version": "repo-lines-v1:sha256:2c98747e0676d096af3a34df75daef840dbd934f989454f240c4e87e9965099b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhMWMwZTE4NWEzZDhjYjVkZGNlMDJlZDVmZTQ3OTMxYTgyMTNkYWY2NmIwY2QwNWNlMGVhODk5NTJmY2I1MjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/skillsFind.ts#L31-L76",
+          "version": "repo-lines-v1:sha256:b9baf4f43e76aa67e8cab845c898e863098d026746842b46a7e96a01df8901a3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjMGJhZTgwMzY2NTQ3Zjc2Y2MzODk4MmM4Yjc2ODYxM2M2Mjk3Yjg4NWE0YWQwYzdjMTJkOWU0NTkxNDdjNzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhYjdhNmEzNzZlZjdiNDI4MjI2MDBlMDg5Njg0NjU2ZWZjNTgxNTgyZWFiZmU1ZmUxMGNkNjBjMTQzZWJjYmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMThmZTQzMDk2ZDYyNTc1YjFiMmVhOTU0NmY4OTJjMDIzYWVlZGJjMGI0Zjc4YzY0NzYwNWM4NjAyNTg4NzkifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/skillsSh.ts#L145-L227",
+          "version": "repo-lines-v1:sha256:149d2cfc25046d91d74abd1352c96f86f5e76dc529d17e46127bb2ad12c8bf0e:eyJzZWxlY3RlZExpbmVDb3VudCI6ODMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwMjg0YWFjNWE2MDc0YmM2ZjViYzdmNjU3ZDI1NjQzZWQwYWJhNDQzZmUxYzNmMTA3NmI5YTZiNjc4YWM0NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdhMWQxNWVkMjVmNDY4ZmQzN2FhMGUxNmRiZjQ3Zjk5YjUwYmJjNjJlMmY5M2RjODFkMWNkOTdkODYzM2YxY2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_680e655aef2c4f35b35e207233ca6756",
+      "statement": "Переключатели навыков - оверлеи в state.json (файлы навыков не редактируются): effective(skill, runtime) = runtimeOverrides ?? defaults ?? useGlobal; мутации идут через PATCH /api/skills (useGlobal | default | runtime).",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/skills/route.ts#L56-L85",
+          "version": "repo-lines-v1:sha256:c933da4a97ed89ef808604aaf9536aed97cf9998468fcb021aab32199da30422:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI0Yzg0M2YzMTc5NjAzY2RhZWIyYzNmNGExNGIyMDQyOWFkYmQzYTdiYjJhYzhlMzU5OWUxN2JjOTY1ZTM4MTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ZTk1YjVmNGM4NGIyM2VhNDU0ZDA4ZGJmN2E3Y2Y2NWY5NjYzZDQ1OTBiYjUyYTFiZThhOTdhOTAxN2JjOWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/skills.ts#L5-L25",
+          "version": "repo-lines-v1:sha256:507574121bc354186309acd25a4e1bd372770b463849412ea3cd0dec74150c42:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlZDQ4NTZkZjcxMmNjMWVjNjExOWE2NzBlNDQ1M2NiMGQ5ODIxNGQ3YWYxODk3NjZmNjRlYjg4NjY1YzgzMjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5NjM5M2M1MDk1ODY0MWUyZGQ4MTcwYzZlMjRkN2NlNDg0YWJmMDRjMTE4Y2U1YTk1MDhhMmZmODk0YzY3MDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cbd11b0aee814ad999636aee15c9613a",
+      "statement": "Сессии читаются из on-disk источников: claude (~/.claude/projects/<slug>/*.jsonl, слаг - путь папки), codex (rollout-*.jsonl, cwd из session_meta), kimi (session_index.jsonl + state.json, workDir), zcode (model-io-логи, корреляция с .zcode/plans); opencode и cursor на SQLite не поддерживаются.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/sessions/claude.ts#L5-L60",
+          "version": "repo-lines-v1:sha256:2ddebb134b3a9e47852c56de1616ff66a51921197b4638a01347e997a8b91316:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyYzdiNDEwZTgxNTllYWQ3Nzk3YTM0OTcyNzliZTdjYjU2Y2IxNTgwZTQzMDQzN2RkYmRjZmI1OTgwYTE1MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwODUxNDRmNGMwY2MyNGFiMWRjZWQ0YTdiMjBlYWE2ZWE0OTIyYTg2MDM2ZDQwZDI2ZWEwNWU5NDFkYjU0ZDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFmMDg2YTgzZjcyZTc4M2I5NDVmYWY1Mjk2NGViNzczZmFkYjVhMTgxZjFlOTIzM2JhNWUwMWVkZTVlNzZlNGUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/sessions/codex.ts#L11-L59",
+          "version": "repo-lines-v1:sha256:8c6698ffa66d670379fa5e03e79ad0d4750a63933ee2c3b4db89c638f471f155:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNjNkNWIyMTgxNzBlMzZlMGE3NzgyY2NiZjFkYWJkMWMzYzNmYzY0ODBlYWFkZmIyYjk1ZmM5ZWNiNTNiMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjMjYzOGQ2ZDUwZDgzNjg3NzdhYWYyYzIxNzkwNmQ3NmY4MDVmOTg2MGZhNTBjN2M5NGMyYWJlMGIxZDRiM2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5YWQxNzRiN2VhNjczNGVlYjU3ZDMyZTg2NzMwZjcxMzMzNDA2OWU4NGEyNTY2MzFmY2Y5NjRkMzUyOTY0ZTcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/sessions/kimi.ts#L10-L67",
+          "version": "repo-lines-v1:sha256:f3d17a5d195f521e6878dea15f7e28b8f6a02890bb19ac885ef6d0fb48b0b6f1:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg2NGQyOWU2NDYyMjc3YmFlYWE1MjRmMGZmN2Q3NGI3MzRiMTBlNGJlNjFmYzM3YzIwY2MxMTVhZWY5OWRmZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhNDA1NTg2MzRmYWJkM2MzZWY5NmZjZjYyY2EzOTZmMjMxMWVmZGU4NjNjZDQ3MjNiMTI2ZmRkNzRkNTRlYjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc2ZDViZmYyODFhMzgzMDVhZjIwMTg4YjEwYWIzZDA1YWQ1ZjdkZjFjNzhmZTM2YjgxYjJlZWFkYTQ5MDAyZDcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/sessions/zcode.ts#L13-L45",
+          "version": "repo-lines-v1:sha256:d75ce44a44008b1c11acd9ff6000a7310cae7809474b34d87cc55f468fbdf541:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQwNjNkNWIyMTgxNzBlMzZlMGE3NzgyY2NiZjFkYWJkMWMzYzNmYzY0ODBlYWFkZmIyYjk1ZmM5ZWNiNTNiMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5ZTQ5NDg4OGUzNThhZTU0YzU3ZmE4MzVlYjBjYzkxMjJkODBkZDEzODI3ZjUyMDc1N2U4ZDE4YzU3M2Y3MTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiMWVmZTlmNDhkYzViYTM5MDA3MWNlMjkzMjg4N2FmODZmNDVkZjMzMDgzOGFkMWI5ZjE4Nzc1YjNjZWM5YTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cf85274078ba4507a3f61f970d901e64",
+      "statement": "POST /api/sessions/reply продолжает сессию отдельным headless-процессом с таймаутом 120 с (REPLY_TIMEOUT_MS), команда берётся из adapter.replyCommand (claude -p --resume, codex exec resume, kimi --session -p, opencode run -s, node <zcode-cli> -p --resume); у cursor headless CLI нет.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/sessions/reply/route.ts#L7-L28",
+          "version": "repo-lines-v1:sha256:f7c168c28da2ee6305c95f118f8727f77551389621cc94f3b0d67ffb172e8552:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5M2FhZmMxZjQ3MGZjNmU1MWMwM2FmZWYzYjc5Yzc3Y2JiOTgwNGRjMzEyOTM3Yjg3N2FhMGRjNzU0ZDY3ZTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZmVhOTE5ZTM4OTQ4YTY0ZjQ2NWI2ZjYxZWQ1ZWRlZTA4MTFiZjNiMWQ2NmYzZGZmYzRlZjNjODc1NTIzZTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5ODcyYTIxOTE3ZTZkODA2MTRkNzI1ZmIyYjgzNGI5MWE2NWYyZTkxNmRjMjI1NDM1ZmM3ZWIxMzAwYmQ1MzIifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/runtimes/claude.ts#L70-L70",
+          "version": "repo-lines-v1:sha256:1d98b8659a3e17eb78614d1af4e6b567a03381ace89d70bdce6ce152555e4cba:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWQ5OGI4NjU5YTNlMTdlYjc4NjE0ZDFhZjRlNmI1NjdhMDMzODFhY2U4OWQ3MGJkY2U2Y2UxNTI1NTVlNGNiYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMWQ5OGI4NjU5YTNlMTdlYjc4NjE0ZDFhZjRlNmI1NjdhMDMzODFhY2U4OWQ3MGJkY2U2Y2UxNTI1NTVlNGNiYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDUxNDY5OTJkZjdmMDVhNWYxMmU0YjI5MDM5ZTdmZTUzYjBjMzM0Y2FmZTRjZmYzYmVkNmQ1NzRkMWI4YWY4MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTAyZjJjN2U2YTQwZjU1MjU5M2JmMThiMzE3Yzc2Njk2ZDJkZDhlZjQ2MThlN2JmYTIxZTcyNjQ3ZTMzNTZmNSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/runtimes/zcode.ts#L101-L101",
+          "version": "repo-lines-v1:sha256:cec352a23f78c05e8cedb0ca9e37624ea9030cc0a8c6b4f86b81fad5cfd25980:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2VjMzUyYTIzZjc4YzA1ZThjZWRiMGNhOWUzNzYyNGVhOTAzMGNjMGE4YzZiNGY4NmI4MWZhZDVjZmQyNTk4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiY2VjMzUyYTIzZjc4YzA1ZThjZWRiMGNhOWUzNzYyNGVhOTAzMGNjMGE4YzZiNGY4NmI4MWZhZDVjZmQyNTk4MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDk3YzI5NDJkOWZlMTYyNmE2NWI5ZjlhNzNjODI2YTcwOGJjMDQxMWQyZDhmMTIyMDNjMjBmMmZiMDE0MzZkYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDFlYmI5N2RkYTRhYjJlMDgxOTEwMjY0ZDk2YTFlZDFlZmRiZTg0Y2Y0YWIzNTBlNzRjZjZhMWIxMzJiNzFjNiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_260c6225ee7c4c2fa6ddab29431f9cce",
+      "statement": "GET /api/providers/usage отдаёт сводку из .agents/console/provider-usage.json (providerUsage) с источниками записей provider-run, agent-chat, runtime-session и tool-ledger; внешние источники (транскрипты, ledger'ы) собираются лениво не чаще раза в 5 минут, вызовы консоли пишутся сразу.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/providers/usage/route.ts#L11-L27",
+          "version": "repo-lines-v1:sha256:d727b162431a830b1d6924096f28a3612cb5c9f89dbd4b3fc4b651404f4e9f11:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiYWZiYmVhNWZhZGI1NDI0MjYxMWQxMTQxZTBiYjc1Y2YzY2ZjOWQ5MDRmYjU1YTBmODg5MDdjOGQ4MTQ3YjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerUsage.ts#L5-L18",
+          "version": "repo-lines-v1:sha256:3cc5f5661c8fa3122d4ecf33b9c51acebef0bb2cad5ac519b9827434f8d7a781:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiZmMzY2JmOTlkMzhlZmNlYjY4YWU3NDI0NmZjOGE5NDkxM2JhODBkZTc0YjY3N2NiYTg3Mzc4NjFkYmRiZTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhmZTllYTMyNzMxYzc4MTJmOTY4NzJlMzU1ZGFjZGUwMTE3MzAwMjBjM2Q0YTE2ZWYzOGI1MmE2OWViYzlmYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxNDAzZGU1NzM2NWQwYjliZmMxM2NjZTk0ZjJmMTUwZjZmZTg5YmRkMWYzMWQzMGY5ZTRlYTc3NDdmZDc2NTIifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.1",
+    "at": "2026-10-01T21:39:07.719Z"
+  }
+}

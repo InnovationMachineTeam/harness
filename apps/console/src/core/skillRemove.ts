@@ -1,18 +1,23 @@
 import { spawn } from "node:child_process";
-import { rm, readFile, writeFile } from "node:fs/promises";
+import { mkdir, rename, rm, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { runSkillHook } from "./skillHooks";
+import { removeSkillLink, skillLinkPath } from "./skillLinks";
 
 /**
  * Удаление установленного harness-навыка: `bunx skills remove <name> -y`
  * (чистит .agents/skills/<name>, записи skills-lock.json и симлинки в
- * каталогах агентов). Если CLI не справился - ручная зачистка тех же мест.
+ * каталогах агентов). Если CLI не справился - ручная зачистка тех же мест:
+ * канонический каталог удаляется, симлинки рантаймов снимаются
+ * (только указывающие в .agents/skills), реальные каталоги уходят в бэкап.
+ * Перед удалением выполняется hook remove из манифеста навыка, если задан.
  */
 
 const ANSI_RE = /\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07/g;
 const REMOVE_TIMEOUT_MS = 60_000;
 
-/** Каталоги навыков агентов в репозитории (симлинки из universal .agents/skills). */
-const AGENT_SKILL_DIRS = [".claude/skills", ".cursor/skills", ".codex/skills", ".opencode/skills", ".zcode/skills"];
+/** Каталоги нативных навыков рантаймов (симлинки из канонического .agents/skills). */
+const LINK_RUNTIMES = ["claude", "codex", "cursor", "zcode", "opencode"];
 
 export function isValidSkillSlug(name: string): boolean {
   return /^[A-Za-z0-9][A-Za-z0-9._-]{0,80}$/.test(name);
@@ -64,12 +69,21 @@ async function pathExists(p: string): Promise<boolean> {
   }
 }
 
-/** Ручная зачистка: каталог навыка, lock-файл, симлинки агентов. */
+/** Ручная зачистка: симлинки рантаймов, канонический каталог, lock-файл. */
 async function manualCleanup(repoRoot: string, name: string): Promise<void> {
-  await rm(path.join(repoRoot, ".agents", "skills", name), { recursive: true, force: true });
-  for (const dir of AGENT_SKILL_DIRS) {
-    await rm(path.join(repoRoot, dir, name), { recursive: true, force: true });
+  for (const runtime of LINK_RUNTIMES) {
+    const outcome = await removeSkillLink(repoRoot, runtime, name);
+    if (outcome.errors.some((message) => message.includes("занят реальным каталогом"))) {
+      // расходившийся реальный каталог - в бэкап вместо удаления
+      const linkPath = skillLinkPath(repoRoot, runtime, name);
+      if (linkPath) {
+        const dest = path.join(repoRoot, ".agents", ".tmp", "skill-links-backup", `${runtime}-${name}-${Date.now().toString(36)}`);
+        await mkdir(path.dirname(dest), { recursive: true }).catch(() => undefined);
+        await rename(linkPath, dest).catch(() => undefined);
+      }
+    }
   }
+  await rm(path.join(repoRoot, ".agents", "skills", name), { recursive: true, force: true });
   const lockPath = path.join(repoRoot, "skills-lock.json");
   try {
     const lock = JSON.parse(await readFile(lockPath, "utf8")) as { skills?: Record<string, unknown> };
@@ -90,6 +104,9 @@ export async function removeHarnessSkill(repoRoot: string, name: string): Promis
   if (!(await pathExists(skillDir))) {
     return { ok: false, detail: `навык не найден: ${name}`, output: "" };
   }
+
+  // hook remove - до удаления каталога: команды работают с содержимым навыка
+  await runSkillHook(repoRoot, "harness:" + name, "remove");
 
   const cli = await runRemoveCli(repoRoot, name);
   let gone = !(await pathExists(skillDir));

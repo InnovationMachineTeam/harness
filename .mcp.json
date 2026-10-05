@@ -1,9 +1,5 @@
 {
   "mcpServers": {
-    "deepwiki": {
-      "type": "http",
-      "url": "https://mcp.deepwiki.com/"
-    },
     "webmcp": {
       "type": "stdio",
       "command": "npx",
@@ -51,6 +47,55 @@
       "command": "qmd",
       "args": [
         "mcp"
+      ]
+    },
+    "openwiki": {
+      "command": "openwiki",
+      "args": [
+        "mcp",
+        "--host",
+        "claude"
+      ]
+    },
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
+    },
+    "open-design": {
+      "type": "stdio",
+      "command": "od",
+      "args": [
+        "mcp",
+        "--daemon-url",
+        "http://127.0.0.1:7456"
+      ]
+    },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ]
+    },
+    "deepwiki": {
+      "type": "http",
+      "url": "https://mcp.deepwiki.com/"
+    },
+    "excalidraw": {
+      "type": "http",
+      "url": "https://mcp.excalidraw.com"
+    },
+    "google-design": {
+      "type": "http",
+      "url": "https://design.googleapis.com/mcp"
+    },
+    "stitch": {
+      "type": "stdio",
+      "command": "stitch",
+      "args": [
+        "mcp",
+        "start"
       ]
     }
   }

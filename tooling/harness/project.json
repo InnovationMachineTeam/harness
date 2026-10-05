@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "test": {
+      "command": "bun test tooling/harness",
+      "options": { "cwd": "{workspaceRoot}" },
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*"],
+      "outputs": []
+    },
+    "validate": {
+      "command": "bun tooling/harness/src/cli.ts validate",
+      "options": { "cwd": "{workspaceRoot}" },
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*"],
+      "outputs": []
+    }
+  }
+}

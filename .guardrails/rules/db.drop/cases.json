@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-psql -c 'DROP DATA",
+    "tool": "Bash",
+    "input": {
+      "command": "psql -c 'DROP DATABASE app'"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-psql -c 'DROP TABL",
+    "tool": "Bash",
+    "input": {
+      "command": "psql -c 'DROP TABLE old'"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-dropdb app",
+    "tool": "Bash",
+    "input": {
+      "command": "dropdb app"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

@@ -21,6 +21,8 @@ export interface PluginDef {
   mcp: PluginMcpContribution[];
   /** Навыки плагина (справочно: имена harness-навыков/пакетов skills.sh). */
   skills?: { name: string; description?: string }[];
+  /** Хуки жизненного цикла (install/remove/enable/disable); cwd - обязательная рабочая папка. */
+  hooks?: import("./lifecycleHooks").LifecycleHooks;
   /** Источник: builtin или marketplace name. */
   source: string;
   url?: string;
@@ -33,6 +35,8 @@ export interface McpPreset {
   description: string;
   transport: McpTransport;
   docsUrl?: string;
+  /** Категория каталога; "design" - инструменты дизайна для панели вкладки "Дизайн". */
+  category?: "design";
 }
 
 export const MCP_PRESETS: McpPreset[] = [
@@ -51,8 +55,27 @@ export const MCP_PRESETS: McpPreset[] = [
     docsUrl: "https://deepwiki.com/",
   },
   {
+    name: "figma",
+    displayName: "Figma MCP",
+    category: "design",
+    description:
+      "Официальный удалённый MCP Figma: чтение макетов, переменных и кода для design-to-code; запись на канву. Авторизация OAuth - при первом вызове в рантайме (/mcp).",
+    transport: { type: "http", url: "https://mcp.figma.com/mcp" },
+    docsUrl: "https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Figma-MCP-server",
+  },
+  {
+    name: "open-design",
+    displayName: "Open Design",
+    category: "design",
+    description:
+      "MCP-сервер Open Design: файлы и артефакты дизайн-проектов агенту (list_projects, get_artifact, …). Требуется CLI od из desktop-приложения Open Design (Настройки → Инструменты).",
+    transport: { type: "stdio", command: "od", args: ["mcp", "--daemon-url", "http://127.0.0.1:7456"] },
+    docsUrl: "https://github.com/nexu-io/open-design",
+  },
+  {
     name: "webmcp",
     displayName: "WebMCP",
+    category: "design",
     description: "Соединяет сайты, встроившие виджет WebMCP, с агентом (webmcp.dev).",
     transport: { type: "stdio", command: "npx", args: ["-y", "@jason.today/webmcp@latest", "--mcp"] },
     docsUrl: "https://webmcp.dev/",
@@ -60,9 +83,37 @@ export const MCP_PRESETS: McpPreset[] = [
   {
     name: "playwright",
     displayName: "Playwright MCP",
+    category: "design",
     description: "Автоматизация браузера: навигация, клики, формы, скриншоты.",
     transport: { type: "stdio", command: "npx", args: ["-y", "@playwright/mcp@latest"] },
     docsUrl: "https://github.com/microsoft/playwright-mcp",
+  },
+  {
+    name: "excalidraw",
+    displayName: "Excalidraw MCP",
+    category: "design",
+    description:
+      "Официальный MCP Excalidraw: вайрфреймы и hand-drawn диаграммы в формате .excalidraw. Удалённый HTTP-сервер, ключи не нужны.",
+    transport: { type: "http", url: "https://mcp.excalidraw.com" },
+    docsUrl: "https://github.com/excalidraw/excalidraw-mcp",
+  },
+  {
+    name: "google-design",
+    displayName: "Google Design MCP",
+    category: "design",
+    description:
+      "Google Design MCP: генерация цветовых схем, извлечение бренд-цветов из изображений, поиск шрифтов Google Fonts и Material Symbols. Ключ Gemini не обязателен; при необходимости - заголовок x-goog-api-key (шестерёнка на карточке сервера).",
+    transport: { type: "http", url: "https://design.googleapis.com/mcp" },
+    docsUrl: "https://developers.google.com/design-mcp",
+  },
+  {
+    name: "stitch",
+    displayName: "Stitch MCP",
+    category: "design",
+    description:
+      "Официальный MCP Google Stitch (CLI @google/stitch, stdio): Canvas-проекты и экраны, генерация вариантов, синхронизация DESIGN.md, захват живых маршрутов и локальный UI-ревью. Требуется авторизация CLI: stitch login (Google OAuth) или переменная STITCH_API_KEY.",
+    transport: { type: "stdio", command: "stitch", args: ["mcp", "start"] },
+    docsUrl: "https://stitch.withgoogle.com/docs/cli/mcp-and-skills/",
   },
   {
     name: "serena",

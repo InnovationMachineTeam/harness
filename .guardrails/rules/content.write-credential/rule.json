@@ -1,0 +1,21 @@
+{
+  "id": "content.write-credential",
+  "title": "Жёстко прописанный пароль или ключ",
+  "description": "Предупреждает о присвоении длинного литерала полям с именами password, secret, token, api_key.",
+  "category": "secrets",
+  "severity": "high",
+  "effect": "warn",
+  "threats": [
+    "secrets"
+  ],
+  "remediation": "Читайте значение из переменной окружения или конфигурации среды.",
+  "limitations": [
+    "Правило не различает тестовые и действующие значения; тестовые фикстуры дают предупреждение."
+  ],
+  "status": "enforced",
+  "owner": "platform",
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed"
+}

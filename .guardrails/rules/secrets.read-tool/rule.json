@@ -1,0 +1,19 @@
+{
+  "id": "secrets.read-tool",
+  "title": "Чтение секрета инструментом",
+  "description": "Блокирует Read, Grep и Glob по секретным путям.",
+  "category": "secrets",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "secrets"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Читайте .env.example или запросите одно значение.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-docker compose dow",
+    "tool": "Bash",
+    "input": {
+      "command": "docker compose down"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-docker compose ps",
+    "tool": "Bash",
+    "input": {
+      "command": "docker compose ps"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-helm destroy demo",
+    "tool": "Bash",
+    "input": {
+      "command": "helm destroy demo"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

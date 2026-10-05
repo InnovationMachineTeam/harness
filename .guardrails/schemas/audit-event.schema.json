@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["schemaVersion", "decisionId", "at", "policyDigest", "effect", "integrationId", "inputDigest", "latencyMs", "ruleId", "malformed", "exceptionId"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "decisionId": { "type": "string" },
+    "at": { "type": "string", "format": "date-time" },
+    "policyDigest": { "type": "string" },
+    "ruleId": { "type": ["string", "null"] },
+    "integrationId": { "type": "string" },
+    "effect": { "enum": ["allow", "warn", "block", "sanitize", "require-approval"] },
+    "runtime": { "type": "string" },
+    "inputDigest": { "type": "string" },
+    "reason": { "type": "string" },
+    "latencyMs": { "type": "number" },
+    "malformed": { "type": "boolean" },
+    "exceptionId": { "type": ["string", "null"] }
+  },
+  "additionalProperties": false
+}

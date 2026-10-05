@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:df84424880f83c46f924e94b365036aa8f3160cab524ea0bbb31df3ddcd2ee83",
+  "claims": [
+    {
+      "id": "claim_a0e62c8fcae447efba5d6c4a81337915",
+      "statement": "The root package.json defines a Bun workspace of apps/* and tooling/harness with scripts setup, console, console:build, console:test, validate:hooks and harness-doctor.",
+      "evidence": [
+        {
+          "resource": "repo://package.json",
+          "version": "repo-file-v1:sha256:a6c704b412b54dcc1cd2efe9b212ab6e76895112a09e40e51baa98518b02f5ff"
+        }
+      ]
+    },
+    {
+      "id": "claim_7eb0265987f74184bf157cc8dbf3c6dd",
+      "statement": "The console dev server runs on port 3000 (next dev -p 3000).",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/package.json",
+          "version": "repo-file-v1:sha256:ee4a4795d022e7a4a0c03835a1f6bf05150fcca1a69a2647ad97f3fce52c5361"
+        }
+      ]
+    },
+    {
+      "id": "claim_1d460865207643ffb68ea774e833c6fb",
+      "statement": "verify-fast and verify-integration are implemented in tooling/scripts/src/verify.ts; other verify commands are reported unavailable.",
+      "evidence": [
+        {
+          "resource": "repo://tooling/scripts/src/verify.ts",
+          "version": "repo-file-v1:sha256:70341ae756df648f18365672b029609de466749339d81a386b4b28092a56e8be"
+        }
+      ]
+    },
+    {
+      "id": "claim_1db17e822d134633a23dc88148b22d7e",
+      "statement": "harness объединяет общую политику шести рантаймов AI-агентов (Claude Code, Codex CLI, ZCode, Cursor, Kimi Code, OpenCode) с консолью Harness на Next.js в apps/console; установка выполняется через tooling/scripts/setup.sh и bun install, dev-сервер слушает порт 3000.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L1-L8",
+          "version": "repo-lines-v1:sha256:3f2cf96ccdd99a48be9633103f78d2e7b253bfdef8ff562b432ea99a68d6306f:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTI5OGM4YjgyMjlmZjBlYmVmZjQ4NzllNjcxNjJhN2U3MDUwZWJkODkxZjE2NzFkM2M2MjFlZDc2ZmViMDhjNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWFmYmU5NDdhY2Q5OGRiNTA4OTVlZjY4ZTkwNDU1OGQ1ZDNlNzdmYTkzNDE5NjIxMjFjMWQ1ZDEwNjQ0OGZmYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmY1NDU5ZDJmYTlkMDc2MjQ2NzQzNWM5ZTVmYzAzOTZlMjhhODk1MDY2ZGFkYzBiZDIwZGI3ZDEzMzczZGYzZCJ9"
+        },
+        {
+          "resource": "repo://apps/console/package.json#L5-L9",
+          "version": "repo-lines-v1:sha256:266123ea86b578c5c750510b64b30dce1bb3a480a16ab6f9c48f0857441b692e:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ4MzNkNTk0OWMwM2E0MGNhOTUyNDkxNjEwYTY2NTk2NDRiM2FhNDY2MzYyZjc5OTAyMGRiZjE5ODE1NDdkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTNmOTIxNzgyNWRmYjdlNGMxMjM4OTBmNjUxMjYzZjNjNmY2MjdlN2Q2OWJjZGM5NDg3MzkzNGM4ODQzZTExMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYzRhN2UxMzA0NzFjZjZlMjI4YjE4ZTFiZTFhZjNlNTQ0NjMyZWYwZjNlMzIzNmM3Njc5OTY0NjBhYjRlZmNlMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDQxMWU0Y2I0NzUyNjZlYjBhMmRkNjg3ZmE1Yjc5MWU2MTNlZTU0ODE1YTM3ZDg4NDNmYzRmY2ZlNTEyMjIyOCJ9"
+        },
+        {
+          "resource": "repo://tooling/scripts/setup.sh#L1-L30",
+          "version": "repo-lines-v1:sha256:c0c94c3a73954d143c37e17e456c33fb0d38c553b394c13e8b4042356742c02a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0NGE4MTMyZGYwNDkxMTEyYzY3MmQzNmUwY2UwY2RkOTE1Y2ZlZDhlNjMxZThjODc0MTZhMTU2Yzg4M2M1NzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ3OGI0ZWY3YmJhYjVhZDQ5ZjVhZGRhYTAxMTNkMjI3Y2IyOTJmYzZhOGI1YmQyYjFjZTYyNWZlNDdmYjkxZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6aa9d0c1159f4f4cadd9a0fb576f151b",
+      "statement": "Корневой package.json определяет Bun-воркспейс (apps/* и tooling/harness) со скриптами setup, console, console:build, console:test, validate:hooks и harness-doctor; console делегирует dev-серверу @harness/console.",
+      "evidence": [
+        {
+          "resource": "repo://package.json#L1-L20",
+          "version": "repo-lines-v1:sha256:cd3c12a41d9706041b9e9945a8d8fce95aa94408c87b515dc6454c4790524335:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2ZmIwOGZkYTFhY2I5NTdiNjExNmJkMzc4MTFhMWZlNDFhMDE2MTFjMDYzMWVkYmY3ODZkNjg4OWEyN2E1NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e7befda9f2bb431ca99ded39e180b678",
+      "statement": "Консоль @harness/console работает на Next.js 16 и React 19; её runtime-зависимости включают @ai-sdk/openai-compatible, @ai-sdk/react, ai, @json-render/core/react, zod и zustand.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/package.json#L11-L31",
+          "version": "repo-lines-v1:sha256:ac91716b1efffa6e5865cf024bd69a35f12616b699b38c20361b84e905c6258c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhM2I0NjlkOWUwOTc1NzIyNDY2NjczNGM5ZWY3YjI1NGQ4ODUzNGY1ZDViYjcwOTg5NjA4MDVjNTUzZGMzMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNDZlMzFmOGYzNDY3Mzk5ODNkMTQyYTg1OTk1NTgxMTUwNmJlMTU3MzZhNjRhYTg2YmRkYmFjY2JlNzJmZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5OTQ2ZTIzZGUzZWQxMTIwOWVmMWYxMzQ1MjViYTg3MDdlNzZiMmM3ZmM2NzAzNGI2YWMyNWRhZTE5YTJiODAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4268333106b548ef9da6dddcf5aee641",
+      "statement": "Вкладка «Агент» (/agent) — первый пункт навигации консоли: диалог идёт через POST /api/agent/chat, а git-состоянием рабочей папки управляют маршруты /api/git/status, /api/git/init и /api/git/branch.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/README.md#L28-L30",
+          "version": "repo-lines-v1:sha256:7272b996efa91a36eb6b0bc6f6fbf855a9391509a73f8dffc978ad35846a6a53:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTU5ZTU0ZTFjZjE3MjM0YWJkYjU2MTdmMWNmOTVlMmU3MGM1OGI2ZGIwYWNhYzc4ZjVhMjE0M2U3YWNlYTlmNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmZlMTIyNmIxNzM2NzA3MWY2NzU5ODI3OTdmZTcyZDNjNTEyOTU3NDk1NjU0ZGRhNGM5MDY2NTE1YmNhMGJkNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDBhMWQ4YmNjNmIzNDE3MWI5NjBmN2MyMzY0YzM0YTlmN2Y1N2U4OTA5MWNjMDA5MWMxYjY1NmNkZGU4YzUxNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMzc0ZmY5ODZkMzBkZDc0ZGQ4ZWEyYzlmYmVmNTQ0ZDFkYjA4ZDdlMjZlOGZkZjc1OWYzYjM3NWEyYWUzNGQyNCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts",
+          "version": "repo-file-v1:sha256:888d6c0d1aa1151575ab6f9a2e9c63aeb69b4e1b5959f6e6be68f2f7985d1a9c"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/git/branch/route.ts",
+          "version": "repo-file-v1:sha256:d7ee3f6b63a8e00f34a07d9d446db9905c398612a004be85e2f6ab1e0d40e1cb"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/git/init/route.ts",
+          "version": "repo-file-v1:sha256:0b4a940642ae13c0289b0fa62af0e89287b76ccf78b581ff80bcae8291ea624f"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/git/status/route.ts",
+          "version": "repo-file-v1:sha256:a06d2e4339bcf9cb4d813eaa2750c7537fd61ae618bce93bf093ed34f606e941"
+        }
+      ]
+    },
+    {
+      "id": "claim_2bb740a646d04be3bcaa5d27bd907a04",
+      "statement": "verify.ts поддерживает только verify-fast и verify-integration: fast — тесты и validate tooling плюс самопроверка guard (payload rm -rf / должен дать exit 2), integration — nx run-many test,validate по @harness/console и @harness/tooling; прочие подкоманды (verify-security, verify-e2e) завершаются ошибкой «недоступна в этом срезе репозитория».",
+      "evidence": [
+        {
+          "resource": "repo://tooling/scripts/src/verify.ts#L38-L68",
+          "version": "repo-lines-v1:sha256:065c47d1bf0211b5f9dade0c50fedc06493cfeb707ba99b58b856ebab5b5e03b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2YTg3NzQwYzYzY2E0NmNkZmMxZTEzZWY1YTQyOTQ4MzJiYTU4NDdmODBkNjAyN2VjYjc0MzkwZjc3MTdmYTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkZWFlMDAxYWJkZTdlZjQ0NmI5YTkzZTkzMDc5MWRkZWY1OWFhYjIyNDRkNzkzM2Y1MTAxOTRlYmU0YTkzZjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5YzYyZTFjNzRkYTc3NGQ4NDk1ZmUxY2YyMTcwOTI2NTZhYzEzYjFmMTgwNjBhNGE3ODZjN2JjOWY4N2VmYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_305c7e559e9743c9a60faf008558f43d",
+      "statement": "Политика guard из AGENTS.md: рекурсивное удаление разрешено только под .agents/.tmp/, /tmp, .nx/, node_modules/; секреты (.env*, *.pem, id_rsa, secrets/) не читаются и не пишутся; правки .agents/roles|skills|runtime|agents требуют одобрения пользователя, а правка самого guard блокируется.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L42-L56",
+          "version": "repo-lines-v1:sha256:6c6e0085ba88cb598cd80fdaf616fb24bf77c746bb85d251dba731aced404e05:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM5NjcwMjgzZGIxOWU0NjUwZmRhZDA2M2IxMWNmZjk0MzFiZDIxZjliNGRiNzA0YjNjMDExNzI1NzZjMzEzNGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxYjMxZTdmOTc4NTMxYjgwNGQ1MzY1ZDY0Mjc3ZTAzYmEwY2IzZDZmZjUxMThmZjA1ZjAwNGQ0MWY4YTZkNjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI5OTNlN2U0MGJmNjJhNDA5MTFmOGNhNGMyMWIyNjFjYzVjYjRjZTc2NTczNjY1NTcyZGFjOGI2MGQ0MWM1YTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f3789e07f5ab4cc8a70b6a27050b114c",
+      "statement": "Права git в конфигах рантаймов: git.commit разрешён, но git.push и git.forcePush выключены — пушить и форсить запрещено всегда, в любом режиме.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L123-L128",
+          "version": "repo-lines-v1:sha256:ecaf273db590bcb80e3be4907b47447bec8f4b25f0261818db34f61acd38e8ce:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZDI1ZWUwMWNhYzI4YzU3YTA1MWQ3YTAwZjA3YTgwYmQ2YzE3OGY0YjA1YzU3MmM5NDhlMDk3MDNjZjNkZWM2YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOGEyYzNlM2E1ODI4MWQxZWUzMjJhMWI1NGE0YzQ3YzY4NjdjYWIyN2M5NmI0MWVmNmVmMTg4NWMwMTU3YTRjNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGM0NDBkYWFmNTRiODM4N2U3OTMwOGU2NjViNTE2ZGQzNmIyYWNkOWYzZjNjYmEyNzdhZWM5Mzk2NjAxMmYwNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzIxMzdhYTZlYWU3OTNkOTU5MGQ4YTUzNTg4ZmYxNDcyMDkyYWVjYjQ1MjhmOGRhOWI2N2RmNzgwODc1Yjg0NyJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.1",
+    "at": "2026-10-01T21:39:07.719Z"
+  }
+}

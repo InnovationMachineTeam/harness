@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-rm -rf /",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -rf /"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-rm -rf .agents/.tm",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -rf .agents/.tmp/cache"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-rm -r ~/work",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -r ~/work"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

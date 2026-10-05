@@ -1,3 +1,9 @@
 [mcp_servers.codegraph]
 command = "codegraph"
 args = ["serve", "--mcp"]
+
+# OPENWIKI:MCP:START
+[mcp_servers.openwiki]
+command = "openwiki"
+args = ["mcp", "--host", "codex"]
+# OPENWIKI:MCP:END

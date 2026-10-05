@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { RuntimeSpace } from "@/components/RuntimeSpace";
+import { RuntimeSpace } from "@/uikit/components/RuntimeSpace";
 import { probeGuardActivity, probeRuntimes } from "@/core/registry";
 import { findRepoRoot } from "@/core/repo";
 import { loadConsoleState } from "@/core/state";

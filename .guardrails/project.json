@@ -1,0 +1,18 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "@harness/guardrails",
+  "targets": {
+    "test": {
+      "command": "bun test ./.guardrails/tests",
+      "options": { "cwd": "{workspaceRoot}" },
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*", "{workspaceRoot}/.codex/**/*", "{workspaceRoot}/.claude/**/*", "{workspaceRoot}/.cursor/**/*", "{workspaceRoot}/.zcode/**/*", "{workspaceRoot}/.kimi/**/*", "{workspaceRoot}/.opencode/**/*", "{workspaceRoot}/.husky/**/*"]
+    },
+    "validate": {
+      "command": "bun .guardrails/src/cli.ts check",
+      "options": { "cwd": "{workspaceRoot}" },
+      "cache": true,
+      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*", "{workspaceRoot}/.codex/**/*", "{workspaceRoot}/.claude/**/*", "{workspaceRoot}/.cursor/**/*", "{workspaceRoot}/.zcode/**/*", "{workspaceRoot}/.kimi/**/*", "{workspaceRoot}/.opencode/**/*", "{workspaceRoot}/.husky/**/*"]
+    }
+  }
+}

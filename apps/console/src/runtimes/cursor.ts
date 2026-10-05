@@ -36,15 +36,25 @@ export const cursorAdapter: RuntimeAdapter = {
 
   async listSkills(ctx: ProbeContext): Promise<SkillItem[]> {
     const items: SkillItem[] = [];
-    for (const dir of ["skills-cursor", "skills"]) {
-      const files = await ctx.fs.collectFiles(join(ctx.home, ".cursor", dir), {
+    const seen = new Set<string>();
+    // проектный каталог приоритетнее глобальных
+    const roots = [
+      { root: join(ctx.repoRoot, ".cursor", "skills"), label: "project" },
+      { root: join(ctx.home, ".cursor", "skills-cursor"), label: "skills-cursor" },
+      { root: join(ctx.home, ".cursor", "skills"), label: "skills" },
+    ];
+    for (const { root, label } of roots) {
+      const files = await ctx.fs.collectFiles(root, {
         match: (name) => name === "SKILL.md",
         maxDepth: 2,
         limit: 100,
       });
       for (const f of files) {
-        const relDir = `${dir}/${f.relPath.replace(/\/SKILL\.md$/, "")}`;
-        const item = toSkillItem(ctx, "cursor", "skill", f.relPath.split("/")[0] ?? "skill", f.path, relDir);
+        const name = f.relPath.replace(/\/SKILL\.md$/, "").split("/")[0] ?? "skill";
+        if (seen.has(name)) continue;
+        seen.add(name);
+        const relDir = `${label}/${f.relPath.replace(/\/SKILL\.md$/, "")}`;
+        const item = toSkillItem(ctx, "cursor", "skill", name, f.path, relDir);
         item.description = await skillDescription(ctx, f.path);
         items.push(item);
       }

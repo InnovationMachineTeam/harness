@@ -1,19 +1,68 @@
 {
   "schemaVersion": 1,
   "pages": {
+    "/openwiki/architecture/agent-panel-tasks-git.md": {
+      "gitHead": "6569cbd1bfb6f07f7af2c07f3e3f0cefb5905719",
+      "sourceFingerprint": "sha256:5752aeef9b28023991b8a9be6debec2ef3291ab10b7a8428366d026c9aa00fde",
+      "pageVersion": "sha256:15a749a1dd52599831a32cd811bcfd30f3de9baacbffbca85126017dd3a22c3d",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "5480ebc3-1b9d-4259-86ae-e2bb8b94c8af"
+    },
+    "/openwiki/architecture/agent-runtime-and-guard.md": {
+      "gitHead": "5aff957fe07802f0344ab0d29d187cb6e14dc7d5",
+      "sourceFingerprint": "sha256:21f6f5d22bf4d6140145e164769d6daeb5dfc0c9add2704afc7c7ff6f74dc882",
+      "pageVersion": "sha256:a54b87ad186845a87c6c64e41001756a252b69e074b4b4df9f95575769d62257",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "585277c5-5f63-4eed-88e4-c3c972736904"
+    },
     "/openwiki/architecture/mcp-sync.md": {
-      "gitHead": "e362b2a9670c26b38a3f1c5259627ac4f4ebd71c",
-      "sourceFingerprint": "sha256:3a184090e9bd8f6898ba6fdac692986097611ac9d42a8d793bd0d70b010bab78",
-      "pageVersion": "sha256:e6dccc554e5ab616439123ef8d55c75938c7a6783b9354e23ea6bc9b9d8b991b",
-      "completedBy": "openwiki/0.5.1",
-      "completedRunId": "5d8e4ac3-d8c5-4312-83cd-ed413adb7271"
+      "gitHead": "5aff957fe07802f0344ab0d29d187cb6e14dc7d5",
+      "sourceFingerprint": "sha256:21f6f5d22bf4d6140145e164769d6daeb5dfc0c9add2704afc7c7ff6f74dc882",
+      "pageVersion": "sha256:3caba7f33a3a7b3085933f1a86967d8fae9c69048e6abd4609be4cf1b040d96a",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "2374e60f-da6e-435d-aebe-353083dc0f74"
+    },
+    "/openwiki/architecture/memory-and-openwiki.md": {
+      "gitHead": "5aff957fe07802f0344ab0d29d187cb6e14dc7d5",
+      "sourceFingerprint": "sha256:21f6f5d22bf4d6140145e164769d6daeb5dfc0c9add2704afc7c7ff6f74dc882",
+      "pageVersion": "sha256:4ec1fcd926c1c2405db1210571f81e3f1b0edddbac7151427ab652e6d9351a27",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "2374e60f-da6e-435d-aebe-353083dc0f74"
     },
     "/openwiki/architecture/overview.md": {
-      "pageVersion": "sha256:73caae140dab23bbee768b8294a476eb731ed8e608cd03970e17b510579cdee1",
-      "completedBy": "openwiki/0.5.1",
-      "completedRunId": "5d8e4ac3-d8c5-4312-83cd-ed413adb7271",
-      "gitHead": "e362b2a9670c26b38a3f1c5259627ac4f4ebd71c",
-      "sourceFingerprint": "sha256:3a184090e9bd8f6898ba6fdac692986097611ac9d42a8d793bd0d70b010bab78"
+      "gitHead": "6645a6bffe4e00d9c78a9545c43e6fad5df5615d",
+      "sourceFingerprint": "sha256:c8c361cb0c908cac499d085d6609f2abfaf9cb59bef6524c0c747b380b53b198",
+      "pageVersion": "sha256:bda2ae912c07e502c85b3ddff5ecd6c5b9e129696900feaeae25e4a284caa19a",
+      "completedBy": "claude-code",
+      "completedRunId": "5d8e4ac3-d8c5-4312-83cd-ed413adb7271"
+    },
+    "/openwiki/architecture/sessions-skills-providers.md": {
+      "gitHead": "6569cbd1bfb6f07f7af2c07f3e3f0cefb5905719",
+      "sourceFingerprint": "sha256:5752aeef9b28023991b8a9be6debec2ef3291ab10b7a8428366d026c9aa00fde",
+      "pageVersion": "sha256:b68084c0905828f9f8d63807726f921223a8a6a169ae9efb89f324f216018243",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "5480ebc3-1b9d-4259-86ae-e2bb8b94c8af"
+    },
+    "/openwiki/architecture/tools-registry.md": {
+      "gitHead": "6569cbd1bfb6f07f7af2c07f3e3f0cefb5905719",
+      "sourceFingerprint": "sha256:5752aeef9b28023991b8a9be6debec2ef3291ab10b7a8428366d026c9aa00fde",
+      "pageVersion": "sha256:6398eca913a975e11e8bc75aac3ee34294510bbd9f1d9e25cb0d4fdce62d338d",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "5480ebc3-1b9d-4259-86ae-e2bb8b94c8af"
+    },
+    "/openwiki/architecture/ui-and-design-tokens.md": {
+      "gitHead": "5aff957fe07802f0344ab0d29d187cb6e14dc7d5",
+      "sourceFingerprint": "sha256:c1bae21736302867d1a5dbda6604d244d0d043d3c1e1d3775618a37705ddf1f5",
+      "pageVersion": "sha256:ef81248e9a9b3f20923baf9c5e929b2c05e15ea45d36fb36f5e28398460a6f3a",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "5480ebc3-1b9d-4259-86ae-e2bb8b94c8af"
+    },
+    "/openwiki/quickstart.md": {
+      "pageVersion": "sha256:d2a81b7e6449232c400f358b7abc218750afa07f7e95759e9f07bfa13c1e4e7b",
+      "completedBy": "openwiki/0.6.1",
+      "completedRunId": "5480ebc3-1b9d-4259-86ae-e2bb8b94c8af",
+      "gitHead": "6569cbd1bfb6f07f7af2c07f3e3f0cefb5905719",
+      "sourceFingerprint": "sha256:5752aeef9b28023991b8a9be6debec2ef3291ab10b7a8428366d026c9aa00fde"
     }
   }
 }

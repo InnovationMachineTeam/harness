@@ -1,12 +1,15 @@
 {
   "canonicalInstructions": "AGENTS.md",
   "defaultVendor": "claude",
-  "publicSkills": [".agents/skills/master"],
+  "publicSkills": [
+    ".agents/skills"
+  ],
   "privateSkillRoot": ".agents/skills/master/skills",
+  "designSkillRoot": ".agents/skills/design/skills",
   "roleAgentRoot": ".agents/roles",
   "agentConfigsRoot": ".agents/agents",
   "workflowsRoot": ".agents/skills/master/workflows",
-  "guard": ".agents/runtime/guard.mjs",
+  "guard": ".guardrails/src/cli.ts",
   "verification": {
     "fast": "bun run tooling/scripts/src/verify.ts verify-fast",
     "integration": "bun run tooling/scripts/src/verify.ts verify-integration",

@@ -28,6 +28,10 @@ TOOL_SPECS=(
   "graphify|graphify|подграф знаний - используй обычный обзор файлов"
   "rtk|rtk|сжатие вывода - запускай команду напрямую"
   "headroom|headroom|прозрачный прокси - прямых вызовов нет, работай как обычно"
+  "nx|nx|оркестратор задач с кешем - используй node_modules/.bin/nx проекта или скрипты package.json"
+  "open-design|od|дизайн-воркспейс с MCP - установи desktop-приложение (open-design.ai); which od может находить системный octal-dump"
+  "agentplane|agentplane|task lifecycle и ACR - используй встроенный task adapter Harness"
+  "codeburn|codeburn|анализ расхода AI-токенов - установи глобально (bun add -g codeburn / npm install -g codeburn)"
 )
 
 usage() {
@@ -37,7 +41,7 @@ usage() {
   status        статус всех инструментов (on/off/missing)
   <id> <args…>  запустить инструмент; exit 3 = недоступен (обычный порядок работы)
 
-Инструменты: serena, qmd, codegraph, graphify, rtk, headroom.
+Инструменты: serena, qmd, codegraph, graphify, rtk, headroom, nx, open-design, agentplane, codeburn.
 Состояние - .agents/console/tools.env (консоль), fallback - наличие бина в PATH.
 EOF
 }
@@ -84,7 +88,7 @@ case "$cmd" in
       if [ -z "$state" ]; then
         if has_bin "$id"; then state="on (по PATH)"; else state="missing"; fi
       fi
-      printf '%-9s %s\n' "$id" "$state"
+      printf '%-11s %s\n' "$id" "$state"
     done
     printf '\nexit 3 TOOL_UNAVAILABLE при запуске = работать обычным способом.\n'
     exit 0
@@ -115,4 +119,8 @@ case "$id" in
   graphify)  exec graphify "$@" ;;
   rtk)       exec rtk "$@" ;;
   headroom)  exec headroom "$@" ;;
+  nx)        exec nx "$@" ;;
+  open-design) exec od "$@" ;;
+  agentplane) exec agentplane "$@" ;;
+  codeburn)  exec codeburn "$@" ;;
 esac

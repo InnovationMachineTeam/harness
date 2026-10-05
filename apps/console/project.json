@@ -1,0 +1,17 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "test": {
+      "command": "bun test",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": true,
+      "outputs": []
+    },
+    "build": {
+      "command": "bun run build",
+      "options": { "cwd": "{projectRoot}" },
+      "cache": true,
+      "outputs": ["{projectRoot}/.next"]
+    }
+  }
+}

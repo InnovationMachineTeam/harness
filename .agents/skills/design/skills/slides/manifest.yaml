@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: slides
+title: slides
+description: "Create strategic HTML presentations with Chart.js, design tokens, responsive layouts, copywriting formulas, and contextual slide strategies."
+source:
+  version: 1.0.0
+  hash: design-group-slides
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [design, ui, ux, brand]

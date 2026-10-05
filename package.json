@@ -2,16 +2,22 @@
   "name": "harness",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    ".guardrails",
+    "tooling/harness"
   ],
   "scripts": {
     "setup": "bash tooling/scripts/setup.sh",
     "prepare": "husky",
     "console": "bun run --filter '@harness/console' dev",
     "console:build": "bun run --filter '@harness/console' build",
-    "console:test": "bun run --filter '@harness/console' test"
+    "console:test": "bun run --filter '@harness/console' test",
+    "validate:hooks": "bun tooling/harness/src/cli.ts validate",
+    "asr": "bun apps/console/scripts/asr.ts",
+    "harness-doctor": "bun tooling/harness/src/cli.ts doctor"
   },
   "devDependencies": {
-    "husky": "9.1.7"
+    "husky": "9.1.7",
+    "nx": "^23.2.1"
   }
 }

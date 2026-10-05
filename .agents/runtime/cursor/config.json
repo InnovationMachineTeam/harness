@@ -3,10 +3,10 @@
   "id": "cursor",
   "vendorAdapter": ".cursor/hooks.json",
   "guard": {
-    "command": "node .agents/runtime/guard.mjs",
+    "command": "bun .guardrails/src/cli.ts evaluate",
     "hooksSupport": "native",
     "notes": "Cursor supports project-level hooks (version 1 schema): .cursor/hooks.json registers a preToolUse hook that runs the guard with AGENT_RUNTIME=cursor and AGENT_RUNTIME_CONFIG=.agents/runtime/cursor/config.json via $CURSOR_PROJECT_DIR paths; exit 2 blocks the call. failClosed is false, so a crashed or timed-out hook lets the call through - the guard is a layer on top of Cursor's own approvals, not a replacement for checking doubtful calls by hand.",
-    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | bun .guardrails/src/cli.ts evaluate"
   },
   "capabilities": {
     "subagentSpawn": "unknown",
@@ -46,6 +46,6 @@
     "git": { "commit": true, "push": false, "forcePush": false },
     "shell": "policy-guarded",
     "mcp": [".mcp.json", ".cursor/mcp.json"],
-    "notes": "Approve and deny live in the IDE's own agent settings; the guard policy is enforced through the preToolUse hook in .cursor/hooks.json (fail-open on hook errors). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
+    "notes": "Approve and deny live in the IDE's own agent settings; the guard policy is enforced through the preToolUse hook in .cursor/hooks.json (fail-closed on hook errors). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
   }
 }

@@ -1,0 +1,22 @@
+{
+  "id": "tooloutput.injection",
+  "title": "Инъекция в выводе инструмента или документе",
+  "description": "Блокирует передачу в модель вывода инструмента со скрытыми директивами; сканирует вложенные структуры и имена ключей.",
+  "category": "prompt-injection",
+  "severity": "high",
+  "effect": "block",
+  "threats": [
+    "prompt-injection"
+  ],
+  "bundles": [
+    "tool-output"
+  ],
+  "remediation": "Замените flagged-вывод нейтральным сообщением об ошибке и передайте находку в журнал аудита.",
+  "limitations": [
+    "Правило срабатывает на документы о самой защите; при подключении PostToolUse нужен фильтр путей Guardrails.",
+    "Легитимные обсуждения политик с глаголами вызова инструментов дают ложное срабатывание."
+  ],
+  "status": "enforced",
+  "owner": "platform",
+  "failureMode": "closed"
+}

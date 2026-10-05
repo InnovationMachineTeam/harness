@@ -1,0 +1,19 @@
+{
+  "id": "deploy.destructive",
+  "title": "Демонтаж среды",
+  "description": "Блокирует teardown управляемой среды.",
+  "category": "deployment",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "deployment"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Получите явное решение пользователя.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

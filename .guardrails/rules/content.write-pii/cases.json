@@ -1,0 +1,32 @@
+[
+  {
+    "id": "hit-base-write-Контакт: ivan@example.co",
+    "tool": "Write",
+    "input": {
+      "file_path": "docs/contacts.md",
+      "content": "Контакт: ivan@example.com, тел. +7 913 123-45-67"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-write-Модуль отвечает за расчё",
+    "tool": "Write",
+    "input": {
+      "file_path": "docs/discounts.md",
+      "content": "Модуль отвечает за расчёт скидок."
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "pass-edge-write-Адрес сервиса: 10.0.0.1:",
+    "tool": "Write",
+    "input": {
+      "file_path": "docs/deploy.md",
+      "content": "Адрес сервиса: 10.0.0.1:8080"
+    },
+    "expect": "pass",
+    "edge": true
+  }
+]

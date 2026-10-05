@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-chmod -R 777 .",
+    "tool": "Bash",
+    "input": {
+      "command": "chmod -R 777 ."
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-chmod 755 script.s",
+    "tool": "Bash",
+    "input": {
+      "command": "chmod 755 script.sh"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "pass-edge-chmod -R u+rwX .",
+    "tool": "Bash",
+    "input": {
+      "command": "chmod -R u+rwX ."
+    },
+    "expect": "pass",
+    "edge": true
+  }
+]

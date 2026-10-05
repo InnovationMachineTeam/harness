@@ -49,16 +49,23 @@ export const codexAdapter: RuntimeAdapter = {
 
   async listSkills(ctx: ProbeContext): Promise<SkillItem[]> {
     const items: SkillItem[] = [];
-    const skills = await ctx.fs.collectFiles(join(ctx.home, ".codex", "skills"), {
-      match: (name) => name === "SKILL.md",
-      maxDepth: 2,
-      limit: 100,
-    });
-    for (const f of skills) {
-      const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
-      const item = toSkillItem(ctx, "codex", "skill", relDir.split("/").pop() ?? "skill", f.path, relDir);
-      item.description = await skillDescription(ctx, f.path);
-      items.push(item);
+    const seen = new Set<string>();
+    // проектный каталог приоритетнее глобального
+    for (const root of [join(ctx.repoRoot, ".codex", "skills"), join(ctx.home, ".codex", "skills")]) {
+      const skills = await ctx.fs.collectFiles(root, {
+        match: (name) => name === "SKILL.md",
+        maxDepth: 2,
+        limit: 100,
+      });
+      for (const f of skills) {
+        const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
+        const name = relDir.split("/").pop() ?? "skill";
+        if (seen.has(name)) continue;
+        seen.add(name);
+        const item = toSkillItem(ctx, "codex", "skill", name, f.path, relDir);
+        item.description = await skillDescription(ctx, f.path);
+        items.push(item);
+      }
     }
     const prompts = await ctx.fs.collectFiles(join(ctx.home, ".codex", "prompts"), {
       match: (name) => name.endsWith(".md"),
@@ -67,6 +74,8 @@ export const codexAdapter: RuntimeAdapter = {
     });
     for (const f of prompts) {
       const name = f.name.replace(/\.md$/, "");
+      if (seen.has(name)) continue;
+      seen.add(name);
       const item = toSkillItem(ctx, "codex", "script", name, f.path, `prompts/${f.name}`);
       item.description = await skillDescription(ctx, f.path);
       items.push(item);

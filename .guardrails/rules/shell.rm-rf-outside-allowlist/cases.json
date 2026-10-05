@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-rm -rf build",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -rf build"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-rm -rf .nx/cache",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -rf .nx/cache"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "pass-edge-rm -r node_modules",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -r node_modules/pkg"
+    },
+    "expect": "pass",
+    "edge": true
+  }
+]

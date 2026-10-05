@@ -1,0 +1,19 @@
+{
+  "id": "shell.git-push",
+  "title": "Публикация Git",
+  "description": "Блокирует push согласно правам этого проекта.",
+  "category": "git",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "git"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Оставьте локальный коммит; публикацию выполняет пользователь.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

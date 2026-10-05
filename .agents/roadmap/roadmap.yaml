@@ -1,0 +1,5 @@
+apiVersion: harness/v1
+kind: Roadmap
+title: Harness roadmap
+columns: [inbox, ready, in-progress, blocked, review, done, archived]
+wipLimits: { in-progress: 4, review: 4 }

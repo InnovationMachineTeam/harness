@@ -1,0 +1,22 @@
+{
+  "id": "shell.credential-dump",
+  "title": "Вывод учётных данных в shell",
+  "description": "Блокирует команды, выгружающие секреты окружения и хранилищ учётных данных в transcript: печать env в pipe, токены gh/gcloud, aws configure get, секреты kubectl/vault/doppler/1Password, keychain macOS.",
+  "category": "secrets",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "secrets"
+  ],
+  "remediation": "Запросите у пользователя конкретное значение или используйте переменную окружения напрямую в команде без вывода.",
+  "limitations": [
+    "Покрывает типовые утилиты хранилищ; экзотические менеджеры секретов не распознаются.",
+    "Печать отдельной переменной (printenv HOME) не блокируется - блокируется выгрузка всего окружения."
+  ],
+  "status": "enforced",
+  "owner": "platform",
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed"
+}

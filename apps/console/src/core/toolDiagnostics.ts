@@ -145,24 +145,23 @@ async function checkDashboard(
   return checks;
 }
 
-interface HeadroomHealth {
+interface HeadroomStats {
   summary?: { api_requests?: number; compression?: { requests_compressed?: number } };
-  status?: string;
 }
 
-/** Headroom-специфика: прокси отвечает, и проходил ли через него трафик. */
+/** Headroom-специфика: прокси отвечает, и проходил ли через него трафик. Счётчики - из /stats (в /health 0.39.x summary нет). */
 async function checkHeadroomRuntime(port: number): Promise<DiagnosticCheck> {
   try {
-    const res = await fetch(`http://127.0.0.1:${port}/health`, {
+    const res = await fetch(`http://127.0.0.1:${port}/stats`, {
       signal: AbortSignal.timeout(5000),
       cache: "no-store",
     });
     if (!res.ok) {
-      return { name: "Headroom: прокси", ok: false, detail: `HTTP ${res.status} от /health`, critical: false };
+      return { name: "Headroom: прокси и трафик", ok: false, detail: `HTTP ${res.status} от /stats`, critical: false };
     }
-    const health = (await res.json()) as HeadroomHealth;
-    const requests = health.summary?.api_requests ?? 0;
-    const compressed = health.summary?.compression?.requests_compressed ?? 0;
+    const stats = (await res.json()) as HeadroomStats;
+    const requests = stats.summary?.api_requests ?? 0;
+    const compressed = stats.summary?.compression?.requests_compressed ?? 0;
     return {
       name: "Headroom: прокси и трафик",
       ok: true,
@@ -176,7 +175,7 @@ async function checkHeadroomRuntime(port: number): Promise<DiagnosticCheck> {
     return {
       name: "Headroom: прокси и трафик",
       ok: false,
-      detail: `нет ответа /health: ${err instanceof Error ? err.message : String(err)}`,
+      detail: `нет ответа /stats: ${err instanceof Error ? err.message : String(err)}`,
       critical: false,
     };
   }

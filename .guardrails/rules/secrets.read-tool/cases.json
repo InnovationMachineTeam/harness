@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-Read-.env",
+    "tool": "Read",
+    "input": {
+      "file_path": ".env"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-Read-.env.example",
+    "tool": "Read",
+    "input": {
+      "file_path": ".env.example"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Glob-secrets/*.json",
+    "tool": "Glob",
+    "input": {
+      "file_path": "secrets/*.json"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

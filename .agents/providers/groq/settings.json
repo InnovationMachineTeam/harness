@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.groq.com/openai/v1",
+  "models": {
+    "fast": "llama-3.3-70b-versatile",
+    "standard": "llama-3.3-70b-versatile",
+    "strong": "deepseek-r1-distill-llama-70b",
+    "subagents": "llama-3.1-8b-instant"
+  }
+}

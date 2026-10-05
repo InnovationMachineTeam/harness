@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-git push --force o",
+    "tool": "Bash",
+    "input": {
+      "command": "git push --force origin main"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-git push --force-w",
+    "tool": "Bash",
+    "input": {
+      "command": "git push --force-with-lease origin branch"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-git push -f",
+    "tool": "Bash",
+    "input": {
+      "command": "git push -f"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

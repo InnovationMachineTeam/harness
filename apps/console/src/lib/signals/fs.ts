@@ -13,6 +13,7 @@ async function walk(
   match: (name: string) => boolean,
   out: FileEntry[],
   budget: { scanLimit: number; visited: number },
+  exclude?: (relPath: string) => boolean,
 ): Promise<void> {
   if (budget.visited >= budget.scanLimit) return;
   let entries;
@@ -25,16 +26,32 @@ async function walk(
     if (budget.visited >= budget.scanLimit) return;
     // сам корень обхода может быть скрытым (~/.claude и т.п.) - это не мешает;
     // внутри пропускаем только скрытые и служебные каталоги, файлы не фильтруем
-    if (entry.isDirectory() && (entry.name.startsWith(".") || SKIP_DIRS.has(entry.name))) continue;
+    if (entry.name.startsWith(".") || SKIP_DIRS.has(entry.name)) continue;
     const abs = join(current, entry.name);
-    if (entry.isDirectory()) {
+    // тип определяем по цели: симлинки следуются (симлинки навыков включения -
+    // штатная форма доставки в нативные каталоги рантаймов); глубина и scanLimit
+    // ограничивают обход циклов
+    let isDir = entry.isDirectory();
+    let isFile = entry.isFile();
+    if (!isDir && !isFile && entry.isSymbolicLink()) {
+      const target = await stat(abs).catch(() => null);
+      if (!target) continue;
+      isDir = target.isDirectory();
+      isFile = target.isFile();
+    }
+    if (isDir) {
       if (depth >= maxDepth) continue;
-      await walk(abs, join(relBase, entry.name), depth + 1, maxDepth, match, out, budget);
-    } else if (entry.isFile() && match(entry.name)) {
+      const rel = join(relBase, entry.name);
+      // поддерево исключено целиком (например, вложенная рабочая папка)
+      if (exclude?.(rel)) continue;
+      await walk(abs, rel, depth + 1, maxDepth, match, out, budget, exclude);
+    } else if (isFile && match(entry.name)) {
+      const rel = join(relBase, entry.name);
+      if (exclude?.(rel)) continue;
       budget.visited += 1;
       try {
         const s = await stat(abs);
-        out.push({ path: abs, relPath: join(relBase, entry.name), name: entry.name, mtime: s.mtime });
+        out.push({ path: abs, relPath: rel, name: entry.name, mtime: s.mtime });
       } catch {
         /* файл исчез между readdir и stat - пропускаем */
       }
@@ -46,15 +63,22 @@ async function walk(
  * Файлы каталога (рекурсивно, с ограничением глубины), отсортированные по mtime
  * по убыванию. scanLimit ограничивает число осмотренных файлов: эвристике
  * "свежий след" достаточно приближения, а обход огромных каталогов (~/.cursor
- * с extensions) не должен съедать секунды.
+ * с extensions) не должен съедать секунды. exclude(relPath) убирает поддерево
+ * из обхода (относительный путь файла или каталога).
  */
 async function collectFiles(
   dir: string,
-  opts: { match?: (name: string) => boolean; maxDepth?: number; limit?: number; scanLimit?: number } = {},
+  opts: {
+    match?: (name: string) => boolean;
+    maxDepth?: number;
+    limit?: number;
+    scanLimit?: number;
+    exclude?: (relPath: string) => boolean;
+  } = {},
 ): Promise<FileEntry[]> {
-  const { match = () => true, maxDepth = 4, limit = 200, scanLimit = 2000 } = opts;
+  const { match = () => true, maxDepth = 4, limit = 200, scanLimit = 2000, exclude } = opts;
   const out: FileEntry[] = [];
-  await walk(dir, "", 0, maxDepth, match, out, { scanLimit, visited: 0 });
+  await walk(dir, "", 0, maxDepth, match, out, { scanLimit, visited: 0 }, exclude);
   out.sort((a, b) => b.mtime.getTime() - a.mtime.getTime());
   return out.slice(0, limit);
 }

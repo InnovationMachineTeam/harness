@@ -1,0 +1,17 @@
+{
+  "name": "@harness/guardrails",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./redact": "./src/content/redact.ts",
+    "./patterns": "./src/content/patterns.ts"
+  },
+  "scripts": {
+    "check": "bun src/cli.ts check",
+    "docs": "bun src/cli.ts docs --check",
+    "generate": "bun src/cli.ts generate",
+    "test": "bun test tests"
+  }
+}

@@ -1,4 +1,8 @@
 # Обновление индексов инструментов экономии контекста (best-effort):
 # codegraph sync, graphify update, serena project index - только
 # установленных и инициализированных. Обход: SKIP_TOOLS_UPDATE=1.
+bun .guardrails/src/cli.ts check --quick
+# Самодиагностирующие артефакты Guardrails исключены: карточки правил,
+# fixtures корпуса и каталог паттернов легитимно содержат примеры образцов.
+git diff --staged -- . ':(exclude).guardrails/rules' ':(exclude).guardrails/generated' ':(exclude).guardrails/tests' ':(exclude).guardrails/src/content' | bun .guardrails/src/cli.ts scan-diff
 bash "$(dirname "$0")/../tooling/scripts/pre-commit-tools.sh"

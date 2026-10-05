@@ -1,0 +1,114 @@
+apiVersion: harness/v1
+kind: Workflow
+id: pdlc
+title: PDLC Discovery
+description: Продуктовый цикл - discovery, исследование, концепция и planning; спланированные задачи попадают в backlog.
+inputs:
+  request:
+    type: string
+    required: true
+defaults:
+  privacy: metadata
+  runtime:
+    candidates: [provider:ollama, zcode, cursor]
+nodes:
+  - id: discovery
+    title: Discovery
+    phase: discovery
+    description: Зафиксировать проблему, аудиторию, гипотезу ценности и критерии успеха.
+    dependsOn: []
+    roles: [product-analyst]
+    inputControl:
+      roles: [product-analyst]
+      prompt: "Проверь запрос пользователя как вход продуктового цикла."
+      dor:
+        - проблема или возможность сформулирована
+        - целевая аудитория обозначена
+      maxAttempts: 10
+    execution:
+      prompt: Зафиксируй проблему, сегменты аудитории, гипотезу ценности и критерии успеха продукта.
+      confirmPlan: false
+    inputs: [request]
+    outputs: [discovery]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 3600000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: research
+    title: Продуктовое исследование
+    phase: research
+    description: Собрать рыночные и пользовательские доказательства - рынок, конкуренты, данные.
+    dependsOn: [discovery]
+    roles: [researcher]
+    inputControl:
+      roles: [product-analyst]
+      prompt: "Проверь discovery как основу исследования."
+      dor:
+        - гипотеза ценности сформулирована
+        - сегменты аудитории определены
+      maxAttempts: 10
+    execution:
+      prompt: "Собери проверяемые доказательства: объём рынка, конкуренты, пользовательские боли и данные существующих решений. Используй навык codebase-research для внутренней аналитики."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - источники указаны
+        - выводы отвечают гипотезе ценности
+      manualReview: false
+      maxAttempts: 10
+    inputs: [discovery]
+    outputs: [research]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 3600000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: concept
+    title: Концепция продукта
+    phase: concept
+    description: Сформулировать концепцию - позиционирование, value proposition, сценарии и метрики.
+    dependsOn: [research]
+    roles: [product-analyst, ux-designer]
+    execution:
+      prompt: "Сформулируй концепцию: позиционирование, value proposition, ключевые пользовательские сценарии и измеримые метрики успеха."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - концепция отвечает на гипотезу из discovery
+        - сценарии покрывают основной сегмент аудитории
+        - метрики успеха измеримы
+      manualReview: true
+      maxAttempts: 10
+    inputs: [discovery, research]
+    outputs: [concept]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 3600000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: planning
+    title: Planning
+    phase: planning
+    description: "Финальный шаг цикла: спланировать задачи продукта с оценкой value/effort; задачи попадают в backlog."
+    dependsOn: [concept]
+    roles: [planner]
+    execution:
+      prompt: "Спланируй задачи продукта по концепции и research. Заверши ответ блоком ```json со списком задач: [{\"title\":\"...\",\"description\":\"...\",\"value\":1-5,\"effort\":1-5}] - value это ценность для продукта, effort это трудозатраты, оба по шкале 1-5."
+      confirmPlan: true
+      producesTasks: true
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - каждая задача проверяема и ведёт к метрикам концепции
+        - у каждой задачи есть оценка value и effort
+      manualReview: false
+      maxAttempts: 10
+    inputs: [concept, research]
+    outputs: [plan, tasks]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 3600000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }

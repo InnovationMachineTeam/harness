@@ -1,0 +1,19 @@
+{
+  "id": "structural.guard-mutation",
+  "title": "Изменение источника политики",
+  "description": "Блокирует изменение guard и связанных policy-файлов агентом.",
+  "category": "governance",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "governance"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Покажите точный diff пользователю для отдельного одобрения.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

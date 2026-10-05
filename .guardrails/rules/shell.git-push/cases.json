@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-git push origin ma",
+    "tool": "Bash",
+    "input": {
+      "command": "git push origin main"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-git status",
+    "tool": "Bash",
+    "input": {
+      "command": "git status"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-git -C repo push",
+    "tool": "Bash",
+    "input": {
+      "command": "git -C repo push"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

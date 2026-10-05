@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { NextResponse } from "next/server";
 import { findRepoRoot } from "@/core/repo";
-import { toolJobFiles } from "@/core/toolJobs";
+import { toolJobFiles, type ToolJobStepResult } from "@/core/toolJobs";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +35,12 @@ export async function GET(request: Request) {
       let sent = 0; // сколько строк job'а уже отправлено
       let finished = false;
       let timer: ReturnType<typeof setInterval> | null = null;
-      const finish = (exitCode: number | null) => {
+      const finish = (exitCode: number | null, results?: ToolJobStepResult[]) => {
         if (finished) return;
         finished = true;
         if (timer) clearInterval(timer);
         timer = null;
-        send({ done: true, exitCode });
+        send({ done: true, exitCode, ...(results ? { results } : {}) });
         try {
           controller.close();
         } catch {
@@ -64,19 +64,26 @@ export async function GET(request: Request) {
           const meta = await readFile(files.meta, "utf8").catch(() => "");
           let done: boolean | null = null;
           let exitCode: number | null = null;
+          let results: ToolJobStepResult[] | null = null;
           for (const row of meta.split("\n")) {
             if (!row.trim()) continue;
             try {
-              const entry = JSON.parse(row) as { id?: string; done?: boolean; exitCode?: number | null };
+              const entry = JSON.parse(row) as {
+                id?: string;
+                done?: boolean;
+                exitCode?: number | null;
+                results?: ToolJobStepResult[];
+              };
               if (entry.id === jobId && typeof entry.done === "boolean") {
                 done = entry.done;
                 exitCode = entry.done ? (entry.exitCode ?? null) : null;
+                results = entry.done ? (entry.results ?? null) : null;
               }
             } catch {
               /* повреждённая строка журнала - пропускаем */
             }
           }
-          if (done) finish(exitCode);
+          if (done) finish(exitCode, results ?? undefined);
         } catch {
           /* файлы ещё не созданы - ждём следующего тика */
         }

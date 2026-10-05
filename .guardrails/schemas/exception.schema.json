@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "ruleId", "scope", "reason", "approvedBy", "createdAt", "expiresAt", "status"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^EX-[0-9]{4}-[0-9]{4,}$" },
+    "ruleId": { "type": "string" },
+    "scope": { "type": "object" },
+    "reason": { "type": "string" },
+    "approvedBy": { "type": "string" },
+    "createdAt": { "type": "string", "format": "date" },
+    "expiresAt": { "type": "string", "format": "date" },
+    "status": { "enum": ["active", "expired", "revoked"] }
+  }
+}

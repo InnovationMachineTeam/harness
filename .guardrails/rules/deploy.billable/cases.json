@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-aws ec2 create-vol",
+    "tool": "Bash",
+    "input": {
+      "command": "aws ec2 create-volume"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-aws ec2 describe-v",
+    "tool": "Bash",
+    "input": {
+      "command": "aws ec2 describe-volumes"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-gcloud run deploy ",
+    "tool": "Bash",
+    "input": {
+      "command": "gcloud run deploy service"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

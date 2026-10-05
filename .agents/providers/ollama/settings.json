@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:11434/v1",
+  "models": {
+    "fast": "deepseek-v4.1-flash:cloud",
+    "standard": "glm-5.3-flash:cloud",
+    "strong": "glm-5.3:cloud",
+    "subagents": "glm-5.3-flash:cloud"
+  }
+}

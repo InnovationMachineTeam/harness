@@ -1,0 +1,32 @@
+[
+  {
+    "id": "hit-base-write-const password = \"correc",
+    "tool": "Write",
+    "input": {
+      "file_path": "src/auth.ts",
+      "content": "const password = \"correct-horse-battery\";"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-write-const password = process",
+    "tool": "Write",
+    "input": {
+      "file_path": "src/auth.ts",
+      "content": "const password = process.env.APP_PASSWORD;"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "pass-edge-write-const token = \"\";",
+    "tool": "Write",
+    "input": {
+      "file_path": "src/auth.ts",
+      "content": "const token = \"\";"
+    },
+    "expect": "pass",
+    "edge": true
+  }
+]

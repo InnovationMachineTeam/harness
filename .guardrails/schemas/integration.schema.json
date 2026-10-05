@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": ["id", "title", "purpose", "protects", "kind", "source", "marker", "bundles", "expectedFailureMode", "notes"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 },
+    "purpose": { "type": "string", "minLength": 1 },
+    "protects": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["runtime-hook", "code", "git-hook", "verification", "ci"] },
+    "source": { "type": "string" },
+    "marker": { "type": "string" },
+    "bundles": { "type": "array", "items": { "type": "string" } },
+    "expectedFailureMode": { "enum": ["open", "closed"] },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

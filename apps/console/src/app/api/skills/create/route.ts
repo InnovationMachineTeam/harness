@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { launchPromptRun } from "@/core/prompts";
+import { parseTaskProviderId } from "@/core/providers";
+import { launchProviderRun } from "@/core/providerRun";
 import { resolveTaskRuntime } from "@/core/state";
 import { serverContext } from "@/lib/server-context";
 
@@ -36,7 +38,7 @@ function buildCreateSkillPrompt(answers: CreateSkillAnswers, repoRoot: string): 
     .join("\n");
 }
 
-/** POST /api/skills/create {answers, runtime?} - запуск через рантайм задачи "Создание навыка". */
+/** POST /api/skills/create {answers, runtime?} - запуск через рантайм или провайдера задачи "Создание навыка". */
 export async function POST(request: Request) {
   const ctx = await serverContext();
   const body = (await request.json().catch(() => null)) as
@@ -50,10 +52,19 @@ export async function POST(request: Request) {
   const runtimeId = body?.runtime ?? resolveTaskRuntime(ctx.state, "skillCreation");
   if (!runtimeId) {
     return NextResponse.json(
-      { error: "не выбран рантайм: назначьте его в настройках для задачи \"Создание навыка\" или выберите ★" },
+      { error: "не выбран исполнитель: назначьте его в настройках для задачи \"Создание навыка\" или выберите ★" },
       { status: 400 },
     );
   }
+  const prompt = buildCreateSkillPrompt(answers, ctx.repoRoot);
+
+  // значение "provider:<id>" - навык создаётся провайдером из реестра консоли
+  const providerId = parseTaskProviderId(runtimeId);
+  if (providerId !== null) {
+    const result = await launchProviderRun({ repoRoot: ctx.repoRoot, state: ctx.state, providerId, prompt, taskKind: "skill-create" });
+    return NextResponse.json(result, { status: result.ok ? 200 : 400 });
+  }
+
   const adapter = ctx.adapters[runtimeId];
   if (!adapter) return NextResponse.json({ error: `неизвестный рантайм: ${runtimeId}` }, { status: 400 });
 
@@ -61,7 +72,7 @@ export async function POST(request: Request) {
     repoRoot: ctx.repoRoot,
     adapter,
     runtimeId,
-    prompt: buildCreateSkillPrompt(answers, ctx.repoRoot),
+    prompt,
   });
   return NextResponse.json(result, { status: result.ok ? 200 : 400 });
 }

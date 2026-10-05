@@ -1,0 +1,27 @@
+[
+  {
+    "id": "hit-base-bash-gh-auth-token",
+    "tool": "Bash",
+    "input": {
+      "command": "gh auth token"
+    },
+    "expect": "hit"
+  },
+  {
+    "id": "pass-base-bash-git-status",
+    "tool": "Bash",
+    "input": {
+      "command": "git status"
+    },
+    "expect": "pass"
+  },
+  {
+    "id": "hit-edge-bash-vault-kv-get",
+    "tool": "Bash",
+    "input": {
+      "command": "vault kv get secret/app"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

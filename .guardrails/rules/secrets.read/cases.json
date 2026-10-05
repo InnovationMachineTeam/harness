@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-cat .env",
+    "tool": "Bash",
+    "input": {
+      "command": "cat .env"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-cat .env.example",
+    "tool": "Bash",
+    "input": {
+      "command": "cat .env.example"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-head ~/.ssh/id_rsa",
+    "tool": "Bash",
+    "input": {
+      "command": "head ~/.ssh/id_rsa"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

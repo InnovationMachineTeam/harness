@@ -1,0 +1,32 @@
+[
+  {
+    "id": "hit-base-write-const key = \"AKIAIOSFODN",
+    "tool": "Write",
+    "input": {
+      "file_path": "src/config.ts",
+      "content": "const key = \"AKIAIOSFODNN7EXAMPLE\";"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-write-export const retries = 3",
+    "tool": "Write",
+    "input": {
+      "file_path": "src/config.ts",
+      "content": "export const retries = 3;\n"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-write-postgres://app:s3cret-pw",
+    "tool": "Write",
+    "input": {
+      "file_path": "docker/compose.local.yml",
+      "content": "postgres://app:s3cret-pw@db.internal:5432/app"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

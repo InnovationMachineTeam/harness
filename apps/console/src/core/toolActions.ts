@@ -1,6 +1,7 @@
 import { detectToolCli, type ToolDef, type ToolRuntimeId } from "./tools";
 import type { ConsoleState, PackageManager, ToolInstallParams } from "./state";
 import { workspaceDirs } from "./state";
+import { graphifyWorkspaceNames } from "./graphify";
 import type { ToolJobStep } from "./toolJobs";
 import { readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -42,8 +43,9 @@ export function buildInstallSteps(opts: {
   platform: NodeJS.Platform;
   packageManager: PackageManager;
   state: ConsoleState;
+  repoRoot: string;
 }): StepsResult {
-  const { def, runtimes, params, platform, packageManager, state } = opts;
+  const { def, runtimes, params, platform, packageManager, state, repoRoot } = opts;
   const steps: ToolJobStep[] = [];
 
   if (def.requires && !detectToolCli(def.requires.bin).installed) {
@@ -68,7 +70,7 @@ export function buildInstallSteps(opts: {
   const useMcpMode = def.hasModes && params.mode === "mcp";
   if (useMcpMode) {
     // только регистрация MCP - per-runtime шагов нет
-  } else if (def.perRuntime) {
+  } else if (def.perRuntime && (def.perRuntime.available?.() ?? true)) {
     // интеграция-сервис (headroom): один detached-шаг на всех рантаймов
     if (def.perRuntime.detachedInstall && def.dashboardCommand) {
       steps.push({ label: `Сервис: ${def.title}`, command: def.dashboardCommand, detached: true });
@@ -94,8 +96,11 @@ export function buildInstallSteps(opts: {
   // инициализация проекта (индексы/граф) - по всем рабочим папкам,
   // независимо от scope интеграции: общий контекст из всех директорий
   if (def.projectInit) {
-    for (const dir of workspaceDirs(state)) {
-      for (const command of def.projectInit.init(dir)) {
+    const dirs = workspaceDirs(state);
+    const names = graphifyWorkspaceNames(dirs);
+    for (const dir of dirs) {
+      const name = names.get(dir) ?? path.basename(dir);
+      for (const command of def.projectInit.init(dir, repoRoot, name)) {
         steps.push({ label: `Инициализация: ${def.title} · ${dir}`, command, cwd: dir });
       }
     }
@@ -106,18 +111,23 @@ export function buildInstallSteps(opts: {
 
 /**
  * Шаги инициализации/переинициализации по всем рабочим папкам
- * (cwd шага = папка; артефакты пишутся в <dir>/… - без взаимных перезаписей).
+ * (cwd шага = папка; артефакты пишутся в <dir>/… - без взаимных перезаписей;
+ * граф Graphify - исключение: <repoRoot>/graphify/<имя>/graphify-out).
  */
 export function buildInitSteps(
   def: ToolDef,
   params: ToolInstallParams,
-  reinit = false,
+  reinit: boolean,
   dirs: string[],
+  repoRoot: string,
 ): ToolJobStep[] {
   if (!def.projectInit || dirs.length === 0) return [];
+  const names = graphifyWorkspaceNames(dirs);
   const steps: ToolJobStep[] = [];
   for (const dir of dirs) {
-    const commands = reinit && def.projectInit.reinit ? def.projectInit.reinit(dir) : def.projectInit.init(dir);
+    const name = names.get(dir) ?? path.basename(dir);
+    const commands =
+      reinit && def.projectInit.reinit ? def.projectInit.reinit(dir, repoRoot, name) : def.projectInit.init(dir, repoRoot, name);
     for (const command of commands) {
       steps.push({
         label: `${reinit ? "Переинициализация" : "Инициализация"}: ${def.title} · ${dir}`,
@@ -137,7 +147,7 @@ export function buildUninstallSteps(opts: {
   const { def, runtimes, params } = opts;
   const steps: ToolJobStep[] = [];
   const useMcpMode = def.hasModes && params.mode === "mcp";
-  if (!useMcpMode && def.perRuntime) {
+  if (!useMcpMode && def.perRuntime && (def.perRuntime.available?.() ?? true)) {
     // сервис-инструменты (headroom): остановка - программно (stopDashboard)
     if (def.uninstallStopsDashboard) return steps;
     for (const runtime of runtimes) {

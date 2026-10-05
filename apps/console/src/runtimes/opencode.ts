@@ -1,7 +1,9 @@
 import { join } from "node:path";
 import type { ActivitySignal, Issue, ProbeContext, RuntimeAdapter, SkillItem } from "@/core/types";
+import { getOpencodeSession, listOpencodeSessions, opencodeAwaiting } from "@/core/sessions/opencode";
 import { skillDescription, toSkillItem } from "@/core/skills";
 import { anyExists } from "@/lib/signals/fs";
+import { scanProcessesSync } from "@/lib/signals/processes";
 
 /** OpenCode: локальная БД сессий (SQLite) - mtime как маркер использования. */
 export const opencodeAdapter: RuntimeAdapter = {
@@ -40,6 +42,19 @@ export const opencodeAdapter: RuntimeAdapter = {
       items.push(item);
     }
 
+    // проектные навыки: .opencode/skills/<имя>/SKILL.md (симлинки хука включения)
+    const projectSkills = await ctx.fs.collectFiles(join(ctx.repoRoot, ".opencode", "skills"), {
+      match: (name) => name === "SKILL.md",
+      maxDepth: 2,
+      limit: 100,
+    });
+    for (const f of projectSkills) {
+      const relDir = f.relPath.replace(/\/SKILL\.md$/, "");
+      const item = toSkillItem(ctx, "opencode", "skill", relDir.split("/").pop() ?? "skill", f.path, relDir);
+      item.description = await skillDescription(ctx, f.path);
+      items.push(item);
+    }
+
     // проектные скрипты-плагины репозитория: .opencode/plugins/*.ts
     const plugins = await ctx.fs.collectFiles(join(ctx.repoRoot, ".opencode", "plugins"), {
       match: (name) => name.endsWith(".ts"),
@@ -74,7 +89,7 @@ export const opencodeAdapter: RuntimeAdapter = {
         title: "Плагин .opencode/plugins/agentos-guard.ts не найден",
         hint: "Guard-политика не применяется к OpenCode",
       });
-    } else if (!plugin.includes("guard.mjs") || !(plugin.includes("AGENT_RUNTIME") && plugin.includes("opencode"))) {
+    } else if (!plugin.includes(".guardrails/src/cli.ts") || !(plugin.includes("AGENT_RUNTIME") && plugin.includes("opencode"))) {
       issues.push({
         severity: "warn",
         title: "Плагин OpenCode не ведёт в guard с AGENT_RUNTIME=opencode",
@@ -83,7 +98,13 @@ export const opencodeAdapter: RuntimeAdapter = {
     return issues;
   },
 
-  // история сессий OpenCode - в opencode.db (SQLite): списки не поддерживаются
+  async awaitingInput(ctx: ProbeContext) {
+    if (scanProcessesSync(/opencode/).length === 0) return null;
+    return opencodeAwaiting(ctx);
+  },
+
+  listSessions: (ctx, dirs) => listOpencodeSessions(ctx, dirs),
+  getSession: (ctx, id) => getOpencodeSession(ctx, id),
 
   replyCommand: (sessionId, text) => ({ command: "opencode", args: ["run", "-s", sessionId, text] }),
   runCommand: (text) => ({ command: "opencode", args: ["run", text] }),

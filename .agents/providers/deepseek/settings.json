@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.deepseek.com/v1",
+  "models": {
+    "fast": "deepseek-chat",
+    "standard": "deepseek-chat",
+    "strong": "deepseek-reasoner",
+    "subagents": "deepseek-chat"
+  }
+}

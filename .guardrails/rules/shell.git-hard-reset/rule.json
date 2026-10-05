@@ -1,0 +1,19 @@
+{
+  "id": "shell.git-hard-reset",
+  "title": "Жёсткий reset",
+  "description": "Предупреждает о потере незакоммиченных изменений.",
+  "category": "git",
+  "severity": "high",
+  "effect": "warn",
+  "threats": [
+    "git"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Сохраните изменения в stash или commit.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://llm.api.cloud.yandex.net/v1",
+  "models": {
+    "fast": "yandexgpt-lite",
+    "standard": "yandexgpt",
+    "strong": "yandexgpt",
+    "subagents": "yandexgpt-lite"
+  }
+}

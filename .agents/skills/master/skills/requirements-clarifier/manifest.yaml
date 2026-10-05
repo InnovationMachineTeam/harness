@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: requirements-clarifier
+title: Requirements clarifier
+description: Используй этот навык, когда нужно преобразовать запрос и evidence в проверяемые функциональные требования, сценарии, edge cases, измеримые NFR, критерии приёмки и журнал решений до начала проектирования или реализации.
+source:
+  version: 1.1.0
+  hash: builtin-requirements-clarifier-2
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [requirements, acceptance-criteria, edge-cases, nfr, scenarios, решения, требования]

@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.together.xyz/v1",
+  "models": {
+    "fast": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "standard": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
+    "strong": "deepseek-ai/DeepSeek-V3",
+    "subagents": "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+  }
+}

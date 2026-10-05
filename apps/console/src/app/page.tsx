@@ -1,20 +1,6 @@
-import { Dashboard } from "@/components/Dashboard";
-import { cachedDashboardData } from "@/core/cache";
-import { buildDashboardData } from "@/core/registry";
-import { findRepoRoot } from "@/core/repo";
-import { loadConsoleState } from "@/core/state";
-import { ADAPTERS } from "@/runtimes";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
-
-export default async function Page() {
-  const repoRoot = findRepoRoot();
-  const data = await cachedDashboardData(`${repoRoot}|7d`, async () =>
-    buildDashboardData({
-      repoRoot,
-      adapters: ADAPTERS,
-      state: await loadConsoleState(repoRoot),
-    }),
-  );
-  return <Dashboard initial={data} />;
+/** Стартовая страница консоли - раздел "Агент". Страница Roadmap удалена. */
+export default function HomeRedirect() {
+  redirect("/agent");
 }

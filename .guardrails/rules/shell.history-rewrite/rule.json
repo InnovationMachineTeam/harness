@@ -1,0 +1,19 @@
+{
+  "id": "shell.history-rewrite",
+  "title": "Перезапись истории",
+  "description": "Блокирует полную перезапись истории Git.",
+  "category": "git",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "git"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Согласуйте миграцию истории с пользователем.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

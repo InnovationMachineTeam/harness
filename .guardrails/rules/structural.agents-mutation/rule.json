@@ -1,0 +1,19 @@
+{
+  "id": "structural.agents-mutation",
+  "title": "Структурное изменение agents",
+  "description": "Предупреждает об изменении ролей, навыков и runtime-конфигурации.",
+  "category": "governance",
+  "severity": "high",
+  "effect": "warn",
+  "threats": [
+    "governance"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Представьте evidence, изменение и риски пользователю.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

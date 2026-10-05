@@ -1,0 +1,19 @@
+{
+  "id": "shell.sudo",
+  "title": "Повышение прав",
+  "description": "Предупреждает о sudo.",
+  "category": "host",
+  "severity": "medium",
+  "effect": "warn",
+  "threats": [
+    "host"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Используйте установку в профиль пользователя.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

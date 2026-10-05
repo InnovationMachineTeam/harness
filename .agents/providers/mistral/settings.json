@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.mistral.ai/v1",
+  "models": {
+    "fast": "mistral-small-latest",
+    "standard": "mistral-medium-latest",
+    "strong": "mistral-large-latest",
+    "subagents": "mistral-small-latest"
+  }
+}

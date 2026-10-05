@@ -1,0 +1,19 @@
+{
+  "id": "db.delete-without-where",
+  "title": "DELETE без WHERE",
+  "description": "Блокирует массовое удаление строк без предиката.",
+  "category": "database",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "database"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Добавьте WHERE или используйте проверяемую миграцию.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

@@ -1,0 +1,19 @@
+{
+  "id": "db.drop",
+  "title": "Удаление базы или схемы",
+  "description": "Блокирует DROP DATABASE, DROP SCHEMA и dropdb.",
+  "category": "database",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "database"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Оформите проверяемую миграцию.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

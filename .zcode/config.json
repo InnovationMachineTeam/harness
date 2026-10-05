@@ -8,9 +8,82 @@
           "hooks": [
             {
               "type": "command",
-              "command": "AGENT_RUNTIME=zcode AGENT_RUNTIME_CONFIG=\"${ZCODE_PROJECT_DIR}/.agents/runtime/zcode/config.json\" node \"${ZCODE_PROJECT_DIR}/.agents/runtime/guard.mjs\"",
+              "command": "AGENT_RUNTIME=zcode AGENT_RUNTIME_CONFIG=\"${ZCODE_PROJECT_DIR}/.agents/runtime/zcode/config.json\" GUARDRAILS_INTEGRATION=runtime:zcode:PreToolUse bun \"${ZCODE_PROJECT_DIR}/.guardrails/src/cli.ts\" evaluate",
               "timeout": 30,
               "statusMessage": "Checking against repository policy"
+            }
+          ]
+        },
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "command -v bun >/dev/null 2>&1 && bun \"${ZCODE_PROJECT_DIR}/tooling/harness/src/cli.ts\" graphify guard-search || exit 0",
+              "timeout": 10
+            }
+          ],
+          "matcher": "Bash|Grep"
+        },
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "command -v bun >/dev/null 2>&1 && bun \"${ZCODE_PROJECT_DIR}/tooling/harness/src/cli.ts\" graphify guard-read || exit 0",
+              "timeout": 10
+            }
+          ],
+          "matcher": "Read|Glob"
+        },
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "command -v bun >/dev/null 2>&1 && bun \"${ZCODE_PROJECT_DIR}/tooling/harness/src/cli.ts\" serena remind || exit 0",
+              "timeout": 10
+            }
+          ],
+          "matcher": "Read|Grep"
+        }
+      ],
+      "UserPromptSubmit": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "command -v bun >/dev/null 2>&1 && bun \"${ZCODE_PROJECT_DIR}/tooling/harness/src/cli.ts\" codegraph prompt-hook || exit 0",
+              "timeout": 10
+            }
+          ]
+        },
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "command -v bun >/dev/null 2>&1 && AGENT_RUNTIME=zcode AGENT_RUNTIME_CONFIG=\"${ZCODE_PROJECT_DIR}/.agents/runtime/zcode/config.json\" GUARDRAILS_INTEGRATION=runtime:zcode:UserPromptSubmit bun \"${ZCODE_PROJECT_DIR}/.guardrails/src/cli.ts\" prompt || exit 0",
+              "timeout": 10
+            }
+          ]
+        }
+      ],
+      "PostToolUse": [
+        {
+          "matcher": "Bash|Read|Grep|Glob|WebFetch|WebSearch",
+          "hooks": [
+            {
+              "type": "command",
+              "command": "AGENT_RUNTIME=zcode AGENT_RUNTIME_CONFIG=\"${ZCODE_PROJECT_DIR}/.agents/runtime/zcode/config.json\" GUARDRAILS_INTEGRATION=runtime:zcode:PostToolUse bun \"${ZCODE_PROJECT_DIR}/.guardrails/src/posttooluse.ts\"",
+              "timeout": 15
+            }
+          ]
+        }
+      ],
+      "SessionStart": [
+        {
+          "hooks": [
+            {
+              "type": "command",
+              "command": "command -v bun >/dev/null 2>&1 && bun \"${ZCODE_PROJECT_DIR}/tooling/harness/src/cli.ts\" serena session-start || exit 0",
+              "timeout": 10
             }
           ]
         }

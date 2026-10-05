@@ -16,7 +16,7 @@ Because nothing here can refuse a call, `agents launch --runtime zcode` caps the
 
 ## Reaching the console
 
-This harness has no hook the repository can install, so the Agentic OS Console cannot see what it does unless the agent tells it. One command does that, and it is the same command `.claude/settings.json` runs at a hook point - one emitter, one event stream, whatever ran (ADR-0019):
+This harness has no hook the repository can install, so the Harness Console cannot see what it does unless the agent tells it. One command does that, and it is the same command `.claude/settings.json` runs at a hook point - one emitter, one event stream, whatever ran (ADR-0019):
 
 ```bash
 echo '{"tool_name":"Bash","tool_input":{"command":"…"}}' | \

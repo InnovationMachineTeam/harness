@@ -1,0 +1,19 @@
+{
+  "id": "shell.chmod-777",
+  "title": "Рекурсивный chmod 777",
+  "description": "Блокирует рекурсивный world-writable режим.",
+  "category": "filesystem",
+  "severity": "high",
+  "effect": "block",
+  "threats": [
+    "filesystem"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Назначьте минимально необходимый режим.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

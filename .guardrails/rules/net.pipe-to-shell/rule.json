@@ -1,0 +1,19 @@
+{
+  "id": "net.pipe-to-shell",
+  "title": "Сеть в shell",
+  "description": "Блокирует прямое исполнение скачанного содержимого.",
+  "category": "supply-chain",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "supply-chain"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Скачайте файл, проверьте его и запустите локально.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

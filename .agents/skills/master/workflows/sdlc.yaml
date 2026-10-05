@@ -1,0 +1,311 @@
+apiVersion: harness/v1
+kind: Workflow
+id: sdlc
+title: Базовый SDLC
+description: Полный цикл от intake до close с входным контролем, ревью результата и ручными гейтами.
+inputs:
+  request:
+    type: string
+    required: true
+defaults:
+  privacy: metadata
+  runtime:
+    candidates: [provider:ollama, zcode, cursor]
+nodes:
+  - id: intake
+    title: Intake и roadmap
+    phase: intake
+    description: Зафиксировать цель, границы, аудиторию, критерии успеха и связь с backlog.
+    dependsOn: []
+    roles: [product-analyst]
+    inputControl:
+      roles: [product-analyst]
+      prompt: Проверь запрос пользователя как вход цикла.
+      dor:
+        - цель сформулирована
+        - границы определены
+        - критерии успеха заданы или уточняемы
+      maxAttempts: 10
+    execution:
+      prompt: Зафиксируй цель, границы, аудиторию, критерии успеха и связь с backlog.
+      confirmPlan: false
+    inputs: [request]
+    outputs: [intake]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: context
+    title: Контекст и evidence
+    phase: research
+    description: Собрать проверяемый контекст по коду и документации.
+    dependsOn: [intake]
+    roles: [researcher]
+    execution:
+      prompt: "Собери проверяемый контекст: инвентаризация кода, документация, доказательства. Используй навык codebase-research."
+      confirmPlan: false
+    inputs: [intake]
+    outputs: [evidence]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: requirements
+    title: Requirements
+    phase: requirements
+    description: Закрыть функциональные и нефункциональные требования и edge cases.
+    dependsOn: [context]
+    roles: [requirements-engineer]
+    inputControl:
+      roles: [requirements-engineer]
+      prompt: Проверь контекст как основу для требований.
+      dor:
+        - контекст полон
+        - источники указаны
+        - открытые вопросы перечислены
+      maxAttempts: 10
+    execution:
+      prompt: Сформулируй функциональные и нефункциональные требования, edge cases и NFR. Используй навык requirements-clarifier.
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - требования проверяемы
+        - edge cases перечислены
+        - NFR заданы
+      ac:
+        - каждое требование имеет критерий проверки
+      manualReview: true
+      maxAttempts: 10
+    inputs: [evidence]
+    outputs: [requirements]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: requirements-gate
+    title: Requirements gate
+    phase: requirements
+    description: Ручное подтверждение готовности требований к дизайну.
+    dependsOn: [requirements]
+    roles: [approver]
+    execution:
+      prompt: Сверь requirements с критериями gate и подготовь решение.
+      confirmPlan: false
+    outputControl:
+      roles: [approver]
+      tests: []
+      dod:
+        - требования готовы к дизайну
+      manualReview: true
+      maxAttempts: 10
+    inputs: [requirements]
+    outputs: [requirements-approval]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 600000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: ux-design
+    title: Product и UX design
+    phase: design
+    description: Подготовить пользовательские потоки, состояния, accessibility и визуальный контракт.
+    dependsOn: [requirements-gate]
+    roles: [ux-designer, frontend-web]
+    execution:
+      prompt: Подготовь пользовательские потоки, состояния, accessibility и визуальный контракт. Инструмент open-design используй для UX артефактов.
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - потоки описаны
+        - состояния перечислены
+        - accessibility учтена
+      manualReview: false
+      maxAttempts: 10
+    inputs: [requirements]
+    outputs: [ux-design]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: system-design
+    title: System design
+    phase: design
+    description: Спроектировать архитектуру, API, данные, безопасность и наблюдаемость.
+    dependsOn: [requirements-gate]
+    roles: [system-architect]
+    execution:
+      prompt: Спроектируй архитектуру, API, модель данных, безопасность и наблюдаемость. Используй навык system-design.
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - архитектура и ADR зафиксированы
+        - API и данные описаны
+        - безопасность и наблюдаемость учтены
+      manualReview: false
+      maxAttempts: 10
+    inputs: [requirements, evidence]
+    outputs: [system-design]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: technical-design
+    title: Technical design
+    phase: design
+    description: Детализировать техническое решение в границах системного дизайна.
+    dependsOn: [system-design]
+    roles: [system-architect, frontend-web]
+    execution:
+      prompt: "Детализируй техническое решение: компоненты, контракты, миграции, риски."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - компоненты и контракты определены
+        - риски и миграции перечислены
+      manualReview: false
+      maxAttempts: 10
+    inputs: [requirements, system-design]
+    outputs: [technical-design]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: design-gate
+    title: Design gate
+    phase: design
+    description: Ручное подтверждение готовности дизайна к планированию.
+    dependsOn: [ux-design, system-design, technical-design]
+    roles: [approver]
+    execution:
+      prompt: Сверь дизайн-артефакты с критериями gate и подготовь решение.
+      confirmPlan: false
+    outputControl:
+      roles: [approver]
+      tests: []
+      dod:
+        - дизайн согласован и готов к планированию
+      manualReview: true
+      maxAttempts: 10
+    inputs: [ux-design, system-design, technical-design]
+    outputs: [design-approval]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 600000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: plan
+    title: Planning
+    phase: planning
+    description: Сформировать исполнимый план и задачи с критериями приёмки; план подтверждается вручную.
+    dependsOn: [design-gate]
+    roles: [planner]
+    execution:
+      prompt: "Сформируй исполнимый dependency plan: декомпозиция, критерии приёмки каждой задачи, план проверок."
+      confirmPlan: true
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - декомпозиция полна
+        - у каждой задачи есть критерий приёмки
+        - порядок исполнения определён
+      manualReview: false
+      maxAttempts: 10
+    inputs: [requirements, ux-design, technical-design, system-design]
+    outputs: [plan, tasks]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: execute
+    title: Implementation
+    phase: implementation
+    description: Выполнить утверждённые задачи плана.
+    dependsOn: [plan]
+    roles: [implementer]
+    execution:
+      prompt: "Выполни задачи плана: реализация и тесты. Работай по плану и заданиям на доработку."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier, quality-general]
+      tests: [unit, integration, lint, typecheck]
+      dod:
+        - код соответствует плану
+        - новые тесты написаны
+        - существующие тесты не сломаны
+      ac:
+        - все задачи плана закрыты
+      manualReview: false
+      maxAttempts: 10
+    inputs: [plan, tasks]
+    outputs: [implementation]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 3600000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: write }
+  - id: verify
+    title: Verification
+    phase: verification
+    description: Независимо проверить результат относительно требований и плана.
+    dependsOn: [execute]
+    roles: [verifier, quality-general]
+    execution:
+      prompt: "Независимо проверь результат: ревью, тесты, трассируемость к требованиям."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: [unit, integration, e2e, lint, typecheck]
+      dod:
+        - трассируемость к требованиям показана
+        - проверки пройдены
+      manualReview: false
+      maxAttempts: 10
+    inputs: [requirements, implementation]
+    outputs: [verification]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 1800000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: release-gate
+    title: Release gate
+    phase: release
+    description: Ручное подтверждение готовности к выпуску.
+    dependsOn: [verify]
+    roles: [approver]
+    execution:
+      prompt: Сверь verification и release-критерии, подготовь решение.
+      confirmPlan: false
+    outputControl:
+      roles: [approver]
+      tests: []
+      dod:
+        - выпуск готов
+      manualReview: true
+      maxAttempts: 10
+    inputs: [verification]
+    outputs: [release-approval]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 600000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: close
+    title: Close
+    phase: release
+    description: Закрыть выпуск, зафиксировать evidence и задачи.
+    dependsOn: [release-gate]
+    roles: [release-manager]
+    execution:
+      prompt: "Закрой выпуск: evidence, заметки выпуска, закрытие задач."
+      confirmPlan: false
+    inputs: [release-approval, verification]
+    outputs: [release]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 900000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }

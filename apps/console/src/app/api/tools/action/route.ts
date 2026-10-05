@@ -5,6 +5,8 @@ import { stopDashboard } from "@/core/dashboards";
 import { syncMcp } from "@/core/mcp/sync";
 import { buildInstallSteps, buildInitSteps, buildUninstallSteps, cleanupAfterUninstall, sanitizeRuntimes, sanitizeToolParams } from "@/core/toolActions";
 import { startToolJob, type ToolJobStep } from "@/core/toolJobs";
+import { runLifecycleHook } from "@/core/lifecycleHooks";
+import { mandatoryWorkspace } from "@/core/state";
 import { readPackageManagerPref, toolById, toolRuntimeInstalled, writeToolsEnv, type ToolRuntimeId } from "@/core/tools";
 import { appendUsageEvent } from "@/core/toolsUsage";
 import { workspaceDirs } from "@/core/state";
@@ -71,6 +73,16 @@ export async function POST(request: Request) {
       action: detail.action,
       runtimes: detail.runtimes,
     });
+    // хук жизненного цикла: install после установки, enable/disable на toggle
+    // (ошибки хуков пишутся в лог домена: .agents/console/hooks/tool.log)
+    await runLifecycleHook({
+      repoRoot: ctx.repoRoot,
+      workspace: mandatoryWorkspace(ctx.state),
+      domain: "tool",
+      name: def.id,
+      op: detail.action === "toggle" ? (detail.enabled ? "enable" : "disable") : "install",
+      hooks: def.hooks,
+    });
     invalidateDashboardCache();
   };
 
@@ -81,7 +93,7 @@ export async function POST(request: Request) {
       action === "reinstall" && record
         ? (record.runtimes as ToolRuntimeId[]).filter((r) => def.perRuntime?.supported.includes(r))
         : sanitizeRuntimes(def, body?.runtimes);
-    const built = buildInstallSteps({ def, runtimes, params, platform, packageManager: pm, state: ctx.state });
+    const built = buildInstallSteps({ def, runtimes, params, platform, packageManager: pm, state: ctx.state, repoRoot: ctx.repoRoot });
     if (!built.ok) return NextResponse.json({ error: built.error }, { status: 400 });
     const steps: ToolJobStep[] =
       action === "reinstall"
@@ -119,6 +131,15 @@ export async function POST(request: Request) {
     const steps = buildUninstallSteps({ def, runtimes, params });
     if (body?.dryRun) return NextResponse.json({ ok: true, steps });
     const removeFinalize = async () => {
+      // hook remove - до зачистки: команды работают с ещё установленным CLI
+      await runLifecycleHook({
+        repoRoot: ctx.repoRoot,
+        workspace: mandatoryWorkspace(ctx.state),
+        domain: "tool",
+        name: def.id,
+        op: "remove",
+        hooks: def.hooks,
+      });
       // проектная зачистка (rtk project: CLI не умеет снимать сам)
       const cleaned = await cleanupAfterUninstall(ctx.repoRoot, def, params);
       // инструмент с сервисом (headroom): остановить инстанс и сбросить автозапуск
@@ -167,7 +188,7 @@ export async function POST(request: Request) {
     if (dirs.length === 0) {
       return NextResponse.json({ error: "рабочие папки не заданы" }, { status: 400 });
     }
-    const steps = buildInitSteps(def, params, body?.reinit === true, dirs);
+    const steps = buildInitSteps(def, params, body?.reinit === true, dirs, ctx.repoRoot);
     if (body?.dryRun) return NextResponse.json({ ok: true, steps });
     if (steps.length === 0) {
       return NextResponse.json({ error: `у инструмента нет инициализации: ${def.id}` }, { status: 400 });
@@ -232,7 +253,7 @@ export async function POST(request: Request) {
     }
 
     const built = enabled
-      ? buildInstallSteps({ def, runtimes, params, platform, packageManager: pm, state: ctx.state })
+      ? buildInstallSteps({ def, runtimes, params, platform, packageManager: pm, state: ctx.state, repoRoot: ctx.repoRoot })
       : ({ ok: true as const, steps: buildUninstallSteps({ def, runtimes, params }) });
     if (!built.ok) return NextResponse.json({ error: built.error }, { status: 400 });
     if (body?.dryRun) return NextResponse.json({ ok: true, steps: built.steps });

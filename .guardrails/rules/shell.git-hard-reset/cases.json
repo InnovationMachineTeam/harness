@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-git reset --hard H",
+    "tool": "Bash",
+    "input": {
+      "command": "git reset --hard HEAD"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-git reset --soft H",
+    "tool": "Bash",
+    "input": {
+      "command": "git reset --soft HEAD~1"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-git reset --hard o",
+    "tool": "Bash",
+    "input": {
+      "command": "git reset --hard origin/main"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

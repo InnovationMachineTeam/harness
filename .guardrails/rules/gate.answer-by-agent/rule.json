@@ -1,0 +1,19 @@
+{
+  "id": "gate.answer-by-agent",
+  "title": "Самоодобрение gate",
+  "description": "Не позволяет агенту ответить на собственный gate.",
+  "category": "approval",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "approval"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Передайте идентификатор gate пользователю.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

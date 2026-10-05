@@ -1,0 +1,19 @@
+{
+  "id": "shell.git-force-push",
+  "title": "Небезопасный force push",
+  "description": "Разрешает force push только с lease.",
+  "category": "git",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "git"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Используйте --force-with-lease после согласования.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

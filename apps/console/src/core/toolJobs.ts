@@ -1,5 +1,5 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { appendFileSync, mkdirSync, renameSync, statSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 /**
@@ -26,6 +26,15 @@ export interface ToolJobStep {
    * успешным сразу, завершение процесса не ждётся.
    */
   detached?: boolean;
+  /** Стабильный идентификатор шага (обновления: id записи реестра) - в results и метах. */
+  stepId?: string;
+}
+
+/** Итог выполненного шага (код выхода; null - процесс не запустился или убит сигналом). */
+export interface ToolJobStepResult {
+  stepId?: string;
+  label: string;
+  exitCode: number | null;
 }
 
 export interface ToolJob {
@@ -35,11 +44,69 @@ export interface ToolJob {
   lines: string[];
   done: boolean;
   exitCode: number | null;
+  /** Итоги выполненных шагов (накапливаются; попадают в jobs-meta.jsonl). */
+  results: ToolJobStepResult[];
   startedAt: number;
   listeners: Set<(line: string) => void>;
 }
 
 const ANSI_RE = /\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07/g;
+
+// N-5: установщики индексов (graphify install, codegraph install, serena init)
+// переписывают файлы хуков рантаймов - вокруг их шагов файлы хуков
+// восстанавливаются к состоянию до шага.
+const PROTECTED_HOOK_FILES = [".claude/settings.json", ".codex/hooks.json", ".cursor/hooks.json"];
+const INDEX_INSTALLERS = new Set(["codegraph", "graphify", "serena"]);
+
+// Путь строго внутри корня: resolve + boundary-проверка (образец - cleanupAfterUninstall).
+function protectedPath(root: string, rel: string): string | null {
+  const rootPath = path.resolve(root);
+  const target = path.resolve(rootPath, rel);
+  return target === rootPath || target.startsWith(rootPath + path.sep) ? target : null;
+}
+
+function snapshotHookFiles(root: string): Map<string, string | null> {
+  const snapshot = new Map<string, string | null>();
+  for (const rel of PROTECTED_HOOK_FILES) {
+    const file = protectedPath(root, rel);
+    if (!file) continue;
+    try {
+      snapshot.set(rel, readFileSync(file, "utf8"));
+    } catch {
+      snapshot.set(rel, null);
+    }
+  }
+  return snapshot;
+}
+
+function restoreHookFiles(root: string, snapshot: Map<string, string | null>): boolean {
+  let changed = false;
+  for (const [rel, before] of snapshot) {
+    const file = protectedPath(root, rel);
+    if (!file) continue;
+    let current: string | null = null;
+    try {
+      current = readFileSync(file, "utf8");
+    } catch {
+      current = null;
+    }
+    if (current === before) continue;
+    try {
+      if (before === null) {
+        rmSync(file, { force: true });
+      } else if (current === null) {
+        mkdirSync(path.dirname(file), { recursive: true });
+        writeFileSync(file, before);
+      } else {
+        writeFileSync(file, before);
+      }
+      changed = true;
+    } catch {
+      /* восстановление не должно ломать цепочку шагов */
+    }
+  }
+  return changed;
+}
 
 const jobs = new Map<string, ToolJob>();
 
@@ -91,7 +158,14 @@ function writeMeta(job: ToolJob): void {
   try {
     appendFileSync(
       file,
-      `${JSON.stringify({ id: job.id, toolId: job.toolId, action: job.action, done: job.done, exitCode: job.exitCode })}\n`,
+      `${JSON.stringify({
+        id: job.id,
+        toolId: job.toolId,
+        action: job.action,
+        done: job.done,
+        exitCode: job.exitCode,
+        results: job.results,
+      })}\n`,
     );
   } catch {
     /* файловый статус не критичен для выполнения */
@@ -126,6 +200,7 @@ export function startToolJob(opts: {
     lines: [],
     done: false,
     exitCode: null,
+    results: [],
     startedAt: Date.now(),
     listeners: new Set(),
   };
@@ -145,6 +220,10 @@ export function startToolJob(opts: {
       return;
     }
     const step = opts.steps[index];
+    // итог шага фиксируется один раз при его завершении (в т.ч. ошибка запуска)
+    const recordResult = (exitCode: number | null): void => {
+      job.results.push({ stepId: step.stepId, label: step.label, exitCode });
+    };
     push(job, `── ${step.label} ──`);
     push(job, `$ ${step.command.join(" ")}`);
     if (step.detached) {
@@ -159,15 +238,25 @@ export function startToolJob(opts: {
         });
       } catch (err) {
         push(job, `ошибка запуска ${step.command[0]}: ${String(err)}`);
+        recordResult(1);
         runNext(index + 1, step.optional ? null : 1);
         return;
       }
       detachedChild.unref();
       push(job, "(фоновый сервис запущен - завершение не ждём)");
+      recordResult(0);
       runNext(index + 1, null);
       return;
     }
     let child: ChildProcess;
+    const protectHooks = INDEX_INSTALLERS.has(step.command[0] ?? "");
+    const hookSnapshot = protectHooks ? snapshotHookFiles(opts.defaultCwd) : null;
+    const restoreHooks = (): void => {
+      if (!hookSnapshot) return;
+      if (restoreHookFiles(opts.defaultCwd, hookSnapshot)) {
+        push(job, "(файлы хуков рантаймов восстановлены - установщик их менять не должен)");
+      }
+    };
     try {
       child = spawn(step.command[0], step.command.slice(1), {
         cwd: step.cwd ?? opts.defaultCwd,
@@ -175,7 +264,9 @@ export function startToolJob(opts: {
         stdio: ["pipe", "pipe", "pipe"],
       });
     } catch (err) {
+      restoreHooks();
       push(job, `ошибка запуска ${step.command[0]}: ${String(err)}`);
+      recordResult(1);
       runNext(index + 1, step.optional ? null : 1);
       return;
     }
@@ -189,10 +280,14 @@ export function startToolJob(opts: {
     child.stdout?.on("data", onChunk);
     child.stderr?.on("data", onChunk);
     child.on("error", (err) => {
+      restoreHooks();
       push(job, `ошибка: ${String(err.message ?? err)}`);
+      recordResult(1);
       runNext(index + 1, step.optional ? null : 1);
     });
     child.on("close", (code) => {
+      restoreHooks();
+      recordResult(code);
       if (code === 0) {
         runNext(index + 1, null);
       } else if (step.optional) {

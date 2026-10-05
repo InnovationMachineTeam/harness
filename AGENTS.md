@@ -34,21 +34,21 @@
 В начале каждой сессии выведи в терминал блок основных настроек и покажи его пользователю:
 
 ```bash
-AGENT_RUNTIME=<id> AGENT_RUNTIME_CONFIG=.agents/runtime/<id>/config.json node .agents/runtime/guard.mjs settings
+AGENT_RUNTIME=<id> AGENT_RUNTIME_CONFIG=.agents/runtime/<id>/config.json bun .guardrails/src/cli.ts settings
 ```
 
 В выводе сверяются: адаптер и hooksSupport твоего рантайма, guard-команда, активный профиль (`AGENT_PROFILE`, по умолчанию `default`), tier→модель, лимиты, права и verification-команды. Если в выводе "NOT verified" у модели или адаптер не соответствует таблице §1 - сообщи пользователю до начала работы.
 
 ## 3. Guard: проверка вызовов до выполнения
 
-Guard - единый движок политики: `.agents/runtime/guard.mjs` (поле `guard` в `.agents/runtime/config.json`). Все шесть адаптеров из §1 запускают его как PreToolUse-хук с переменными `AGENT_RUNTIME` и `AGENT_RUNTIME_CONFIG`.
+Guardrails — единый движок политики: `.guardrails/src/cli.ts` (поле `guard` в `.agents/runtime/config.json`). Все шесть адаптеров из §1 запускают его как PreToolUse-хук с переменными `AGENT_RUNTIME` и `AGENT_RUNTIME_CONFIG`.
 
 - Контракт: stdin `{"tool_name":"Bash","tool_input":{"command":"…"}}`; **exit 0** - разрешено (warn-правила печатаются в stderr), **exit 2** - блок.
 - При блоке stderr содержит id правила, причину и строку `Instead: …` - следуй ей, не обходи блок.
 - Нативный хук - автоматический слой. Он не отменяет ручную проверку: перед любой сомнительной shell-командой или записью прогони payload через guard сам:
 
 ```bash
-echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | node .agents/runtime/guard.mjs
+echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | bun .guardrails/src/cli.ts evaluate
 ```
 
 - Самопроверка guard на каждом рантайме - `verifyCommand` из твоего конфига (ожидается exit 2 и причина в stderr).
@@ -148,13 +148,16 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | node .
 | `bun` (+`bunx`) | обязательный | менеджер пакетов, раннер скриптов, `bunx skills …` |
 | `node` ≥ 22 | обязательный | guard-хуки рантаймов, headless-запуск ZCode, база для openwiki |
 | `uv` | опциональный | питоньи инструменты (serena/graphify/headroom) |
-| `openwiki` | опциональный | вкладка "Память": сборка вики и визуализатор |
+| `openwiki` | опциональный | раздел "Знание": сборка вики и визуализатор |
 | `serena` | опциональный | семантическая навигация по коду (LSP, MCP) |
 | `qmd` | опциональный | локальный поиск по markdown (MCP) |
 | `codegraph` | опциональный | knowledge graph кода (MCP + per-runtime) |
-| `graphify` | опциональный | граф знаний кода/доков (skill/hooks, вкладка "Память") |
+| `graphify` | опциональный | граф знаний кода/доков (skill/hooks, раздел "Знание") |
 | `rtk` | опциональный | сжатие вывода shell-команд (хуки рантаймов) |
 | `headroom` | опциональный | сжатие контекста перед LLM (прокси/MCP) |
+| `nx` | опциональный | оркестратор задач с кешем (verify, build; `nx.json` в корне, кеш `.nx/`) |
+| `open-design` | опциональный | дизайн-воркспейс с MCP-сервером (desktop-приложение, CLI `od`; open-альтернатива Claude Design) |
+| `codeburn` | опциональный | анализ расхода AI-токенов и стоимости; данные отчёта CodeBurn (вкладка "Оптимизация") |
 
 Способы установки: macOS - Homebrew (нет brew - скрипт предложит поставить и его), Linux - официальный инсталлер bun и NodeSource для node. Системные утилиты (`ps`, `sh`, `which`, `open`, `git`) только проверяются. **Рантаймы агентов (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode) в установку не входят** - их пользователь ставит самостоятельно. Per-runtime настройку опциональных инструментов (`graphify install` / `rtk init` / `headroom wrap`) делает консоль: "Настройки → Инструменты".
 
@@ -168,25 +171,36 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | node .
 |---|---|---|
 | serena | поиск/чтение/правка по символам вместо Read файла целиком | MCP `mcp__serena__find_symbol`, `get_symbols_overview`, `replace_symbol_body` |
 | codegraph | обзор незнакомого кода: символ + call paths одним вызовом | `tool.sh codegraph explore "<символ>"`, `callers` / `callees` / `impact` |
-| graphify | "где делается X" по коду и докам: подграф вместо grep | `tool.sh graphify query "<вопрос>"` |
+| graphify | "где делается X" по коду и докам: подграф вместо grep | `tool.sh graphify query "<вопрос>"` (корень репозитория); граф рабочей папки - `tool.sh graphify query "<вопрос>" --graph graphify/<имя>/graphify-out/graph.json` |
 | qmd | поиск по markdown-докам и заметкам | `tool.sh qmd query "<запрос>"` (CLI) или MCP `qmd query/get` |
 | rtk | шумные команды: git, тесты, lint | префикс: `tool.sh rtk git diff`, `tool.sh rtk bun test` |
 | headroom | прозрачен: прокси держит консоль (autostart) - вызывать не нужно | memory-инструменты при наличии |
+| nx | повторные задачи (test/build/validate) в проектах с `nx.json` | `tool.sh nx run-many -t test`, `tool.sh nx reset`; верификация - через §7, nx внутри |
+| open-design | дизайн-задачи через CLI od (после установки desktop-приложения) | `tool.sh open-design <args…>` |
+| agentplane | lifecycle инженерных задач, verification и ACR | `tool.sh agentplane <args...>`; при недоступности используй встроенный task adapter Harness |
+| codeburn | вопрос "куда уходит расход токенов и стоимость" | `tool.sh codeburn <args…>`; без установки отчёт CodeBurn (вкладка "Оптимизация") показывает null-state |
+
+Internal skills (master skills) находятся в мастер-каталоге `.agents/skills/master/skills` (`privateSkillRoot` из `.agents/runtime/config.json`; каталоги с `manifest.yaml` + `SKILL.md`), определения workflow - в `.agents/skills/master/workflows` (`workflowsRoot`). Группа дизайн-навыков - `.agents/skills/design/skills` (`designSkillRoot`, лейбл `design` в консоли, панель "Навыки" раздела "Дизайн"; та же механика manifest.yaml + SKILL.md). Публичные навыки skills.sh остаются в `.agents/skills` (каталоги без manifest). В native каталоги навык попадает только через хук включения (симлинк в обязательной рабочей папке). В Console команды раскрываются на сервере перед отправкой промта: `/master <промт>` выбирает master skill автоматически, `/master:<id> <промт>` - явно; `/agent:<id> <промт>` подключает роль из `.agents/roles` (в direct-чате; в workflow агенты выбираются в узлах); `/workflow:<id> <промт>` запускает workflow из direct-режима; `@<путь>` - файл или папка рабочей папки (рантайм резолвит нативно, провайдеру консоль разворачивает содержимое; секреты не читаются). Переключение навыка выполняет хуки (симлинк + команды манифеста после guard-проверки) и синк нативных команд: мастер-навыки и workflow становятся слэш-командами `/master:<id>` и `/workflow:<id>` (или `/master-<id>`; у codex и kimi - навыками `/master-<id>` и `/skill:master-<id>`) в каталогах команд и навыков рантаймов обязательной папки и работают в отдельно запущенном рантайме. Размещение навыков: каноническое хранилище - `.agents/skills`, каталоги рантаймов - только симлинки (исключение - graphify, рабочий каталог); статус и ручная регенерация - Настройки → Навыки → "Команды рантаймов" и "Симлинки навыков" (детали - `docs/skills.md`).
 
 Развёрнутые правила:
 
 - **Serena**: для навигации по коду предпочитай `mcp__serena__find_symbol`, `find_referencing_symbols`, `get_symbols_overview` чтению файлов целиком; правки - `replace_symbol_body` / `insert_after_symbol` вместо Read+Edit всего файла.
 - **CodeGraph**: перед цепочкой grep/Read по незнакомому модулю - один вызов `codegraph_explore` (или `tool.sh codegraph explore "<имя>"`): вернёт исходник + call paths + blast radius одним payload, экономит цепочку вызовов.
 - **Graphify**: вопросы про архитектуру/поток ("где обрабатывается X") - `tool.sh graphify query "<вопрос>"`; после крупных правок граф обновляет консоль или `graphify update .`.
+- **Graphify-воркспейсы**: у каждой рабочей папки консоли свой граф в хранилище `./graphify/<имя>/graphify-out/` (имя - basename папки; при совпадении имён - суффикс `-` + 4 символа sha256 пути). Запросы идут к графу целевой директории сессии: `graphify query "<вопрос>" --graph graphify/<имя>/graphify-out/graph.json` (так же `path`, `explain`, `affected`); сборка - `graphify extract <папка> --out graphify/<имя>/`; wiki из графа - `graphify export wiki --graph graphify/<имя>/graphify-out/graph.json` (статьи в `graphify-out/wiki/`, `index.md` - точка входа). Корневой `graphify-out/graph.json` - граф самого репозитория: он используется, когда целевой папки нет.
 - **qmd**: "что в доках написано про Y" - `tool.sh qmd query "Y"` вместо чтения `docs/` целиком.
 - **RTK**: если хук рантайма не активен, префиксуй шумные команды (`tool.sh rtk git status`, `tool.sh rtk npm run lint`) - вывод сожмётся до попадания в контекст; полный вывод - `rtk recall <hash>`.
 - **Headroom**: сжатие происходит в локальном прокси автоматически; ничего дополнительно вызывать не нужно.
+- **Хуки индексов**: событийные хуки Serena, CodeGraph и Graphify вызывают только обёртку `tooling/harness/src/cli.ts` - единый источник списка (реестр `tooling/harness/src/registry.ts`), проверки - `bun run validate:hooks`, бюджеты и журнал `.agents/.tmp/hooks/hooks.log` - `bun run harness-doctor run`; покрытие рантаймов: Claude и ZCode - полный набор, Cursor - агрегатор `pretooluse`, Kimi - PreToolUse через зеркало `~/.kimi-code/config.toml`, Codex и OpenCode - правила AGENTS.md; детали - `docs/tools.md`.
+- **Serena в Codex** (S-4): хуки с additionalContext не поддерживаются - для файлов `*.ts`/`*.tsx` больше 300 строк начинайте с `mcp__serena__find_symbol` или `get_symbols_overview` вместо чтения файла целиком.
 
-Инициализация и обновление: Serena, CodeGraph и Graphify проиндексируйте в проекте после установки - кнопка **"Инициализировать"** в карточке (скрывается, когда инициализация выполнена): `serena project index`, `codegraph init`, `graphify extract . --code-only` (локальный AST без LLM-ключа; полный режим с доками требует API-ключ). То же выполняется при установке из консоли и в setup.sh. OpenWiki собирается **на русском**: `openwiki --language ru --init|--update "Веди вики на русском языке."`.
+Инициализация и обновление: Serena и CodeGraph проиндексируйте в проекте после установки - кнопка **"Инициализировать"** в карточке (скрывается, когда инициализация выполнена): `serena project index`, `codegraph init`. Граф Graphify рабочей папки собирается в хранилище воркспейсов консоли: `graphify extract <папка> --code-only --out graphify/<имя>/` (локальный AST без LLM-ключа; полный режим с доками требует API-ключ; повторный запуск инкрементален). То же выполняется кнопкой из консоли; интеграционный граф самого репозитория (`graphify-out/` в корне) ставит setup.sh (`graphify extract . --code-only`). OpenWiki собирается **на русском**: `openwiki --language ru --init|--update "Веди вики на русском языке."`.
 
-Дальше индексы обновляются автоматически: husky pre-commit (скрипт `tooling/scripts/pre-commit-tools.sh` запускает `codegraph sync -q`, `graphify update . --code-only`, `serena project index`- только для установленных и уже инициализированных; best-effort, коммит не блокирует). Обход: `SKIP_TOOLS_UPDATE=1 git commit …`. graphify-out/ и .codegraph/ - в .gitignore; .serena/ коммитьте по желанию (project.yml + memories).
+Дальше индексы обновляются автоматически: husky pre-commit (скрипт `tooling/scripts/pre-commit-tools.sh` запускает `codegraph sync -q`, `graphify update .`, `serena project index` - только для установленных и уже инициализированных; best-effort, коммит не блокирует). Обход: `SKIP_TOOLS_UPDATE=1 git commit …`. graphify-out/, graphify/ и .codegraph/ - в .gitignore; .serena/ коммитьте по желанию (project.yml + memories).
 
 Правило поддержки: **если изменение начинает использовать новый внешний инструмент или библиотеку, отсутствующую в npm-зависимостях воркспейса (CLI, бинарник, глобальный npm-пакет, системная утилита вне базового набора ОС), - в той же серии коммитов оформи его плагином** (`core/tools/<id>.ts` + строка в реестре `core/tools.ts`; гайд - `docs/tools-dev.md`) **и обнови** `tooling/scripts/tool.sh` (диспетчер агентов), `tooling/scripts/setup.sh` (статус и установка) и `docs/tools.md`; таблицы этого раздела держи синхронными.
+
+Инстанс консоли: проверка интерфейса выполняется в инстансе на порту 3000. Перед запуском своего инстанса проверь порт (`lsof -tiTCP:3000 -sTCP:LISTEN`): если порт занят dev-версией этой консоли (`next dev`, hot reload), используй её как есть и не перезапускай - правки исходников подхватываются автоматически. Перезапуск или перевод на production-сборку (`bun run start`) - только по явной просьбе пользователя.
 
 ## 11. Документация (`docs/`)
 
@@ -203,6 +217,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | node .
 | навыки: уровни, семантика тогглов, флоу skills.sh (find/add/remove/create) | `docs/skills.md` |
 | новые/изменённые API-роуты, схема `state.json`, кеши/производительность, безопасность | `docs/architecture.md` |
 | процессы, промпты/"Исправить", настройки задач, рабочие папки, guard-совместимость | `docs/operations.md` |
+| хуки индексов: обёртки, реестр, бюджеты, журнал, doctor, защита установщиков | `docs/tools.md` |
 | запуск/навигация консоли (как пользоваться) | `apps/console/README.md`, `docs/README.md` |
 
 Правила: диаграммы - ASCII; язык - русский (деловой стиль - §12); структура документов меняется - обнови индекс `docs/README.md` и таблицу выше.
@@ -290,9 +305,42 @@ If there is no `.codegraph/` directory, skip CodeGraph entirely - indexing is th
 
 This repository has a generated `openwiki/` evidence index. It is optional just-in-time context, not required startup reading.
 
+- Do not enumerate, preload, or search wikis at task start. Use retrieval when the user asks for it, when unfamiliar architecture or dependency behavior materially affects the task, or when source inspection leaves an important uncertainty. Stop once the question is grounded.
+- When those conditions apply and OpenWiki retrieval tools are available, use `openwiki_search` for just-in-time context and `openwiki_read` for the relevant complete sections. If search returns `workspace_required`, ask which listed workspace to use and retry with its ID.
+- Use `openwiki_list_workspaces` or `openwiki_list_wikis` when workspace membership itself needs to be discovered.
+- If the retrieval tools are unavailable, read `openwiki/quickstart.md` and follow its links to the relevant pages.
 - Treat source code and tests as authoritative. A brief's unknowns and review items are verification gaps, not automatic requirements.
 - Prefer the narrowest quiet validation that proves the changed behavior. Preserve complete failure output.
 
 The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
 <!-- OPENWIKI:END -->
+
+<!-- nx configuration start-->
+<!-- Leave the start & end comments to automatically receive updates. -->
+
+# Nx
+
+- Задачи репозитория (`test`, `validate`, `build`) идут через nx с локальным кешем `.nx/`; конфигурация - `nx.json` в корне и `project.json` проектов (`apps/console`, `tooling/harness`).
+- Точки входа верификации - раздел 7 (`bun run tooling/scripts/src/verify.ts verify-fast|verify-integration`); nx используется внутри как кеширующий оркестратор, прямые вызовы - `node_modules/.bin/nx`.
+- Команду `nx configure-ai-agents` не запускать: конфигурация агентов ведётся в harness (этот файл и `.agents/runtime/`).
+- Сброс кеша - `node_modules/.bin/nx reset`; каталог `.nx/` в .gitignore.
+
+<!-- nx configuration end-->
+
+<!-- harness-design:start -->
+# Дизайн-контекст Harness (harness)
+
+Файлы дизайн-контекста этой папки:
+- DESIGN.md - визуальные токены (формат @google/design.md: front matter + гайд); прочитай его перед задачами интерфейса.
+- design/ui-kit.md - правила интерфейса web и mobile.
+- design/components.json - реестр компонентов проекта.
+
+Ключевые токены: palette: accent: #50fa7b; page: #282a36; surface: #2d2f3d; raised: #353846; line: #44475a; fg: #f8f8f2; fg-muted: #a9adcd | radii: md 6px, lg 8px, xl 12px.
+
+Правила:
+- Код web и mobile ведётся по токенам DESIGN.md и примитивам кита проекта; хардкод цветов и радиусов не применяется.
+- Новые компоненты добавляются в кит проекта и в design/components.json (платформа web или mobile).
+- design/ui-kit.md старше этого блока не приоритетен: при расхождении источник истины - DESIGN.md.
+Дизайн-MCP этого проекта: open-design, figma (проектный .mcp.json).
+<!-- harness-design:end -->

@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://api.x.ai/v1",
+  "models": {
+    "fast": "grok-4-fast",
+    "standard": "grok-4",
+    "strong": "grok-4",
+    "subagents": "grok-4-fast"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "deploy.billable",
+  "title": "Платный облачный ресурс",
+  "description": "Предупреждает о создании платного ресурса.",
+  "category": "cost",
+  "severity": "high",
+  "effect": "warn",
+  "threats": [
+    "cost"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Подтвердите стоимость до следующего шага.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

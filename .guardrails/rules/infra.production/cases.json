@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-terraform destroy",
+    "tool": "Bash",
+    "input": {
+      "command": "terraform destroy"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-terraform plan",
+    "tool": "Bash",
+    "input": {
+      "command": "terraform plan"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-kubectl delete nam",
+    "tool": "Bash",
+    "input": {
+      "command": "kubectl delete namespace prod"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

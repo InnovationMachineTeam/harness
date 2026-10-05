@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-sudo apt install j",
+    "tool": "Bash",
+    "input": {
+      "command": "sudo apt install jq"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-bun add jq",
+    "tool": "Bash",
+    "input": {
+      "command": "bun add jq"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-cd /tmp && sudo sh",
+    "tool": "Bash",
+    "input": {
+      "command": "cd /tmp && sudo sh x"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

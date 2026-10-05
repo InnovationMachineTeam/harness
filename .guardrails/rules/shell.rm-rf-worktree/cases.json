@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-rm -rf .agents/.wo",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -rf .agents/.worktrees/demo"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-bun run worktree:r",
+    "tool": "Bash",
+    "input": {
+      "command": "bun run worktree:remove demo"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-rm -r ./x/.agents/",
+    "tool": "Bash",
+    "input": {
+      "command": "rm -r ./x/.agents/.worktrees/demo"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

@@ -3,8 +3,13 @@
   "hooks": {
     "preToolUse": [
       {
-        "command": "AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG=\"$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json\" node \"$CURSOR_PROJECT_DIR/.agents/runtime/guard.mjs\"",
+        "command": "AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG=\"$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json\" GUARDRAILS_INTEGRATION=runtime:cursor:preToolUse bun \"$CURSOR_PROJECT_DIR/.guardrails/src/cli.ts\" evaluate",
         "timeout": 30,
+        "failClosed": true
+      },
+      {
+        "command": "command -v bun >/dev/null 2>&1 && bun \"${CURSOR_PROJECT_DIR}/tooling/harness/src/cli.ts\" pretooluse || exit 0",
+        "timeout": 10,
         "failClosed": false
       }
     ]

@@ -1,0 +1,177 @@
+{
+  "$schema": "docs/pricing.md",
+  "$comment": "Каталог подписок: vendors - вендоры рантаймов (.agents/runtime/<id>), providers - провайдеры консоли (core/providers.ts). period: month | quarter | halfyear | year. Цены в валюте плана. Обновление - POST /api/pricing/refresh или правка файла.",
+  "updatedAt": "2026-10-03T12:00:00.000Z",
+  "vendors": {
+    "claude": {
+      "label": "Anthropic Claude",
+      "site": "https://www.anthropic.com/pricing",
+      "payg": { "available": true, "note": "API Anthropic: оплата по токенам" },
+      "plans": [
+        { "id": "pro", "name": "Claude Pro", "period": "month", "price": 20, "currency": "USD" },
+        { "id": "max-5x", "name": "Claude Max 5x", "period": "month", "price": 100, "currency": "USD" },
+        { "id": "max-20x", "name": "Claude Max 20x", "period": "month", "price": 200, "currency": "USD" }
+      ]
+    },
+    "codex": {
+      "label": "OpenAI Codex",
+      "site": "https://openai.com/chatgpt/pricing",
+      "payg": { "available": true, "note": "API OpenAI: оплата по токенам" },
+      "plans": [
+        { "id": "go", "name": "ChatGPT Go", "period": "month", "price": 8, "currency": "USD" },
+        { "id": "plus", "name": "ChatGPT Plus", "period": "month", "price": 20, "currency": "USD" },
+        { "id": "pro", "name": "ChatGPT Pro", "period": "month", "price": 200, "currency": "USD" }
+      ]
+    },
+    "cursor": {
+      "label": "Cursor",
+      "site": "https://cursor.com/pricing",
+      "payg": { "available": false, "note": "Cursor API недоступен на индивидуальных планах" },
+      "plans": [
+        { "id": "pro", "name": "Cursor Pro", "period": "month", "price": 20, "currency": "USD" },
+        { "id": "pro-year", "name": "Cursor Pro (год)", "period": "year", "price": 192, "currency": "USD" },
+        { "id": "pro-plus", "name": "Cursor Pro+", "period": "month", "price": 60, "currency": "USD" },
+        { "id": "pro-plus-year", "name": "Cursor Pro+ (год)", "period": "year", "price": 576, "currency": "USD" },
+        { "id": "ultra", "name": "Cursor Ultra", "period": "month", "price": 200, "currency": "USD" },
+        { "id": "ultra-year", "name": "Cursor Ultra (год)", "period": "year", "price": 1920, "currency": "USD" }
+      ]
+    },
+    "zcode": {
+      "label": "Z.ai (GLM Coding Plan)",
+      "site": "https://z.ai/subscribe",
+      "payg": { "available": true, "note": "API z.ai: оплата по токенам" },
+      "plans": [
+        { "id": "glm-lite", "name": "GLM Coding Lite", "period": "month", "price": 18, "currency": "USD" },
+        { "id": "glm-lite-year", "name": "GLM Coding Lite (год)", "period": "year", "price": 151, "currency": "USD" },
+        { "id": "glm-pro", "name": "GLM Coding Pro", "period": "month", "price": 72, "currency": "USD" },
+        { "id": "glm-max", "name": "GLM Coding Max", "period": "month", "price": 160, "currency": "USD" }
+      ]
+    },
+    "kimi": {
+      "label": "Moonshot Kimi",
+      "site": "https://www.kimi.com/membership",
+      "payg": { "available": true, "note": "API Moonshot: оплата по токенам" },
+      "plans": [
+        { "id": "moderato", "name": "Kimi Moderato", "period": "month", "price": 19, "currency": "USD" },
+        { "id": "allegretto", "name": "Kimi Allegretto", "period": "month", "price": 39, "currency": "USD" },
+        { "id": "allegro", "name": "Kimi Allegro", "period": "month", "price": 99, "currency": "USD" }
+      ]
+    },
+    "opencode": {
+      "label": "OpenCode",
+      "site": "https://opencode.ai/zen",
+      "payg": { "available": true, "note": "Zen: пополнение баланса (от $20), лимиты месячных трат настраиваются" },
+      "plans": [
+        { "id": "go", "name": "OpenCode Go", "period": "month", "price": 10, "currency": "USD" }
+      ]
+    }
+  },
+  "providers": {
+    "openai": {
+      "label": "OpenAI",
+      "site": "https://openai.com/chatgpt/pricing",
+      "payg": { "available": true, "note": "оплата по токенам с ключа OPENAI_API_KEY" },
+      "plans": [
+        { "id": "go", "name": "ChatGPT Go", "period": "month", "price": 8, "currency": "USD" },
+        { "id": "plus", "name": "ChatGPT Plus", "period": "month", "price": 20, "currency": "USD" },
+        { "id": "pro", "name": "ChatGPT Pro", "period": "month", "price": 200, "currency": "USD" }
+      ]
+    },
+    "anthropic": {
+      "label": "Anthropic Claude",
+      "site": "https://www.anthropic.com/pricing",
+      "payg": { "available": true, "note": "оплата по токенам с ключа ANTHROPIC_API_KEY" },
+      "plans": [
+        { "id": "pro", "name": "Claude Pro", "period": "month", "price": 20, "currency": "USD" },
+        { "id": "max-5x", "name": "Claude Max 5x", "period": "month", "price": 100, "currency": "USD" },
+        { "id": "max-20x", "name": "Claude Max 20x", "period": "month", "price": 200, "currency": "USD" }
+      ]
+    },
+    "gemini": {
+      "label": "Google AI (Gemini)",
+      "site": "https://one.google.com/about/ai-plans",
+      "payg": { "available": true, "note": "Gemini API: оплата по токенам, есть бесплатный уровень" },
+      "plans": [
+        { "id": "ai-plus", "name": "Google AI Plus", "period": "month", "price": 4.99, "currency": "USD" },
+        { "id": "ai-pro", "name": "Google AI Pro", "period": "month", "price": 19.99, "currency": "USD" },
+        { "id": "ai-ultra", "name": "Google AI Ultra", "period": "month", "price": 249.99, "currency": "USD" }
+      ]
+    },
+    "kimi": {
+      "label": "Moonshot Kimi",
+      "site": "https://www.kimi.com/membership",
+      "payg": { "available": true, "note": "оплата по токенам с ключа MOONSHOT_API_KEY" },
+      "plans": [
+        { "id": "moderato", "name": "Kimi Moderato", "period": "month", "price": 19, "currency": "USD" },
+        { "id": "allegretto", "name": "Kimi Allegretto", "period": "month", "price": 39, "currency": "USD" },
+        { "id": "allegro", "name": "Kimi Allegro", "period": "month", "price": 99, "currency": "USD" }
+      ]
+    },
+    "openrouter": {
+      "label": "OpenRouter",
+      "site": "https://openrouter.ai/docs/faq",
+      "payg": { "available": true, "note": "пополнение баланса, тариф - цена провайдера модели плюс комиссия" },
+      "plans": []
+    },
+    "deepseek": {
+      "label": "DeepSeek",
+      "site": "https://api-docs.deepseek.com/quick_start/pricing",
+      "payg": { "available": true, "note": "оплата по токенам, off-peak-тариф снижен примерно вдвое" },
+      "plans": []
+    },
+    "groq": {
+      "label": "Groq",
+      "site": "https://console.groq.com/settings/billing",
+      "payg": { "available": true, "note": "оплата по токенам" },
+      "plans": []
+    },
+    "xai": {
+      "label": "xAI Grok",
+      "site": "https://docs.x.ai/docs/models",
+      "payg": { "available": true, "note": "оплата по токенам" },
+      "plans": []
+    },
+    "together": {
+      "label": "Together AI",
+      "site": "https://www.together.ai/pricing",
+      "payg": { "available": true, "note": "оплата по токенам" },
+      "plans": []
+    },
+    "mistral": {
+      "label": "Mistral AI",
+      "site": "https://mistral.ai/pricing",
+      "payg": { "available": true, "note": "оплата по токенам, есть бесплатный уровень" },
+      "plans": []
+    },
+    "gigachat": {
+      "label": "GigaChat (Сбер)",
+      "site": "https://developers.sber.ru/gigachat",
+      "payg": { "available": true, "note": "тарифы API - в личном кабинете Сбер, оплата по токенам (RUB)" },
+      "plans": []
+    },
+    "yandexgpt": {
+      "label": "YandexGPT (Yandex Cloud)",
+      "site": "https://yandex.cloud/ru/prices",
+      "payg": { "available": true, "note": "оплата по токенам (RUB)" },
+      "plans": []
+    },
+    "ollama": {
+      "label": "Ollama (локально)",
+      "site": "https://ollama.com",
+      "payg": { "available": false, "note": "локальный запуск, оплаты нет" },
+      "plans": []
+    },
+    "lmstudio": {
+      "label": "LM Studio (локально)",
+      "site": "https://lmstudio.ai",
+      "payg": { "available": false, "note": "локальный запуск, оплаты нет" },
+      "plans": []
+    },
+    "vllm": {
+      "label": "vLLM (локально)",
+      "site": "https://docs.vllm.ai",
+      "payg": { "available": false, "note": "локальный запуск, оплаты нет" },
+      "plans": []
+    }
+  }
+}

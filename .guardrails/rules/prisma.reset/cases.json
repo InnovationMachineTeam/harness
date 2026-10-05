@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-bunx prisma migrat",
+    "tool": "Bash",
+    "input": {
+      "command": "bunx prisma migrate reset"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-bunx prisma migrat",
+    "tool": "Bash",
+    "input": {
+      "command": "bunx prisma migrate dev"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-prisma reset",
+    "tool": "Bash",
+    "input": {
+      "command": "prisma reset"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

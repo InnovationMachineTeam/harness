@@ -32,10 +32,12 @@ export const <id>Tool: ToolDef = {
   uninstallStopsDashboard: true,  // опц.: uninstall останавливает сервис
   postInstallCommands: (state, params) => string[][],  // опц. (qmd: индексация)
   projectInit: {                  // опц.: инициализация проекта
-    init: (dir) => [["<cli>", "init"]],            // кнопка + install; cwd = dir
-    reinit: (dir) => [["<cli>", "index"]],         // опц.: пересборка поверх
-    update: (dir) => [["<cli>", "sync", "-q"]],    // husky pre-commit (быстро!)
-    initMarker: (dir) => `${dir}/…`,               // признак "уже инициализирован"
+    // Аргументы: dir - рабочая папка, repoRoot - корень репозитория консоли,
+    // name - имя воркспейса папки (graphify: <repoRoot>/graphify/<name>).
+    init: (dir, repoRoot, name) => [["<cli>", "init"]],        // кнопка + install; cwd = dir
+    reinit: (dir, repoRoot, name) => [["<cli>", "index"]],     // опц.: пересборка поверх
+    update: (dir, repoRoot, name) => [["<cli>", "sync", "-q"]],// husky pre-commit (быстро!)
+    initMarker: (dir, repoRoot, name) => `${dir}/…`,           // признак "уже инициализирован"
   },
   dashboard: { url: "http://127.0.0.1:…", label: "Дашборд …" },
 };

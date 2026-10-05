@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:1234/v1",
+  "models": {
+    "fast": "qwen2.5-7b-instruct",
+    "standard": "qwen2.5-14b-instruct",
+    "strong": "qwen2.5-32b-instruct",
+    "subagents": "qwen2.5-7b-instruct"
+  }
+}

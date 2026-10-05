@@ -53,6 +53,23 @@ export const zcodeAdapter: RuntimeAdapter = {
   },
 
   async listSkills(ctx: ProbeContext): Promise<SkillItem[]> {
+    const items: SkillItem[] = [];
+    const seen = new Set<string>();
+    // проектный каталог: .zcode/skills/<skill>/SKILL.md - приоритетнее плагинов
+    // (тот же порядок, что у нативного разрешения ZCode)
+    const project = await ctx.fs.collectFiles(join(ctx.repoRoot, ".zcode", "skills"), {
+      match: (name) => name === "SKILL.md",
+      maxDepth: 2,
+      limit: 200,
+    });
+    for (const f of project) {
+      const name = f.relPath.replace(/\/SKILL\.md$/, "").split("/").pop() ?? "skill";
+      if (seen.has(name)) continue;
+      seen.add(name);
+      const item = toSkillItem(ctx, "zcode", "skill", name, f.path, f.relPath.replace(/\/SKILL\.md$/, ""));
+      item.description = await skillDescription(ctx, f.path);
+      items.push(item);
+    }
     // кэш плагинов: <marketplace>/<plugin>/<version>/skills/<skill>/SKILL.md -
     // берём свежую версию каждого навыка плагина
     const cache = join(ctx.home, ".zcode", "cli", "plugins", "cache");
@@ -71,8 +88,9 @@ export const zcodeAdapter: RuntimeAdapter = {
         byPluginSkill.set(key, { file: f, plugin: m.groups.plugin, skill: m.groups.skill });
       }
     }
-    const items: SkillItem[] = [];
     for (const { file, plugin, skill } of byPluginSkill.values()) {
+      if (seen.has(skill)) continue;
+      seen.add(skill);
       const item = toSkillItem(ctx, "zcode", "skill", skill, file.path, `plugins/${plugin}/${skill}`);
       item.description = await skillDescription(ctx, file.path);
       items.push(item);

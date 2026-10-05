@@ -1,0 +1,112 @@
+{
+  "$schema": "docs/pricing.md",
+  "$comment": "Каталог API-цен моделей. prices[] - точка цены у провайдера: provider - id провайдера консоли, official - цена официального провайдера модели (приоритет при расчёте), inputPerMtok/outputPerMtok/cacheReadPerMtok - USD за миллион токенов. average пересчитывается readCatalog() по prices[]; правка вручную не нужна. Источник machine-readable (OpenRouter) добавляет точки provider=openrouter при refresh.",
+  "updatedAt": "2026-10-03T12:00:00.000Z",
+  "models": {
+    "claude-sonnet-5-5": {
+      "label": "Claude Sonnet 5.5",
+      "aliases": ["claude sonnet 5.5", "claude sonnet 5", "sonnet 5.5"],
+      "prices": [
+        { "provider": "anthropic", "official": true, "inputPerMtok": 2, "outputPerMtok": 10, "cacheReadPerMtok": 0.2, "source": "https://www.anthropic.com/pricing#api", "asOf": "2026-10-03" }
+      ]
+    },
+    "claude-opus-5-5": {
+      "label": "Claude Opus 5.5",
+      "aliases": ["claude opus 5", "claude opus 5.5", "opus 5"],
+      "prices": [
+        { "provider": "anthropic", "official": true, "inputPerMtok": 4, "outputPerMtok": 20, "cacheReadPerMtok": 0.4, "source": "https://www.anthropic.com/pricing#api", "asOf": "2026-10-03" }
+      ]
+    },
+    "claude-fable-5-1": {
+      "label": "Claude Fable 5.1",
+      "aliases": ["claude fable 5.1", "fable 5.1"],
+      "prices": [
+        { "provider": "anthropic", "official": true, "inputPerMtok": 10, "outputPerMtok": 50, "cacheReadPerMtok": 1, "source": "https://www.anthropic.com/pricing#api", "asOf": "2026-10-03" }
+      ]
+    },
+    "composer-2-5": {
+      "label": "Composer 2.5",
+      "aliases": ["composer 2.5", "composer 2.5 (fast)"],
+      "prices": []
+    },
+    "gpt-5.2": {
+      "label": "GPT-5.2",
+      "prices": [
+        { "provider": "openai", "official": true, "inputPerMtok": 1.75, "outputPerMtok": 14, "cacheReadPerMtok": 0.175, "source": "https://platform.openai.com/docs/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "gpt-5.5": {
+      "label": "GPT-5.5",
+      "prices": [
+        { "provider": "openai", "official": true, "inputPerMtok": 5, "outputPerMtok": 30, "source": "https://platform.openai.com/docs/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "gpt-5-mini": {
+      "label": "GPT-5 mini",
+      "prices": [
+        { "provider": "openai", "official": true, "inputPerMtok": 0.25, "outputPerMtok": 2, "source": "https://platform.openai.com/docs/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "gemini-3-pro": {
+      "label": "Gemini 3 Pro",
+      "prices": [
+        { "provider": "gemini", "official": true, "inputPerMtok": 2, "outputPerMtok": 12, "source": "https://ai.google.dev/gemini-api/docs/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "gemini-3-flash": {
+      "label": "Gemini 3 Flash",
+      "prices": [
+        { "provider": "gemini", "official": true, "inputPerMtok": 0.5, "outputPerMtok": 3, "source": "https://ai.google.dev/gemini-api/docs/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "glm-5.3": {
+      "label": "GLM-5.3",
+      "aliases": ["glm 5.3"],
+      "prices": [
+        { "provider": "zai", "official": true, "inputPerMtok": 1.4, "outputPerMtok": 4.4, "source": "https://docs.z.ai/guides/overview/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "glm-5.3-flash": {
+      "label": "GLM-5.3 Flash",
+      "aliases": ["glm 5.3 flash"],
+      "prices": [
+        { "provider": "zai", "official": true, "inputPerMtok": 0.15, "outputPerMtok": 0.5, "cacheReadPerMtok": 0.03, "source": "https://docs.z.ai/guides/overview/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "kimi-k2.7-code-highspeed": {
+      "label": "Kimi K2.7 Code Highspeed",
+      "prices": []
+    },
+    "kimi-k2.7-turbo": {
+      "label": "Kimi K2.7 Turbo",
+      "prices": [
+        { "provider": "kimi", "official": true, "inputPerMtok": 0.55, "outputPerMtok": 2.2, "source": "https://platform.moonshot.ai/docs/pricing", "asOf": "2026-10-03" }
+      ]
+    },
+    "kimi-k3": {
+      "label": "Kimi K3",
+      "prices": [
+        { "provider": "kimi", "official": true, "inputPerMtok": 3, "outputPerMtok": 15, "cacheReadPerMtok": 0.3, "source": "https://platform.moonshot.ai/docs/pricing", "asOf": "2026-10-03" },
+        { "provider": "openrouter", "inputPerMtok": 1.39, "outputPerMtok": 13, "cacheReadPerMtok": 0.8, "source": "https://openrouter.ai", "asOf": "2026-10-03" }
+      ]
+    },
+    "kimi-k2.7-code": {
+      "label": "Kimi K2.7 Code",
+      "prices": [
+        { "provider": "kimi", "official": true, "inputPerMtok": 0.679, "outputPerMtok": 3, "source": "https://platform.moonshot.ai/docs/pricing", "asOf": "2026-10-03", "note": "верхняя граница диапазона прайса K2.7 Code; сверить при refresh" }
+      ]
+    },
+    "deepseek-chat": {
+      "label": "DeepSeek Chat (V4)",
+      "prices": [
+        { "provider": "deepseek", "official": true, "inputPerMtok": 0.3, "outputPerMtok": 1.2, "cacheReadPerMtok": 0.03, "source": "https://api-docs.deepseek.com/quick_start/pricing", "asOf": "2026-10-03", "note": "пиковые цены; off-peak примерно вдвое ниже" }
+      ]
+    },
+    "deepseek-reasoner": {
+      "label": "DeepSeek Reasoner (V4)",
+      "prices": [
+        { "provider": "deepseek", "official": true, "inputPerMtok": 1.32, "outputPerMtok": 2.64, "source": "https://api-docs.deepseek.com/quick_start/pricing", "asOf": "2026-10-03", "note": "пиковые цены (выход - оценка, примерно вдвое входа); off-peak примерно вдвое ниже" }
+      ]
+    }
+  }
+}

@@ -50,7 +50,7 @@
         "id": "6655b52f-d701-47f4-a81a-0cf9d964b340",
         "path": "/openwiki/architecture/overview.md",
         "title": "Console Architecture Overview",
-        "purpose": "System-level picture of the Agentic OS Console: Bun-workspace Next.js 15 / React 19 / zustand stack, client-server-core-adapter layering, data flow over RSC/JSON/SSE, the three sources of truth (vendor runtime configs, state.json, server-driven UI data), the core mutation invariant (file first, then client), and the performance mechanisms (dashboard micro-cache with TTL+dedup, single-ps snapshot, scanLimit, tabCache, streaming skeletons).",
+        "purpose": "System-level picture of the Harness Console: Bun-workspace Next.js 15 / React 19 / zustand stack, client-server-core-adapter layering, data flow over RSC/JSON/SSE, the three sources of truth (vendor runtime configs, state.json, server-driven UI data), the core mutation invariant (file first, then client), and the performance mechanisms (dashboard micro-cache with TTL+dedup, single-ps snapshot, scanLimit, tabCache, streaming skeletons).",
         "seedPaths": [
           "README.md",
           "architecture.md"
@@ -436,8 +436,8 @@
       {
         "id": "9e60838b-37fa-4dd5-a914-00ea89188109",
         "path": "/openwiki/quickstart.md",
-        "title": "Quickstart: Agentic OS Console Docs Wiki",
-        "purpose": "Task-routing entry point. Explains that this repo is the documentation workspace of the harness / Agentic OS Console system (code lives in the parent monorepo apps/console, tooling/, .agents/), maps the wiki hierarchy (architecture / runtimes / mcp / skills / tools / workflows / ui), and routes common change tasks - add a runtime, add an MCP server or plugin, add a skill, add a context tool, change console UI, touch state.json or security-sensitive code - to the right pages.",
+        "title": "Quickstart: Harness Console Docs Wiki",
+        "purpose": "Task-routing entry point. Explains that this repo is the documentation workspace of the harness / Harness Console system (code lives in the parent monorepo apps/console, tooling/, .agents/), maps the wiki hierarchy (architecture / runtimes / mcp / skills / tools / workflows / ui), and routes common change tasks - add a runtime, add an MCP server or plugin, add a skill, add a context tool, change console UI, touch state.json or security-sensitive code - to the right pages.",
         "seedPaths": [
           "AGENTS.md",
           "README.md",
@@ -454,7 +454,7 @@
         "instructions": [
           "Organize the quickstart as a task-routing table ('I want to change X' → wiki page), not a directory dump; route readers down the hierarchy into exactly one best starting page per task.",
           "Per repo guidance: treat the documented behavior (backed by the parent repo's source and tests) as authoritative; unknowns in the docs are verification gaps, not requirements.",
-          "This repository contains only documentation (Russian-language) for the Agentic OS Console; referenced code paths such as apps/console/src/** and tooling/scripts/** belong to the parent harness monorepo - describe the system as documented here and keep those cross-repo references explicit instead of inventing source-level claims."
+          "This repository contains only documentation (Russian-language) for the Harness Console; referenced code paths such as apps/console/src/** and tooling/scripts/** belong to the parent harness monorepo - describe the system as documented here and keep those cross-repo references explicit instead of inventing source-level claims."
         ],
         "status": "pending"
       }

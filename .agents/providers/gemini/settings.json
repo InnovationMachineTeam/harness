@@ -1,0 +1,9 @@
+{
+  "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+  "models": {
+    "fast": "gemini-3-flash",
+    "standard": "gemini-3-pro",
+    "strong": "gemini-3-pro",
+    "subagents": "gemini-3-flash"
+  }
+}

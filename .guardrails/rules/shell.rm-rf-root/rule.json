@@ -1,0 +1,19 @@
+{
+  "id": "shell.rm-rf-root",
+  "title": "Рекурсивное удаление корня",
+  "description": "Блокирует абсолютные, домашние и wildcard-цели rm -r.",
+  "category": "filesystem",
+  "severity": "critical",
+  "effect": "block",
+  "threats": [
+    "filesystem"
+  ],
+  "bundles": [
+    "baseline"
+  ],
+  "failureMode": "closed",
+  "remediation": "Укажите разрешённый относительный путь.",
+  "status": "enforced",
+  "owner": "platform",
+  "limitations": []
+}

@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: lessons-learned
+title: Lessons learned
+description: Используй этот навык после выполнения, проверки, инцидента или обратной связи, когда нужно извлечь доказанные findings, установить первопричины и предложить проверяемые улучшения документации, ролей, навыков, процессов или backlog.
+source:
+  version: 1.1.0
+  hash: builtin-lessons-learned-2
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [retrospective, findings, root-cause, backlog, documentation, lessons-learned, ретроспектива]

@@ -24,14 +24,22 @@ const params = (p: Partial<ToolInstallParams> = {}): ToolInstallParams => ({
 });
 
 describe("реестр инструментов", () => {
-  test("7 инструментов с уникальными id и бинарями", () => {
+  test("11 инструментов с уникальными id и бинарями", () => {
     expect(TOOLS.map((t) => t.id).sort()).toEqual(
-      ["codegraph", "graphify", "headroom", "openwiki", "qmd", "rtk", "serena"].sort(),
+      ["agentplane", "codeburn", "codegraph", "graphify", "headroom", "nx", "open-design", "openwiki", "qmd", "rtk", "serena"].sort(),
     );
     expect(new Set(TOOLS.map((t) => t.bin)).size).toBe(TOOLS.length);
   });
 
-  test("unsupported-матрица: rtk/codegraph не поддерживают zcode, rtk также codex; headroom без per-runtime", () => {
+  test("codeburn: npm-глобальная установка выбранным PM, без per-runtime интеграций", () => {
+    const tool = toolById("codeburn");
+    expect(tool?.bin).toBe("codeburn");
+    expect(tool?.systemInstall("bun", "darwin")).toEqual(["bun", "add", "-g", "codeburn"]);
+    expect(tool?.systemInstall("npm", "linux")).toEqual(["npm", "install", "-g", "codeburn"]);
+    expect(tool?.perRuntime?.supported).toEqual([]);
+  });
+
+  test("unsupported-матрица: rtk/codegraph не поддерживают zcode, rtk также codex; headroom без cursor; nx без per-runtime", () => {
     expect(toolById("rtk")?.perRuntime?.supported).not.toContain("zcode");
     expect(toolById("rtk")?.perRuntime?.supported).not.toContain("codex"); // rtk 0.39.x: нет --codex
     expect(toolById("rtk")?.perRuntime?.notes?.codex).toBeTruthy();
@@ -39,6 +47,29 @@ describe("реестр инструментов", () => {
     expect(toolById("headroom")?.perRuntime?.supported).not.toContain("cursor");
     expect(toolById("headroom")?.uninstallStopsDashboard).toBe(true);
     expect(toolById("graphify")?.perRuntime?.supported).toContain("zcode"); // generic agents
+    expect(toolById("nx")?.perRuntime?.supported).toEqual([]); // чистый CLI, без интеграций в конфиги рантаймов
+    expect(toolById("open-design")?.perRuntime?.supported).toEqual(["claude", "codex", "cursor", "kimi", "opencode"]);
+  });
+
+  test("open-design: MCP preset использует актуальный od mcp --daemon-url", () => {
+    const def = toolById("open-design")!;
+    expect(def.bin).toBe("od");
+    expect(def.category).toBe("design");
+    expect(def.systemInstall("bun", "darwin")).toBeNull(); // desktop-приложение ставится вручную
+    expect(def.mcpPreset?.(params())).toEqual({
+      type: "stdio",
+      command: "od",
+      args: ["mcp", "--daemon-url", "http://127.0.0.1:7456"],
+    });
+    expect(def.perRuntime!.installCommand("claude", params())).toEqual(["od", "mcp", "install", "claude"]);
+    expect(def.perRuntime!.uninstallCommand("cursor")).toEqual(["od", "mcp", "install", "cursor", "--uninstall"]);
+  });
+
+  test("agentplane: системная установка и встроенный fallback без per-runtime конфигов", () => {
+    const def = toolById("agentplane")!;
+    expect(def.bin).toBe("agentplane");
+    expect(def.systemInstall("bun", "darwin")).toEqual(["bun", "add", "-g", "agentplane"]);
+    expect(def.perRuntime).toBeUndefined();
   });
 
   test("install-команды graphify: платформа + scope + strict (только claude)", () => {
@@ -132,6 +163,8 @@ describe("реестр инструментов", () => {
       "3.13",
       "serena-agent",
     ]);
+    expect(toolById("nx")!.systemInstall("bun", "darwin")).toEqual(["bun", "add", "-g", "nx"]);
+    expect(toolById("nx")!.systemInstall("npm", "linux")).toEqual(["npm", "install", "-g", "nx"]);
   });
 
   test("npx-пресеты адаптируются под bun (без -y), http - не изменяются", () => {
@@ -140,6 +173,15 @@ describe("реестр инструментов", () => {
     expect(context7.transport).toEqual({ type: "stdio", command: "bunx", args: ["@upstash/context7-mcp"] });
     const deepwiki = bun.find((p) => p.name === "deepwiki")!;
     expect(deepwiki.transport).toEqual({ type: "http", url: "https://mcp.deepwiki.com/" });
+    const figma = bun.find((p) => p.name === "figma")!;
+    expect(figma.transport).toEqual({ type: "http", url: "https://mcp.figma.com/mcp" });
+    // od - не npx: пресет не адаптируется под менеджер пакетов
+    const openDesign = bun.find((p) => p.name === "open-design")!;
+    expect(openDesign.transport).toEqual({
+      type: "stdio",
+      command: "od",
+      args: ["mcp", "--daemon-url", "http://127.0.0.1:7456"],
+    });
     const npm = mcpPresetsForPm("npm");
     const npmContext7 = npm.find((p) => p.name === "context7")!.transport;
     expect(npmContext7.type === "stdio" && npmContext7.command).toBe("npx");

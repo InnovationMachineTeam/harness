@@ -1,0 +1,136 @@
+{
+  "rules": [
+    {
+      "id": "shell.rm-rf-root",
+      "cases": 3
+    },
+    {
+      "id": "shell.rm-rf-worktree",
+      "cases": 3
+    },
+    {
+      "id": "shell.rm-rf-outside-allowlist",
+      "cases": 3
+    },
+    {
+      "id": "shell.git-force-push",
+      "cases": 3
+    },
+    {
+      "id": "shell.git-push",
+      "cases": 3
+    },
+    {
+      "id": "shell.history-rewrite",
+      "cases": 3
+    },
+    {
+      "id": "shell.chmod-777",
+      "cases": 3
+    },
+    {
+      "id": "db.drop",
+      "cases": 3
+    },
+    {
+      "id": "db.delete-without-where",
+      "cases": 3
+    },
+    {
+      "id": "prisma.reset",
+      "cases": 3
+    },
+    {
+      "id": "secrets.read",
+      "cases": 3
+    },
+    {
+      "id": "secrets.read-tool",
+      "cases": 3
+    },
+    {
+      "id": "net.pipe-to-shell",
+      "cases": 3
+    },
+    {
+      "id": "write.secret-path",
+      "cases": 3
+    },
+    {
+      "id": "write.protected-path",
+      "cases": 3
+    },
+    {
+      "id": "infra.production",
+      "cases": 3
+    },
+    {
+      "id": "deploy.prod-apply",
+      "cases": 3
+    },
+    {
+      "id": "deploy.destructive",
+      "cases": 3
+    },
+    {
+      "id": "gate.answer-by-agent",
+      "cases": 3
+    },
+    {
+      "id": "approval.by-agent",
+      "cases": 3
+    },
+    {
+      "id": "structural.guard-mutation",
+      "cases": 3
+    },
+    {
+      "id": "deploy.billable",
+      "cases": 3
+    },
+    {
+      "id": "shell.git-hard-reset",
+      "cases": 3
+    },
+    {
+      "id": "shell.git-clean",
+      "cases": 3
+    },
+    {
+      "id": "shell.sudo",
+      "cases": 3
+    },
+    {
+      "id": "structural.agents-mutation",
+      "cases": 3
+    },
+    {
+      "id": "shell.credential-dump",
+      "cases": 3
+    },
+    {
+      "id": "content.write-secret-value",
+      "cases": 3
+    },
+    {
+      "id": "content.write-pii",
+      "cases": 3
+    },
+    {
+      "id": "content.write-credential",
+      "cases": 3
+    },
+    {
+      "id": "prompt.injection",
+      "cases": 3
+    },
+    {
+      "id": "tooloutput.injection",
+      "cases": 3
+    },
+    {
+      "id": "prompt.confidential-marker",
+      "cases": 3
+    }
+  ]
+}

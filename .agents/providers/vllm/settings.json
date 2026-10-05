@@ -1,0 +1,9 @@
+{
+  "baseUrl": "http://localhost:8000/v1",
+  "models": {
+    "fast": "Qwen/Qwen3-8B",
+    "standard": "Qwen/Qwen3-32B",
+    "strong": "Qwen/Qwen3-235B-A22B",
+    "subagents": "Qwen/Qwen3-8B"
+  }
+}

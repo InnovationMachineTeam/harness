@@ -1,0 +1,286 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:dfc769db23c02e1c61d817dc1098992643c9ebce2d5af99673959e662350fabb",
+  "claims": [
+    {
+      "id": "claim_82f90ddda6d142468f0346977105f15c",
+      "statement": "POST /api/agent/chat (app/api/agent/chat/route.ts, maxDuration = 300) валидирует zod-тело {messages: UIMessage[], executor, tier (fast|standard|strong|subagents, default standard), effort? (low|medium|high|max), cwd?, branch?}; cwd, отличный от корня репозитория, обязан входить в workspaceDirs(state), иначе 400.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L180-L183",
+          "version": "repo-lines-v1:sha256:f1908b78cf00e76c5738206e0b3961dfa6c7510169579c41faa75d48c1ef3798:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTUwZmUxMWM1M2NjODE3YzRkNWIyYzA2MGJlOThkZDNjYWFiYzg3ZWI3YmM5MDUzZGFmZWY1NTU5Y2FlNjJmYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWQyMDJkZmNjNWM2ZDMwMjQyYjg1ZThhMDVhZDczNDc3M2UyOTMzNjU0Njc5MDQ0ZDBjNTVkODYzNGY4YjRkMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjFkM2I0NzRmN2VmNWQ5YzkyNGZkNTZhODZlODY2MWVlZTlkODI4ZTAzODU4N2E5ZDMzNGJmNWRjN2MyMDMxMSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L30-L63",
+          "version": "repo-lines-v1:sha256:082d7e066568612cee11d122b75b543bd95a7fcaa0e260ade9e1552073b5cc7f:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxOTIxNDU1Yjk3MmU0YzQ3NTg0YWFjYzRkYjk5NjNlMTMyNWRhNmY5NTc1MzVkM2FmOGEwODYzNTUxYzczN2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2ZjViNDBiMTU4NDU3ZDE3ODY0ZjIxNzkwNzg2ZGQ1YTJlY2RiNjRiNjZhNjUxZjc4OGQ0ZTI1Y2QzMzAzZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5M2ZkYTQwOTFjODU4ZDQ2OWE3ODFhNjEzNmQzYTE5ZjI0NDU5MGNiM2I5ZjgyZWE1MDM1ZTUyNzU0ZjI1NzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQxZDM1ZmUxMzg2ZDlkMDQ1ZTA1NmRlYzUwM2M4NDEzMDU4OWFiZGNlYjNlN2Y3ZGRhMDgzNGYxNzg2OWExY2YifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/state.ts#L232-L234",
+          "version": "repo-lines-v1:sha256:d8fb16a5df01815f387a8eeabf1c6d1b3b7c7b4bca1e05619a39a5e2031666e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTY2NjExZDgxNjQwZDg4Yzg4MDFjN2RlNzIwMzJhYTI4ZjY2ZDUxMTM4MTgyZmE1Yzc1Y2FhN2U5YmE3ZTMwZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTdhYTk2NzExMmRhZjFkMzFhN2YwZGE1NjA4MzAzMTMxNmYyZDBjYTE0YWZmMzdiYTA1NTIzMDhlYmRhZjM3NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmNlZDE0OTljZWViMzgwZjg1MjVmMTcyYWVmMmYzNDIzNDM4ODc3M2M1YzMwODBiMjY4MjNkMzQyODkxN2RmOCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ceca83858c4645f2b389a49f95e1271f",
+      "statement": "executor разбирается как 'provider' (провайдер по умолчанию resolveDefaultProvider: state.defaultProvider или FALLBACK_PROVIDER_ID ollama), 'provider:<id>' через parseTaskProviderId (конкретный провайдер) или иначе id рантайма из ctx.adapters.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L188-L190",
+          "version": "repo-lines-v1:sha256:2e505b0fe54481ba0f5d5251de245b1a1ca9c9fd0a93654e31a9fd943c876089:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzg2ZTZmOGE3MjhhZDBkOGUwMzVjMDI3M2RhNjVjZjFkOTExMGUxMmM4Y2Q3NThkM2EwNTY4MzI0YzgzNWIzNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzZmOTJiNWY1OTk3OTZiYTdlNGYwMDU4MWVkM2VlMTMzNDkwNTVmZGM2NTg5ZmIxYjJlZGJmYjM5ZTU4ZjM4YSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGQxZjNhMzQ0YTBiYmVkOGRhYjU0N2VmNDI4YjcyMWFmNGJmODc3OWYxNmM4MzY2NzI5MmMxZjc0NTI4ODEyYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODY2ZTAyNmE5MDg2NjViMGY4YTMzZmMyZTBkODMwOTMyNWIyN2QyYmZmMTdmNmIwOTliN2M4MjU3MWZiMWI2NiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L311-L316",
+          "version": "repo-lines-v1:sha256:7fbcf5bcf103641520e5b2ebb9e43ee758edbe723fb7c995e2cd4a968f8aa437:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjYxNWEzYTg4MjE1NTU2NWJhNDU2ODEzZGY5OGE2ODUwMGNkNmFhM2E5ZDcwZDhhMTM2NjdjOTQwMzMzNjA1NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDM3MjQ0ZjZmMTliNDgwN2MyZTRhYTBhZTFhZjVhY2E1Mzk5NDQyMjQ5ZmViYWRmMDUzZDY5ZTY0Y2IwMTMzZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDFjZTg2OWE4ZjgzYmI5YWIwYWVmMjliODg2NmIxNWFlOTM3YjVkMzg4MGViNGJhZjQyM2MyMmFmMGE1N2JiMyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L496-L498",
+          "version": "repo-lines-v1:sha256:3729f9002e322faa0c401b05ff5b467c90eebb0fdc363fc865fc1a73c9ef13d2:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWFmMWZmZTI3NTI1NzNiNWZjOWU0NTgxZTYwMDYzMTgxMjZhYWM3Mjk5M2VlNzdlMzI0NmYyMmYwZDNhZTA4NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzc5MGUzMzYwNjE1MGE4MmNhZmQ0MzVjMjZmMGU0Mzc3YzJmNGUzNzY5OTJhOGU0OWJhYmUwNGRmMjA0OGJlYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZmY3NmU0YjcyNTIxZmZlZjA3NmI0MzZjZjcxYzhmMzE1NjJkYWY0NjdmNTY3MjdjZjhkNzQ2MjJhNDk2MThmYyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/state.ts#L114-L117",
+          "version": "repo-lines-v1:sha256:fe52f3a1abfe0f2338e56afddecafda9fd4a997ce5ef8cd77111286c051291a6:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTBkZGIzMzU2MjA5MGExMzg3ZDA1NDBmNTllZWU5MzZiZDgyMTcwYmU3MzRlZTgxYzAyYmY4MGFhMWRjZGUwOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Y2YzcyZmM4NDMwMzIwNzU3OGFkM2MwNjMyMTFiODQ1ZGI5ODkxMDFlOGU2NDJhODVmYzE3ZTExOWEyYjRhMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjAwMTIxNjQzNzEzMzhlODZmNzQ0ODg4NjM4YjRhOWJjNWUwMTUyYWJlNTIzOWRhMGUwNmNhYzE3ODI5YTU4NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_18309b5c422147ce9423ec6216295a66",
+      "statement": "Путь провайдера /api/agent/chat: проверки пресета (providerPresetById, isActiveProvider), хост-политика providerBaseUrlError (только http/https без userinfo; онлайн-провайдерам запрещены локальные/приватные адреса и metadata-хост 169.254.169.254), обязательный verify.kind openai, наличие модели tier и resolveProviderToken; стрим выполняет streamText с моделью createOpenAICompatible и providerOptions reasoningEffort, где 'max' маппится в 'high'.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L191-L221",
+          "version": "repo-lines-v1:sha256:9d3223bdcf578d84e6fc569399272ee7b3aa7a6e8c6a0370b0fc842f5c7ff770:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiOGVmMWEyMzk2ODE5OTI5NDFkMThlNGI1MDQ1MmNmY2MzYzE4ZGFmNjFjM2FiYzlmZTc1Mzk5NWFmYTFkYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlNTA1YjBmZTU0NDgxYmEwZjVkNTI1MWRlMjQ1YjFhMWNhOWM5ZmQwYTkzNjU0ZTMxYTlmZDk0M2M4NzYwODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiODRlMWFhOGRhMDVhNzViMWI0ZWQ4ZmIzZmYyYWFjMWE3NDA3OTdjM2M5MDE1ZWVjODVjMWZlMTdmNGJjMzAifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L236-L265",
+          "version": "repo-lines-v1:sha256:a88f021624cf89ea77a5abec386dc30c6dfcabc96d2d243cd9b73314deeedc42:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0ODZiNTI4ZjM4MmIwOTkyMjdhYmI0MmUwNzlkZjYwZDIwOWU1NzZkNGM0MjdkNDcwY2FmYzEwYzhiNjA4MzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmZjhjYjQyNmVlN2QxZjE0MDEzYTM5NmJiODQzMTVhZDgyZjE0OGJjOTFiYzkyMGM3MDAxZjg4ZDRmYzc1YWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRkNzYyYWQzNjIyNjk4MTlmOWQ5Zjc3N2RmMDM4YmVkNzYzYzRhZDgzM2ZkODA1ODQwMTIyYzU2ZWQ0ZWZlMzEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L482-L489",
+          "version": "repo-lines-v1:sha256:b071411a679151c9dc3a6d65b611ca5c6ac8fc03e6ecd241169eae0aaa377f91:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmY1ODQ4ZmI2NzViOTg0OGE4OGUwMzU4NWU4ZDA2NzE1NDMwM2M4MTZhYTM0MWFiZWI2NzVlNDZkZTdiZDA2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGY2MDFhYjE3MmE2ZDAxNjg2ZWI4NzhiZThhN2UyM2M0YTIxZjUyNTQ3ODlmN2FjZDU5OTQ5Y2VlMmQ2NTgyNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBhN2EyYWM3YTQ3YzFkZTY5ODhlZGIwZDhlYmEwMGVjZjliNzY5ZTVhYzcxNzllYmYxMWYxZTE5ODMxZmFkOSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providers.ts#L542-L567",
+          "version": "repo-lines-v1:sha256:bea69d629031a09a67222d31e27a6b405517d8aa8e41bf5533bd6c20e1a18eac:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjNDI0MzVkZWM4NzM4OTEwM2Y4NGI0MDNiN2NlZmVhOWFkNmY0YmFmMjk2NzBkN2IwMGMyNDNiOTQ1YTEyNTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhZTAxOTFhMjAzYTU5ZDgzNGQ4M2UyYmY5NGY1NzM5ZDhiNWYwODUxNWZhN2MzNTVhZmYzMTQ3NmFkMzUyZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc5NGJhYWMzYjZiODU1YmIxYzIwZmU1NzZlZGJmZTA4OTMwMjkwY2YwZTQ4NjBmYzAxNmY3NDYwZjI2YTA0ODcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_86872e070f354890a1887b9aca2f308c",
+      "statement": "Ответ /api/agent/chat — createUIMessageStreamResponse: createJsonRenderTransform (@json-render/core) выделяет data-spec части из текста стрима на обоих путях, каталог компонентов (Card/Heading/Text/List/Table/Metric) задаётся lib/json-render/catalog.ts и его prompt(mode inline) идёт в system-промт провайдера; на клиенте AgentMessage рендерит спеку через useJsonRenderMessage и lib/json-render/registry.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L131-L137",
+          "version": "repo-lines-v1:sha256:09edde830515b095c210785349b2c031f41587ee5da78d6729390873a326008e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWQwNWE5MWI1ODYzN2Q2MWM0MzI5NzlmYmE4N2YzMjg2MGYwYmZiOTRmNTM5MTMzMDQwM2VjM2VkODhhMGU1NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDEyY2EzNDVjY2Y3NWJmOWMwODA2YmNlNjk1YmU4ZGU4MDhiNzk5ODQyNTFhN2E1NGQyMDJjZjYxMDFkZDQ1MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmQwZjJkM2EzYWFkYTI3NTg2NDU3OGQwYTQzOTE1NjM4ZDU0M2ZlY2EyYzk0ODU4ZGI5NDEyMTFlODZjZWYyYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZDJkOGQ0YjIzNGE3YTYzZGNjN2E4MDNmYTk1N2E4NDgwYTU1ODZhOTk1YzA3Mzc2YTQ3ZjBiMTI4MDMyZmVhMyJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L257-L308",
+          "version": "repo-lines-v1:sha256:f18dc3dcdc512ec21c3a7e679a07f12a33636a5f84cff418cd640d7bb1f220de:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwOGJmZTQzMjZiYmZhMmU0ZGFkMGNiYjZiODlhNTcyMWNhYjBiNmI0MjRkY2JlMTA0MTQ4MjUxMWMwNjM4NWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0ZjhhMzYxNmQ5NTc0OWFhNTU1NGIyYjdiNWIyM2U0NTZhM2NkMjFhZWQ5NmJjNWY2NTgwZWZjNmIwY2Q3N2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRmNWExMTIwYWFjM2VkZGQwM2FjOWZhNGY5NDA1MDZhMzg3ZDNmNTc0MmE5OTk1ZWY1M2IxOTkwZGQxODgwYjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjljYzgzN2NlN2M3NjFjZWU0ZmZlZGNhY2JiMGY1NjAwYzI4ODg2MTQ1MDg4OTc5YzVkYmNjYzE2ZThkMjE4MTgifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/AgentMessage.tsx#L13-L37",
+          "version": "repo-lines-v1:sha256:52b6b3a1b6515d66418f29ef82876673256c81b76ab47e91f6680922e7231396:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MjA1YTRkZGU4MTJmZDlkNGM2Yjk0OTk3NzA3MzMzYzZmMjA3OWZlNzFiYmY2ZDUxODhjYzVlZTU0MGE2NjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxYTNiZTEzMjgyYWY1Yjk4NGM5OTBkZjBkMGQ0YTM1NGQ2MWM1Yzk0YjVkNjdjMDZjNDI4OGRkZDY5YzgyMDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/lib/json-render/catalog.ts#L12-L57",
+          "version": "repo-lines-v1:sha256:d4e4462636f1b8cdabf37866ef621f50c9b7b3b59034b6fddb3f6b6a1c3e58ea:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFhZjdjZTkwYmI0NGVlMzc0MzI0MTE1N2Y3YzExZTA0OGNhMzhmZjdhZTRkMTQ0MGEyZjAwMDcwZGE1MzExNjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI1NjFiMmNkZTU4MjNjM2UzOWQzYzMwZWVkZTkxYjU0OTk3Nzc3MGRlYWYyY2EyYjRmYWE3MTA2MTU0MzA1MTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRhZjcyMGY5MjVlYmFlYTc0ZWFiYjE4YzA0MjZmZjE2ODJlN2UzMjYzZjkxMzJiMWI2YTE5NGMwYWU1NDNkMTEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_badb72bca11a4daaa33f7db6b57af675",
+      "statement": "Провайдерский диалог регистрируется в реестре задач (kind prompt, executor provider:<id>, pid null, лог .agents/console/runs/<stamp>-agent-provider-<id>.log), финализируется finishTaskMeta по завершении стрима, а usage с totalTokens > 0 пишется через appendUsageRecords с source 'agent-chat' в .agents/console/provider-usage.json.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L223-L233",
+          "version": "repo-lines-v1:sha256:1649edab042563517fdecb334fc00385cdf0485348a78595fe454b991897d9eb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxYzA4OTg5OTVhMTNlYmY0NmM0NTgzM2Q0ZmI5NDU1MTEyZDMyNmQ2MTI0ODFlZmMyZTQ5Y2QwOTYzOWNlMjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViODNjZmQ4MmIyYzE5NDM3MDdkMDZmMWU0OGFlOTk0NWQzZWEwOTBhZmQxYzNjYjYzOWMwMWY5ZTA0YjYxMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwY2U0NmMzNmE1N2I5YWMyZjFlMjhmMzM0ZGI2YTMxNWMzZjU2YjI0ZTdkZTkwYTQxYTZiYzJiM2VkMTY4OWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExOWI4NDQ5MDc5NWQwNWFjNTQyMTFhZjI2ZmU3YjFhOTUwNTZhMThiYjRmZTc3Zjk5YjEzYzE1ZDdhNDliOWEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L269-L307",
+          "version": "repo-lines-v1:sha256:b50c593249feb45cba77cc7ca927e178a98cf88c6769d0f188b6e97cf1749b76:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkYmQyMzlmZTY3NTc2OWU5NDFhYmJlOTNiNzM5Njg4YTI3ZjY5YTMyMGI0N2Q2NDYwYTY5OTRhN2M5YWZiZmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRkNzYyYWQzNjIyNjk4MTlmOWQ5Zjc3N2RmMDM4YmVkNzYzYzRhZDgzM2ZkODA1ODQwMTIyYzU2ZWQ0ZWZlMzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQzNzI0NGY2ZjE5YjQ4MDdjMmU0YWEwYWUxYWY1YWNhNTM5OTQ0MjI0OWZlYmFkZjA1M2Q2OWU2NGNiMDEzM2YifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/providerUsage.ts#L5-L18",
+          "version": "repo-lines-v1:sha256:3cc5f5661c8fa3122d4ecf33b9c51acebef0bb2cad5ac519b9827434f8d7a781:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiZmMzY2JmOTlkMzhlZmNlYjY4YWU3NDI0NmZjOGE5NDkxM2JhODBkZTc0YjY3N2NiYTg3Mzc4NjFkYmRiZTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhmZTllYTMyNzMxYzc4MTJmOTY4NzJlMzU1ZGFjZGUwMTE3MzAwMjBjM2Q0YTE2ZWYzOGI1MmE2OWViYzlmYmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYxNDAzZGU1NzM2NWQwYjliZmMxM2NjZTk0ZjJmMTUwZjZmZTg5YmRkMWYzMWQzMGY5ZTRlYTc3NDdmZDc2NTIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cbab4823389b47f08386b5eec23a6a26",
+      "statement": "Путь рантайма /api/agent/chat: модель и effort берутся из vendor-конфига tier (runtimeModelForTier, thinkingLevel как effort по умолчанию), история UIMessage сворачивается historyToPrompt с обрезкой до 28k, запуск — launchPromptRun (detached-процесс, белый список команд claude/codex/kimi/opencode/node, model/effort через headlessModelEffortArgs с маппингом max->high для codex) с логом .agents/console/runs/<stamp>-<runtime>.log; ответ стримится поллингом лога runtimeLogChunks каждые RUN_POLL_MS 500 мс, пока processAlive(pid), с таймаутом RUN_TIMEOUT_MS 15 минут.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L139-L162",
+          "version": "repo-lines-v1:sha256:a85535d3651652bd92abe54ca903697ee08a6e2a5b8e2ac6f0fa5f50cfde80d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIzZGI2NzE5Nzc1YzU2Njk0YjViM2NjZWRkYjQxYWMzYjQ3OGUwZTE3MjY2ODIwYTVjODc1MzI3M2NmMWI5NzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5NGZjMGMxNzNkMWVjM2ZjNTAxZDdkZmE5Mjg1NTAxYzUyN2NmYjQ3MTI1ODNkYTNjYzM2MTgwNTY2YjRiZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFmMTc0ZGU1YjY1ODYyNTBiNWFhYTRmMjZjNTA1ODliMTJmNDhlYmZjZDM3NmQ5ZWJjMWExZmQ0YjdiZTVkZjMifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L317-L343",
+          "version": "repo-lines-v1:sha256:3ef6217716fbb6000e9349291c8332c364e6c405482e3047b503013f65a0a9bc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmMDRlNDljNTQzZWZkZGM3MTY2NjNlNDE1MWY4N2ViNzIyMDIwNGE2OWNlYTE5OTljNDI5ZmY1NjRiOWUyNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMTgwZmMyY2Q1NDY4MTk3MTkxNWYzZDY2MWZkNWFhY2UzNjA0ZTZmMzU0OTc4NTkwOWRhNWRjMjk3OGRhZGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1YjFlODRiMjRiYzVjY2RkZjE2OTE5MTc1ZTc0MGM5ZGM1MGEzNDZlN2RjNzc0ZWE2NjBiOGMxOGJlY2Q2YTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L65-L129",
+          "version": "repo-lines-v1:sha256:4d2235d1d9874c66cb756af363bd55d38a0d0eb7b3ea7031b7238dd8c002a4bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyY2IwNTgyZjcwZTBmN2IxZWI1OWFhNWMzMzQ0ZDhhNmM4OWFjNmVlZWFkNjlkNGI3MGYxYTU5NGJkYWFmZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1MWVjMGM1NzJhODhkMzFmNTc1YWZkMTQxNTg0MzkzZmJlNWJhZmZkY2I3ODU3ZGUwNTkyZDY2Y2Q4ZjVmZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2NmM3ZjRkNjk2ZTQwYzA0ODg0ODU0ZTBlMGE5YjZhNTJmZjcyMDc2MTVlYzM4M2M3MGFiYjM0Mzc5NjQwN2QifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L126-L234",
+          "version": "repo-lines-v1:sha256:87e2e29f7c1345712d6226bfd9d5b80d0cadfbed472a3f3a7dc264aedffa7320:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA5LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxYjkwNTU0MDA3M2E4YTczYWU3N2Y2ZWExMmU0OGVjNGEzMDY4N2IzOGQ1MzEwZmQ1OGIxMjFlYjY0Nzk3M2MwIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI0MTJjYTM0NWNjZjc1YmY5YzA4MDZiY2U2OTViZThkZTgwOGI3OTk4NDI1MWE3YTU0ZDIwMmNmNjEwMWRkNDUxIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI3Nzc5NTVmZmJmNWU0OGRlOTE4YjFjOGNhNTJkMTg4OTEwYWQwZTk5Y2FkNjdiM2MwYzUyZDljYjUwZjU3ZjY1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzYTVlODFmOTAzZDNlNTgyMzRiNjljZmQ4NGUyNzNkMTBjNTRmMmZmN2VkNGU4ZDQ4ZWUyZjUwNzJlODkzMWY2In0"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L83-L111",
+          "version": "repo-lines-v1:sha256:ba3f730ad9485fe12ea41a56430b21bb6f356672757211cff1e68dea73ca4527:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjMjZmZDkwNjlmMTRjYTIwZmYwOTYzYjgxNWUyMzFlNTExYjVmZDk0YjY5ZDU2YmU0NzEzZTlkMzM2YjhlODgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgyNDA4YWRmMjMxNDYyZWVmYmQwZWFmZDQ2YWRmYmZlZDMzMjBiYjFiNmRiMDkyNDJmNmFjNGJmN2I2NTc0OWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUxYjgwOWYwOWY4MDJhMTU2YmRjYjg0MWE1ZTNlZmJiYjVhODI0YmJjNTBlYTgzMzcyNTdkZjRmNTcxODU0OWUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0c08c74e22304ed8949ce9aae94c87dc",
+      "statement": "Реестр задач core/tasks.ts хранит мету каждой задачи (TaskKind prompt|openwiki-build|graphify-build|graphify-wiki; TaskExecutor runtime|provider|tool) атомарными JSON-файлами в .agents/console/tasks с монотонным startedAt; статусы running|completed|failed|interrupted финализируются лениво при чтении (finalizeTaskStatuses): мёртвый pid + FAILURE_PATTERNS лога от logStartOffset (хвост до 64 КБ) → failed/completed, provider-задачи (pid null) старше STALE_RUNNING_MS 15 минут → interrupted, меты старше 30 дней удаляются.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/tasks.ts#L13-L43",
+          "version": "repo-lines-v1:sha256:a45fd40c52be0b3b60c3f9e868b4f8bdaec8a2e8c48d6702e75f87263bf18ef4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyYjUwZTlkYzk2ZjI0NzMzOWRkMzU1ZDU3ZTJlYWEwNTEzNjY5NTNjNjMxMWY2NjI5NGEzNjQ0NTM1NGM5MWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUyNmMyM2Q2YjIyNGZiYjc4ZDY5YzkyZTczNmNkZjI2ZTI5ZTU3NDU4ZjFjODc5MjI0ODgxZGEwYzgxOWIzYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM1NDNiNGQ5YzRlMzk5ODRhYTE2YzcyYzJiZDY0YTIyZjNiYzk5YjFkOTEwMDA1NjIzZDcwYWM2NDIwM2E0YjMifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/tasks.ts#L169-L243",
+          "version": "repo-lines-v1:sha256:8f116a8d2147931299f005bed93221c334e2364ddd923405a02b893e1515d8fb:eyJzZWxlY3RlZExpbmVDb3VudCI6NzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5Zjk3MjY2MjMxZjA3OGI0ZmJiOWFlYTYzYWJjOTU5ZDE0NGQyYmY5MDI2OWE5YzE5YjY1ZDMzYjIxZTA2ODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRjOWY1MTcwNTEwZjlkMGI1ZTY4MWNjYThhZjg4YWJlZDM0OWI4MzA2Mzc4ZWZmZGE4MDAyODYxNmU4ZWYzM2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkYWEwYjczYzUwMDQ5MjY4NTVhNjc0ZTc2NmQzYjc2MzhkODZhYTg5OWZkMWY3MGZmMGFhMWM1ZmIwZjU1OWUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/tasks.ts#L57-L116",
+          "version": "repo-lines-v1:sha256:878f70bb19ffc1bdc19c5f12515274861eab7b03e842713706fb719130cdee6b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc5YzU5OWJkOWJiNDZlMjliODg4YzBmOTgwYzJmY2QyNTVkMDE5ZGNmMmNhN2Q2NTIxYWYyYjM5ZGI1OGE1MjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ1YmFlZjljZjk0NzdlNDJkY2I1MDg2ZGIzYjQ3ZmZkNjUzMDk4MWNlNmQ3NTAwNzhkYTU5MDA4MzY5MzQ1ZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE0NGZkYTI1MzkxNjU1YWU0ODQ0YTVmZWVmOTRlYzNhYzM3ZjBhYmIzODQ4MjcwODJlZWNkMzE0YmM1YjY1NTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ec67834e2e3d4109b1376297a63fe7cb",
+      "statement": "GET /api/monitoring/tasks возвращает DTO с executorLabel (имя адаптера, 'провайдер · <label>', 'инструмент · OpenWiki/Graphify') и sessionHref (/runtime/<id>?tab=sessions или /memory); вкладка «Мониторинг → Задачи» (app/monitoring/page.tsx, components/monitoring/TasksPanel.tsx) опрашивает маршрут раз в 4 секунды с фильтрами Активные/Все/Завершённые.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/monitoring/tasks/route.ts#L8-L41",
+          "version": "repo-lines-v1:sha256:6c5d95e53a2d305334950f404afffc87e8ea4967df76ab574159462384d04759:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlYTA1YmI1ZWMwYTBmNjYxMmMyYTgzYzE0NDYxN2JkYzkxNDU5MWJlYTcxNzIxNTM4NDNlMDk4YmMyOWY0Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5ZTZhZTk3Y2ZjMzM2ZjU2MDk5OTQ2ODYwZWI4YzZhOTRiMDcwZTAzZjZhMzlmYzM3MjA1YTFlOTU1YjI3NzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/monitoring/page.tsx#L11-L23",
+          "version": "repo-lines-v1:sha256:bef757d0181a3b0cce86ec9ef8da1143b9224dfda66ec4d05e240179ebd41e5a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzYzJmYWU0ZThmYmM0YzkxMGYxYzMyZjZiZjFjZjQ0ZWQyNzMzOGYzZDI0NDUxMzY0ZjU2ODljOTViMGI1ODUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwMmVhYTc5NmNmYTk3ZmFkOTVlMDU0Mzc3OTIyYTcxN2U2NzBhZTIyY2RhYTMxOGUxMzE1ZDQ5YjUwMTUyZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/monitoring/TasksPanel.tsx#L36-L60",
+          "version": "repo-lines-v1:sha256:f0ef9b98bb01f7890dfb27e047fcda64f63ce89de8b4fb8f48f825438237ca07:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3MDU2MWFlNzg3NjI2ZGY2MmU0YTZlOTM1YTY2MzM5Y2M0ODJkZGZkMzUyZDVhYjdkNjM0NmRkMDE3ODNlNjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyZmJkMWVmNTIyNTRjNWQ5ZTg1NmIyOGVjNGQ2MzYxM2I3Yjg3NGEyNjI0NTcyMTdjZjg4YjhlZjBkMTljYWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzYjdlYTUyMTRjNGNlZDQzMGRkMjI2NWQyZTFmMDZiNTRmYmIyMzIyNzg4ZTk1MTg2YTBmMWM1ODVjY2UyNWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFmODIxYzE5OGQ1NTQ1ZjA5M2Q3MTNjYzE2MGY1YWEzMDVlMWEyNDViZmYzOGJhYWMyNWRjMjY5MDI2ZGZiMTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8d4e9852b9604959b5acc6674081a8c3",
+      "statement": "Git-поток рабочих папок: GET /api/git/status возвращает gitRepoStatus (gitAvailable, isRepo через rev-parse, current ветка или null при detached, branches, empty), POST /api/git/init выполняет git init, POST /api/git/branch {dir,name,create?} создаёт (git checkout -b) или переключает (git checkout) ветку; все маршруты принимают только dir из workspaceDirs(state) и существующий каталог, а логика core/git.ts — синхронные spawnSync с таймаутом и проверкой имени ветки git check-ref-format.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/git/branch/route.ts#L15-L42",
+          "version": "repo-lines-v1:sha256:404450b42b08bedef95cbeb0c1dcef40192f72c601d71241cef6a978ecf78df9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMzI3MTM1MDI5NzgwNjMxYzhhMWEzMDYyNjM0M2Y5YzA1NmE1YTMyNDA5ZWEyNGJmYzM3YWRjZGExNGQ5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU2MzI5ZTc4MjNiOTAwMGY5YTljODBkN2NiMDc0NmRkZDMxZTU4MmU1OGI3YzU0MWRkOWQ3NjBhMzA2YmFhYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/git/init/route.ts#L13-L30",
+          "version": "repo-lines-v1:sha256:069b809f107a8880803d4f102a70eb7b46ae0cd661dda6a8b9ee1abb43b5dcbb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMzI3MTM1MDI5NzgwNjMxYzhhMWEzMDYyNjM0M2Y5YzA1NmE1YTMyNDA5ZWEyNGJmYzM3YWRjZGExNGQ5OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJhOGU4ZGI3YjlmNTlmODQ5NjUzZTkxMjI4NzM4NDYwN2Y5NzVjZTJiN2Q1YjA4N2NkNWQ0OGZkMTAxZGFjM2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/app/api/git/status/route.ts#L13-L25",
+          "version": "repo-lines-v1:sha256:725878c9c772364b2cac61999ea87648ec81056580e8d57e23eb9887238d6298:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJjNGFhMjExZDg5ZTY1NDM5MThlNzkzZDIxNjFmYTA2ZjdkMzJkZWU4MDlkNzkzYzdhMDFmOTE3MjEyNjAwYzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiNWUyNDYwMjg2ODkyNmJiMTI4ZGFjNWNkMWJmYzRlNmE1YmY0ZjUwMTYwODY1NjNmMjc3NGFhMGJiNjJhOTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/git.ts#L28-L107",
+          "version": "repo-lines-v1:sha256:f30f0ff844f1662aaf45fa4556c5bba0c69cac1219bed0054a93d7fdbec38f92:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MGQxYmYyZWExYTBkOWFkY2YwZTQzOTAxNDlmY2NmYjAxZTNjMTg1M2I3NTVmMzdjNzY4ZmNkZDdjNzEwZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQxMGEyOWQwYjk5NzBlZmNjNmRmZDk2MjNjYjk0ZThkNjRmMjJiZDEyMDkwYWM3MDdkODNhMzRiNzUwOTc5NGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c83e0c68d0b44be88604db0f609a2efd",
+      "statement": "WorkspaceBar в композере вкладки Агент: папка без git-репозитория показывает кнопку '✕ Git' с подтверждением git init; репозиторий — селектор веток с пунктом «Создать новую ветку…» (модальное окно); операции идут через POST /api/git/branch, после успеха onBranchChange инкрементирует gitVersion в AgentPanel и статус перечитывается GET /api/git/status.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/components/agent/AgentPanel.tsx#L114-L130",
+          "version": "repo-lines-v1:sha256:921fa02499440347c0b8d3f050ad75f8d956f3a19813a5a3b182ae7e461a7a9c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NjZmYmZhODg5OThkYTc0NjU2YzUwMTk0OTU2YzI1ZjA4NDk0NTc2NjBjMDA5ZmU2M2QxZTlmYTlkYzkzMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3MzhhMjhkNGRhMjY2NTBlNDcyOGQzMGNlZmJhZjcwYzU2OTZjZDA0YWEzMjYzMTgyYjU5YThkMTAxMDFhYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhY2VjYjhkMDMyMzNlZjk2Yjg2NWRmNDI4Y2MwMmQ0OTljZTdjYjE4Yzk4YWZiZWE4Y2E2MTYxM2M4OTMyMjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMyZDJmZGFiMWVmODJkMjVhNGQ0OGI5NWYyYjVlYzc5YTg1ZDEyOTA5ODQwNzAzMjRhZTgyYmM0MGE2NTRjNGEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/AgentPanel.tsx#L259-L266",
+          "version": "repo-lines-v1:sha256:107f819cb984b8cd3993c2415e4a5711c1a7de8db89d787ff39238b6da53eebd:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODA3ZDJlYzQ4ZDVmZTQzZDNkNGEzOWVlYWY2ZTBlOTU5ODRhMjBhNDM1NjcwYmYxY2UzZmFiMTlhZjhmOTY5MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNmRhNTkzZWI4M2M3OWZlOWM2ZDI2OGQxYzFiODc4N2EwOTI4MTA4NjJiMjFmZThhMWQxNjJmNGYxZDFmMzExYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMThmZmIxNWEyNzdkYzBhYjIwN2I1ZmNlOGNlODhkMzFjNTMyYzVhYTM2YzhkNDA2NmEwZTA1NjRkOGE1MDY5MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTYzYzQ3ODEwZGYyNjZkMTdhMzBjODdlMTVhYjhiY2E5MWQ1ZTI4ZGFlZDI1YWQ0YmZjN2I2Zjg1ZjJkMDE3NiJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/WorkspaceBar.tsx#L141-L159",
+          "version": "repo-lines-v1:sha256:ea7dc2e5d46a6a713a8dca6ede641172adab2437925c646feeeb6d13d1956648:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk4M2UyNWI3YTdjOTYxNzdmNDJkYzdhZTViYzFmYzMxZWQ1NTFjYmU0ZThhNDBhMDZiMTQ1MWZjZDgyNDMzNWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ3YjhjMTA4NWY5NWExYWZhYmU1ZDE1MmFkNThkYjlkYzI2MzM2YzEyMThlMmI4NDBhZTdhZDgyNmEwZDU3NDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzNjNjZjA3YWI0MzkxODk2ZTk3YThmOTE1ODgyNzVmNTY1OTU1YWQzMjE2Yzk2NmEyZWRmYjkyZjU3YzEyY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1OWIxOTRiY2U2MjlmODRhYjgwN2U1ZmVjOTRiNTE3OWVjODU0OTQ1NmY0ZTc1N2MyYjYyZDQ3NWQ3M2UzMzIifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/WorkspaceBar.tsx#L19-L23",
+          "version": "repo-lines-v1:sha256:30af00d482b0fc32cb3ae62438044680492fa3e44e9341dcd53019402af9f574:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkOWIzNTljMTM4YTUxMzg3YjkwNjliZWE4YWNmNDFiMTNiNjk1ZWY4MWI2YzQ3Y2NkYWQ4ODQyYjRmMDAzYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjMyYTFkMWQwZTkxN2EwYTFhNmQxYTczN2UxNGIyZDNjMzMzMDUwYWY1YWYyNmUwOTljYzZlZjk5N2M4ODgyMSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/WorkspaceBar.tsx#L59-L125",
+          "version": "repo-lines-v1:sha256:ed4903b73d909c11afc6bc50a18a06a5df224ce5372fa1c37767ca4a64755c8a:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlNTAwZmNhYmRmOGJhMzZiMjE1MTQwNmNkY2E4MjVjYzE5YjI1YmMyNmZkYzA1ZjJmOTgzMWI3YWVmY2NlZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4NzU0M2JmNzU0NzdlZGZmYThmNjA5Y2NlZjE5ZDQxOWYwZjlhNDI3ZWYwNTdiMWE2MDc1YTM0YjFmODM4YmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA4ZTY5ZGU3YWQzNzczYWVhZDBkOGY2OThiOTE2MDY3M2YyYzFiYzIyYTY2YjRiMWMyMTM5NGM0Yjg4N2ViMmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4b5d25ad81244b8d89c25b2013e50788",
+      "statement": "AgentPanel (/agent) собирает селекторы исполнителя (провайдеры AI SDK и рантаймы одной группой), tier (4 MODEL_TIERS) и effort (low/medium/high/max); useChat с DefaultChatTransport отправляет body-функцией актуальные executor/tier/effort/cwd в POST /api/agent/chat, списки папок и провайдеров приходят из /api/workspaces и /api/providers.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/components/agent/AgentPanel.tsx#L14-L30",
+          "version": "repo-lines-v1:sha256:989b8d036e6ad232740c4a864a02ea3f99f65d9202f18691b2f2cd352660959f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMmQyYzBkNmRjNWU3NGQ5MmZhMTRiOTFkYmVhMjY0MDkwYmViMzVmZGI5MTg4ZDliMzQxMTgxZGNlOWY0Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3OTc5YmI0OTc3Mjg5ZTc4M2U2YjBjNWM3N2U3M2VjYWFmOGYxYmYyNjEwZThmYTYxODU0MzE2YzEwZTE2YzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3NWViYjNjZDNkYmY2OWFlOGFiMjNiZTEzNTJlZDIxM2Q5OTk1N2NmZTFjYmY5YjVlZGY4ZTk4M2YzMTM5OTEifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/AgentPanel.tsx#L178-L208",
+          "version": "repo-lines-v1:sha256:b4e0de1a293c9b9978581c930a25583388b35d9ff24545732b943b877bd9c4c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5NDlhNDcwZWI1YjU3ZGQwYjc3ZWZlOWU1ZmYxMTQ3NDUwMTc3MzYxYTA1MzUxZWEzYjQzMDk2OGFmNWViMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZWYwMWJjMDhkYmMzYjYzZTRlNzVlYTNkMjZhNWI5NDE4OTE4NzdlMjdhZDg5MTMyOWM4NDExZDdkOGRjNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2ZTk0ODYzZTQwZjVkM2ZhNjVkNmU0NjI3MGIxYTVhYjNkMzY2ODhkMmMzM2JjNTA1NjczMTNjNzYzZGU3ZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmMTg3NzAzZjI3YzhjMTdjZDZlZjcxYzAwZmZhMzE5MjFlMDI0OGEwY2I0MTMyMTYzYjY3ZTRiN2NkYjEyYzcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/components/agent/AgentPanel.tsx#L85-L149",
+          "version": "repo-lines-v1:sha256:623dc7a68daf95733365b284c7f196ed1cdb1689b081a98b1135256b91979823:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NjZmYmZhODg5OThkYTc0NjU2YzUwMTk0OTU2YzI1ZjA4NDk0NTc2NjBjMDA5ZmU2M2QxZTlmYTlkYzkzMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NGQyYmFiMWE4YzA3OGU3YmY4MDYwN2NkZDFlZjZiMWRjMGQ5NmVlZmE5NDc1ODliNDFkZWYxZGU1MzJjZDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRhMzc1MGJiMmRlMGU2ZDQ4ODAzZmQzZjkzYjViOTFhZjNlMmQ2MDIyN2E0ZDYyMGRhMDQ4NDg1YWQwNDVmYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEwNGJmNGRhNjBkNzNhYjM3NWY5MTBmNmY1YjM0ZDE1ZWZlNzRhMWQ2MmFlNWQzM2E2YTIwOTNjY2I4OWMwMjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a6be434dd2c54d258cf042eaf0d0d1b0",
+      "statement": "Поведение реестра задач покрыто core/__tests__/tasks.test.ts: чистый лог + мёртвый pid → completed, ошибка в логе до logStartOffset игнорируется, дописанная после старта ошибка → failed, живой процесс остаётся running, provider-задача старше STALE_RUNNING_MS → interrupted с идемпотентной повторной финализацией.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/__tests__/tasks.test.ts#L60-L175",
+          "version": "repo-lines-v1:sha256:c215bb0ff09aeecf40b37c612bd2b7702061a98805a245cdaf458eb33e811ca2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIxNGZiZGRjYTU5NTJjNGMxMDc0ZWY3MDI2MzQ3Mjg2Nzg3OGY5Njg4MWNhN2RmMzhlYTMxNDRhNTNhNmFlZGJjIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIzYTNlNDZmOTQyNzZiNmY2ZjRlZDFmMDJhZjc4YmVmNmEyZWUxYzQzOWRkNTU4NGI5NzM5NDgzMTMyMTRkMmI3IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2N2ZjYTk5YTQ0NWQ3ZGE1OGMwYjY2NGMxNWJjYjJhMTc4ZGVkZWU1MzljYTUzYzc5YThlZDBjYTViZTMwOGZhIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIzNTQ3MzNkMTFhYzA4OGNiZmU5ZTdlMWM3MzUxMmQzNmI3MWJhNDJjZTM4MjQzMGM2MzI0YzVjOTU4NjZlOWIzIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8bfdd56500d849a8b2e570f651161b49",
+      "statement": "processAlive(pid) в core/memory.ts проверяет процесс через kill(pid, 0), трактуя EPERM как «жив, но чужой»; этой функцией пользуются и /api/agent/chat (поллинг лога рантайма), и finalizeTaskStatuses (ленивая финализация), и статус сборок wiki/graphify.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/agent/chat/route.ts#L114-L114",
+          "version": "repo-lines-v1:sha256:14bfc9903b8074d7561634f6d7420edace3420ea2bda6e8ff037ae3210c9cc2e:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTRiZmM5OTAzYjgwNzRkNzU2MTYzNGY2ZDc0MjBlZGFjZTM0MjBlYTJiZGE2ZThmZjAzN2FlMzIxMGM5Y2MyZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTRiZmM5OTAzYjgwNzRkNzU2MTYzNGY2ZDc0MjBlZGFjZTM0MjBlYTJiZGE2ZThmZjAzN2FlMzIxMGM5Y2MyZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmRlZDg0ZmY4ZWNjNjBiODIwODliZTE1NGU2MGQ0MTkzNGIxN2Q0ZDhmZmFjNWRmMmQ1N2MwNTZlN2E1NGY3MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYWY0MjkyMDU5NjcxMzE0NWZiYjA5MjZiNWM0NjNlNDdlNGIzM2YyNmQzZjY2YWQ2MzJhM2I3ZjdiZDY4MDc5NCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L229-L238",
+          "version": "repo-lines-v1:sha256:d1314e9c22e473543a6bf8bfc71a9191a0ef6b7844550ddb67984031e30871da:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljMDllYTc5YmZhMjRlN2JhNGRhZDUzZTY5YzNlNTlhYTE4Mjc5NWNkNTQ3YTQwNjZmMGY5ZGE4ODA0NjRiOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkY2EwZWI1NmRmNDM2MWQ4MGVhYzJkNjU1YjI2ZjM1N2IxMDA2M2Y3M2U1ZjE1ZjRhNjA1NDQxNzczYzAyY2EifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/tasks.ts#L188-L188",
+          "version": "repo-lines-v1:sha256:af4cf83a06682f702c409d8775c52df0caa2b8d2939161e8388f43f3906ba5af:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYWY0Y2Y4M2EwNjY4MmY3MDJjNDA5ZDg3NzVjNTJkZjBjYWEyYjhkMjkzOTE2MWU4Mzg4ZjQzZjM5MDZiYTVhZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWY0Y2Y4M2EwNjY4MmY3MDJjNDA5ZDg3NzVjNTJkZjBjYWEyYjhkMjkzOTE2MWU4Mzg4ZjQzZjM5MDZiYTVhZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzBjM2Q3MTk0ZTljZjFiMGVmYmZiY2JhZWI4YmNkN2JiZTYyNmJlMDUxMmUyY2RjNTNhYTgwMGRhNGUyNGYwYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjQzZGM3NDZmMzdmM2JlM2IzYTc1NTI3YmE3OTE1ZGNhY2Q0MmNlODdlYWNmMjJmNTM2MzVkOGNhOGZiMjJlYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_d2d0e4533eb347a9bc06efa2725f829d",
+      "statement": "Сборки OpenWiki и Graphify регистрируются тем же реестром задач, что и диалоги агента: launchAgentWikiBuild пишет kind openwiki-build с исполнителем runtime в core/prompts.ts, CLI-сборка graphify — kind graphify-build с исполнителем tool в core/graphify.ts, поэтому вкладка Мониторинг показывает их вместе с промтами и провайдерскими диалогами.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/monitoring/tasks/route.ts#L28-L33",
+          "version": "repo-lines-v1:sha256:b012bf0b9f30efee4f2456dd6c79096d1b390109ff414d2735a3dbee3051f0ae:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWFmMjJjZjA3MzI1OTJjMjQ3MTQxY2JlNjFlZmExMTAxMjYxMmY1YTMxMjJiOWFmOWJiYWY1MmY1NzI0ZDE5NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTcyYTQyOTM4MmIyZTE0NzE4ZTBlMzdiMDU3MGE4YTE3MDI5OTFmY2Q4NDk4Y2Q4NDA2MGE4YmY0ZjA1MDE3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjY3ZjU1YjY0MjhmOWZlMWViNjllMTEwY2QxYzhlYTM4NmY1NzI1MDQ4ZDZmMTQxYzNiNTY4OWY5MWYwYjJmOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzlmZGE3NWJhNGQ4MjRiMTgwYmM2MDRmYTUyMzJjZjM5YjFkYTY4MDVjODVlZDZhNjQ4YmIwMzllNGRjNmIxNCJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/graphify.ts#L151-L175",
+          "version": "repo-lines-v1:sha256:27811c24dc4d59be1bc45decb98ea556d67fd897be51df9033331a2fe7c343e4:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlOGE1NTcxYzRjNmY2MTFjOGI4ODhmNzZiMGYzMTI4ZDUxMTVkMmJjZjZkZDI4ZjlmZDU0MzIwOGFjNDc5YzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI3ZTU3ODhkNWQ5ZDczZDI0YTgxZGJjMGE1YTc0YmZhODJjOWMzYjNhZjk5ZTUyYWY3OTZlOTBiNDY4YThhM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4OTBiMDk4NjAwNmUwOWVmMThhYzIyNWVkODJkYWRiYWYxMzdmNjZjZWE5ZWFjMjQwZWM5Nzg5MzBjOTNjYjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1MmU1YmNmMTdhZjBiYzNkMzZjMzVjYWNhMWVhNDAyNzdkOTJkOTk2NDE0ZGEzZjE2NDJjNmU2OTgwZDU2MjcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L338-L347",
+          "version": "repo-lines-v1:sha256:40dd1c6a192cd6921b0f510d7cf41723bd76a1c32222b782e33b8e4a0d3c3cef:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2Y2NmMmIwOWEyNWZlZWQwYmQxMzg1ZWZmZDFlN2I0NTA1MmU5NjBjYzQyOGEzNTVhMWEyMjgwNjc5OTUzYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1NTEyNmFhMDgxZDA1OWZkNDllNjYxMTZjOWZkNTM1YWI0OGY3ODFiNmNjYjc1ZTU5ZTU3OTRjM2RkYzVkMDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcwZDVjZjQ5YTJkYmIzZjk1NzQ4ZjlkODYwZDg0MGE5MjljNDk0ZTdjY2RkYzlmZGRmMGI4YmIwZTNlODI3YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2OTBjZjc3Y2Q4NDcyNmQxNzQ5OGEwMzE0ZjJlZjRjZWJjNmM3YmU5ZGI5YTc0NzNlOWY1OTNkZGQ5NjNkMWYifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.1",
+    "at": "2026-10-01T21:39:07.719Z"
+  }
+}

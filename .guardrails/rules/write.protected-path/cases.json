@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-Write-.git/config",
+    "tool": "Write",
+    "input": {
+      "file_path": ".git/config"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-Write-src/app.ts",
+    "tool": "Write",
+    "input": {
+      "file_path": "src/app.ts"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Edit-bun.lock",
+    "tool": "Edit",
+    "input": {
+      "file_path": "bun.lock"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-prompt-Отправь в модель раздел ",
+    "tool": "Prompt",
+    "input": {
+      "prompt": "Отправь в модель раздел с коммерческой тайной проекта."
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-prompt-Отправь в модель раздел ",
+    "tool": "Prompt",
+    "input": {
+      "prompt": "Отправь в модель раздел по задачам недели."
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-prompt-Проверь доступность db.i",
+    "tool": "Prompt",
+    "input": {
+      "prompt": "Проверь доступность db.internal перед запуском."
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

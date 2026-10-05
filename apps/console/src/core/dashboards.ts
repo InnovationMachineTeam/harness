@@ -136,6 +136,11 @@ export async function startDashboard(repoRoot: string, toolId: string): Promise<
       child = spawn("headroom", ["proxy", "--port", String(port)], spawnOptions);
       shown = `headroom proxy --port ${port}`;
       break;
+    case "agentplane":
+      // read-only дашборд графа знания из .agentplane workspace (cwd = корень репозитория)
+      child = spawn("agentplane", ["context", "dashboard", "--host", "127.0.0.1", "--port", String(port)], spawnOptions);
+      shown = `agentplane context dashboard --host 127.0.0.1 --port ${port}`;
+      break;
     default:
       await fh.close();
       return { ok: false, error: `нет команды запуска дашборда для ${toolId}` };

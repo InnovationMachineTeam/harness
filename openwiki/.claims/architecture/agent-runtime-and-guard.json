@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:fae1a124c6ea1704d8653dc68cad24206cdf898257fff8ce2e2fdacdff1058d2",
+  "claims": [
+    {
+      "id": "claim_960e998387744c16a35f4a2a4c2ea67a",
+      "statement": "guard.mjs allows (exit 0) or blocks (exit 2) a tool call, evaluating BLOCK rules before WARN rules and returning the first match.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/guard.mjs",
+          "version": "repo-file-v1:sha256:fc3bc0ddebba4871a37bb64a6361a6babd8c92772a357934866f286643288e6e"
+        }
+      ]
+    },
+    {
+      "id": "claim_bde7b99fb13a4cf7b0c4d9443bdb671a",
+      "statement": "Recursive delete is allowed only under .agents/.tmp/, /tmp/, /private/tmp/, .nx/ and node_modules/.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/guard.mjs",
+          "version": "repo-file-v1:sha256:fc3bc0ddebba4871a37bb64a6361a6babd8c92772a357934866f286643288e6e"
+        }
+      ]
+    },
+    {
+      "id": "claim_a11f9d55cc9d493f93a83c0a3e5535b9",
+      "statement": "verify-fast runs the tooling test and validate nx targets plus a guard self-check that expects exit code 2 for rm -rf /; verify-security and verify-e2e are reported unavailable by verify.ts.",
+      "evidence": [
+        {
+          "resource": "repo://tooling/scripts/src/verify.ts",
+          "version": "repo-file-v1:sha256:70341ae756df648f18365672b029609de466749339d81a386b4b28092a56e8be"
+        }
+      ]
+    },
+    {
+      "id": "claim_b9b59f31ffcc4061a02ec3722b69c4da",
+      "statement": "Shared limits and the fast/default/deep profiles are defined in .agents/runtime/config.json.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/config.json",
+          "version": "repo-file-v1:sha256:c0cf5891e5d52a32454eadba940bb98af3ceb18535e873bfcc4773056fab9a1c"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f194498d7fb4fd995c22c615a1a08b9",
+      "statement": "Each runtime has a vendor config with adapter, guard command, hooksSupport and model tiers; the Claude adapter is .claude/settings.json with native hooks.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/claude/config.json",
+          "version": "repo-file-v1:sha256:75ff450980edc59af02fd2100bbe0440bac63c02fe7c6d72a93a4b65fbf36b4a"
+        },
+        {
+          "resource": "repo://AGENTS.md",
+          "version": "repo-file-v1:sha256:3a5fcb27e695ef88e098c84bb6373d6ef804bc685bad41eb1a676ddfbe67d511"
+        }
+      ]
+    },
+    {
+      "id": "claim_fabcd9cac8f14f89ad8f19cf2fcbece1",
+      "statement": "Режим `settings` guard.mjs печатает блок основных настроек рантайма (рантайм, адаптер, hooksSupport, guard-команда, активный профиль из AGENT_PROFILE с учётом его переопределений лимитов, маппинг tier→модель с флагом verified, лимиты, права, verification-команды); AGENTS.md §2 обязывает агента показывать этот вывод в начале каждой сессии и помечает и раздел, и режим как временные (TEMP), подлежащие удалению после окончания теста резолва переменных.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/guard.mjs#L440-L482",
+          "version": "repo-lines-v1:sha256:eae6c5ffb7f603799ede6cf724b10ece409c89c8037fb0991d38877b41bbfba8:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3ZTFlNWE1OGI0ZGM4M2U1ZWFiYmY4MmYyNmU0ZDAyZjExYjI0YTBiMTdiZjM3ZjVkNTU2NmVhYjk2MjNmMjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ0NDE3MDQ1OGM5YjdiMzk3MGRjMjBlODA0NzgzNzkwYzhmNTVlMDY5OWM3OGFhNWM0MzE3MzIzYWE0OGEyODQifQ"
+        },
+        {
+          "resource": "repo://AGENTS.md#L29-L40",
+          "version": "repo-lines-v1:sha256:4ff9db9527a393e2bd11ee38283576e7247a863382ee6b6ff9019b43edc35fb0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ5OWEwYmU2ODg2ZGYzNzk5MThiYTZiYzljNDFkY2U2ZDNmMGUwY2ZkMGU5YmU3NDEyM2VlM2YwNjQ5N2E4Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg0MTkwY2FiYTI5ODIzZGM5MmNjYzg3OTdlMWRlYTlmYjNjY2YyOWE1MWQ0MWIxNzM1OTlkYTVjZTY3OWZmZGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4ZTAxYTYwMTUwODBjMThiZmQyMDA3NTFhNzVjYjk4NDcxYjRkYjVmNDJhMzMzODM4NmY4OWM3MTQwNDQ2MDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhNWQ0ODZjMzU1M2MzY2UzYTkxYThjNzg5MzQwOGNhMzU5ZDY5MmU4YjhkMjhjMmQ3YTYzOWE1MTNkMzJhOTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4860e8675a3f41289de35a3b82680bbd",
+      "statement": "Правило поддержки инструментов (AGENTS.md §10): если изменение начинает использовать новый внешний инструмент или библиотеку, отсутствующую в npm-зависимостях воркспейса (CLI, бинарник, глобальный npm-пакет, системная утилита вне базового набора ОС), его обязаны в той же серии коммитов оформить плагином консоли (`apps/console/src/core/tools/<id>.ts` + строка в реестре `core/tools.ts`, гайд - docs/tools-dev.md) и синхронно обновить `tooling/scripts/tool.sh`, `tooling/scripts/setup.sh` и `docs/tools.md`.",
+      "evidence": [
+        {
+          "resource": "repo://AGENTS.md#L163-L197",
+          "version": "repo-lines-v1:sha256:da1d83cd884ff115f60ee777f0cffc2b94c1412b0d37009f97c10cd03ad9e453:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMmUwM2NkMDQwNGE4YjMyNmYwNjBkYmM0MmM0OGJhMTUwOGM2OGQ0ODAyZWQ3YTNiMjI4YjRiMDJkMmFkMDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkY2FlOTIzZDU1ZWNkYTY1OWZhNDUzZmFlYTc4ZDk3NzUxOWU4NDEyYjk4NjRmNTI1NzRhMzU3OTdmYmQyYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5MjUxMzE2NTNlN2E0OTViM2ZmNWRkN2JiMTQ3YTdjZWRhYjcxN2RmMGMzZmVmMmY1YzQyZDViOTcwZDBlYzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFkNDIyOGMyZjYwODczYmE3ZThhNDE2YzJlMWMyMTFhNjkwODE2NjE3MWI1YzIyMmRjZTU2YjRlYzViNTQ3ZGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_16e8b26e4af2450db258f3b196711153",
+      "statement": "Доставка политики в OpenCode реализована проектным плагином .opencode/plugins/agentos-guard.ts: он подписывается на событие tool.execute.before, прогоняет JSON с {tool_name, tool_input} через guard.mjs с AGENT_RUNTIME=opencode, бросает ошибку при exit 2 (что отклоняет вызов инструмента в OpenCode), а warn-срабатывания и сбои самого guard логирует через client.app.log, не блокируя вызов.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/opencode/config.json#L5-L9",
+          "version": "repo-lines-v1:sha256:464c6f826d98c6cc1cf95a160a443f4e718b000b040bc8bd72e930a122a73554:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDdkMTkxZDQxZTAwZTAxZDM3ZDI1MDVlMmIyOGMxMWVkODcwYWFhZWJmZWYyZjdmZDViNWQ2MjNjMDg3NmRmYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWI3M2U1Yzg3NjhjNDc5Yjg0ODM1MmM2OTMwMzk4MTk3NGQ0MjViNGY5NmEyZDkyY2MwNTQyZGFiOTYzNGVhNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2RkNjQ4NzAxYmQ5OWI2NjJmZmE4OGIyMjY0MWJmMzUzN2MwM2UyNDRlYTExNjA0YzZkMjI5NDQwMTcxMjUwNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODc2MGRiZDdkNzYxNDJhMTE1NWY1NTAwOGUyZDQwZGFjZDhiMDhjNTVkODZmYzYzZWY4MmI5MTM1NzZkZTY3MCJ9"
+        },
+        {
+          "resource": "repo://.opencode/plugins/agentos-guard.ts#L14-L63",
+          "version": "repo-lines-v1:sha256:8633051e3f6d87e931ca787ce829351cc6eed82f00b281263fec4b009f48783a:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzM2YzZmYyMGNhNmMwMTQ5MzUwZmU0ZDg3MjBiNjAxMGMyMDkyNWNjYzVhZDlkNGZjOGQ5OWQwNDRiNGJjZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVmNDcyN2RjYTllMWQ5NzEzZTdiZjJjZmY1NmNjOWFkZWRmNmZiODNmZWYyNmMyOTIxZjg2OTcyNjJjYWUxYzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjllMjc4ZDMzZjhlODgwYzU4Y2YwOTcyMzhmNWMxMjU5ZTBjZTNmMDc2ZTI5MzNmY2NkY2QxYTM4Yjc2N2FiNGYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b4bec26a759a4683b56a57287bb0dada",
+      "statement": "guard.mjs нормализует имена инструментов вендоров к каноническим перед оценкой правил (TOOL_ALIASES: Cursor Shell/Delete→Bash, при этом Delete превращается в эквивалент команды `rm -rf <path>`, ZCode ApplyPatch→Edit, Task→Agent; строчные имена OpenCode) и считает payload, не парсящийся как JSON, разрешённым (exit 0) - fail-open, чтобы повреждённый ввод не блокировал работу.",
+      "evidence": [
+        {
+          "resource": "repo://.agents/runtime/guard.mjs#L25-L57",
+          "version": "repo-lines-v1:sha256:6f2200f19265b5c284a2bccd2421230fcc1d07570960b90c47ee93d64a0338cc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyMjc2NmU0ODU0OGE4YTc1N2Q0MjliM2Q2YmM5MmQ0OWJiMTRhYzVlNGRiYmEyYzE5MmZhM2Y4YWIwM2ExNDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE0YzhjMTc3OTBjZjIxNzExNmYzNzAzYTcwYzg1Nzk4ZDk1MzI2ZjY2NTQwZWQ0ZWZmZDE3ZmU4MmRkNGYyMmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJmZWRkYWIzYzdjMmJiOGY4MGRkMzQ4NjY5ODBjMzYxNGRlM2E1MTI5YmIwOTQxNjAyOGQwMDM5NzliZTA0NTYifQ"
+        },
+        {
+          "resource": "repo://.agents/runtime/guard.mjs#L516-L523",
+          "version": "repo-lines-v1:sha256:725033e9126fe963139f1bffd1e6f4592d88cf05571f5c8b0569e0ab7202cff6:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTUxMzliOGEzMWI4MzhhMmU1ZDQ2NmJhZTk2ZTRiNDE0NjU1NTcwMjQzYzZlNGRhNGRiNmY1MzY0NmMzNjE5ZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjZmNTY2YjI0YTg0ZTdiOGQwN2JhZmE4ODhlYTNhODRmZGNmMzFhZTZiMmY1OTM1NjRjYzYwMzY3ZDA4YTRlYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWIyNDQyYzY4NTE1ZGJiYmIwNjY5MTk1MmRjNjk2MWZjMzVkNTM2M2YxMDVkMDc0NzE3NjkxY2E4ZjM4OTk1ZCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.1",
+    "at": "2026-10-01T21:02:38.012Z"
+  }
+}

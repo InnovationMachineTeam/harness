@@ -3,10 +3,10 @@
   "id": "kimi",
   "vendorAdapter": ".kimi/config.toml (mirrored into ~/.kimi-code/config.toml)",
   "guard": {
-    "command": "node .agents/runtime/guard.mjs",
+    "command": "bun .guardrails/src/cli.ts evaluate",
     "hooksSupport": "user-mirror",
     "notes": "Kimi Code has no project-level hook file: .kimi/config.toml holds the [[hooks]] entries (PreToolUse, matcher Bash|Write|Edit|Read|Grep|Glob) and the user mirrors them into ~/.kimi-code/config.toml. Hooks run with cwd set to the session's project directory, so the relative guard path works once mirrored; exit 2 blocks the call. Until the mirror exists the policy is honoured behaviourally - pipe a doubtful call through the guard before running it.",
-    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | bun .guardrails/src/cli.ts evaluate"
   },
   "capabilities": {
     "subagentSpawn": "unknown",

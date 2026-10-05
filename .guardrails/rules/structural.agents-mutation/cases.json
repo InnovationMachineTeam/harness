@@ -1,0 +1,29 @@
+[
+  {
+    "id": "hit-base-Edit-.agents/runtime/codex/config.json",
+    "tool": "Edit",
+    "input": {
+      "file_path": ".agents/runtime/codex/config.json"
+    },
+    "expect": "hit",
+    "edge": false
+  },
+  {
+    "id": "pass-base-Edit-docs/runtimes.md",
+    "tool": "Edit",
+    "input": {
+      "file_path": "docs/runtimes.md"
+    },
+    "expect": "pass",
+    "edge": false
+  },
+  {
+    "id": "hit-edge-Write-.agents/skills/new/SKILL.md",
+    "tool": "Write",
+    "input": {
+      "file_path": ".agents/skills/new/SKILL.md"
+    },
+    "expect": "hit",
+    "edge": true
+  }
+]

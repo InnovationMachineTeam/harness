@@ -33,10 +33,19 @@ type JsonEntry = Record<string, unknown>;
 
 function stdioOrHttp(t: McpTransport, kind: "mcpServers" | "opencode"): JsonEntry {
   if (t.type === "http") {
-    return kind === "opencode" ? { type: "remote", url: t.url } : { type: "http", url: t.url, ...(t.headers ?? {}) };
+    const headers = t.headers && Object.keys(t.headers).length > 0 ? { headers: t.headers } : {};
+    // opencode: type "remote", headers отдельным полем, enabled обязателен
+    return kind === "opencode"
+      ? { type: "remote", url: t.url, ...headers, enabled: true }
+      : { type: "http", url: t.url, ...headers };
   }
-  const base: JsonEntry =
-    kind === "opencode" ? { type: "local", command: t.command } : { type: "stdio", command: t.command };
+  // opencode: command - массив argv, переменные окружения - в environment, enabled обязателен
+  if (kind === "opencode") {
+    const entry: JsonEntry = { type: "local", command: [t.command, ...(t.args ?? [])], enabled: true };
+    if (t.env && Object.keys(t.env).length > 0) entry.environment = t.env;
+    return entry;
+  }
+  const base: JsonEntry = { type: "stdio", command: t.command };
   if (t.args?.length) base.args = t.args;
   if (t.env && Object.keys(t.env).length > 0) base.env = t.env;
   return base;

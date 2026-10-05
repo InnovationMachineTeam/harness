@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+
+bun .guardrails/src/cli.ts check
+bun test ./.guardrails/tests

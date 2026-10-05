@@ -7,30 +7,40 @@
         "hooks": [
           {
             "type": "command",
-            "command": "AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" node \"${CLAUDE_PROJECT_DIR}/.agents/runtime/guard.mjs\"",
+            "command": "AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:PreToolUse bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/cli.ts\" evaluate",
             "timeout": 30
           }
         ]
       },
       {
-        "matcher": "Bash|Grep",
         "hooks": [
           {
             "type": "command",
-            "command": "graphify hook-guard search",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" graphify guard-search || exit 0",
             "timeout": 10
           }
-        ]
+        ],
+        "matcher": "Bash|Grep"
       },
       {
-        "matcher": "Read|Glob",
         "hooks": [
           {
             "type": "command",
-            "command": "graphify hook-guard read --strict",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" graphify guard-read || exit 0",
             "timeout": 10
           }
-        ]
+        ],
+        "matcher": "Read|Glob"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" serena remind || exit 0",
+            "timeout": 10
+          }
+        ],
+        "matcher": "Read|Grep"
       }
     ],
     "UserPromptSubmit": [
@@ -38,7 +48,52 @@
         "hooks": [
           {
             "type": "command",
-            "command": "codegraph prompt-hook"
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" codegraph prompt-hook || exit 0",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v bun >/dev/null 2>&1 && AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:UserPromptSubmit bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/cli.ts\" prompt || exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|Read|Grep|Glob|WebFetch|WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:PostToolUse bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/posttooluse.ts\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" serena session-start || exit 0",
+            "timeout": 10
+          }
+        ],
+        "matcher": "startup|resume"
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" serena session-end || exit 0",
+            "timeout": 10
           }
         ]
       }

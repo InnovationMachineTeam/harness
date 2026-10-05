@@ -1,16 +1,19 @@
 import { NextResponse } from "next/server";
 import { invalidateDashboardCache } from "@/core/cache";
 import { isValidMcpName, syncMcp } from "@/core/mcp/sync";
+import { lifecycleHooksSchema, runLifecycleHook } from "@/core/lifecycleHooks";
+import { mcpServerLabel } from "@/core/mcpLabels";
+import { mandatoryWorkspace } from "@/core/state";
 import type { McpTransport } from "@/core/types";
 import { serverContext } from "@/lib/server-context";
 
 export const dynamic = "force-dynamic";
 
-/** GET /api/mcp - реестр + результаты последнего синка по таргетам. */
+/** GET /api/mcp - реестр (с лейблами происхождения) + результаты последнего синка по таргетам. */
 export async function GET() {
   const { state } = await serverContext();
   return NextResponse.json({
-    servers: Object.values(state.mcp.servers),
+    servers: Object.values(state.mcp.servers).map((server) => ({ ...server, label: mcpServerLabel(state, server.name) })),
     targets: Object.values(state.lastMcpSync),
   });
 }
@@ -42,29 +45,46 @@ function parseTransport(input: unknown): { ok: true; transport: McpTransport } |
   return { ok: false, error: "ожидался stdio {command,args?,env?} или http {url}" };
 }
 
-/** POST /api/mcp - добавить/обновить сервер и прогнать синк. */
+function parseHooks(input: unknown): { ok: true; hooks?: import("@/core/lifecycleHooks").LifecycleHooks } | { ok: false; error: string } {
+  if (input === undefined || input === null) return { ok: true };
+  const parsed = lifecycleHooksSchema.safeParse(input);
+  return parsed.success ? { ok: true, hooks: parsed.data } : { ok: false, error: "hooks: ожиданы списки строк install/remove/enable/disable" };
+}
+
+/** POST /api/mcp - добавить/обновить сервер и прогнать синк; hook install после добавления. */
 export async function POST(request: Request) {
   const ctx = await serverContext();
-  const body = (await request.json().catch(() => null)) as { name?: string; transport?: unknown } | null;
+  const body = (await request.json().catch(() => null)) as { name?: string; transport?: unknown; hooks?: unknown } | null;
   const name = body?.name?.trim() ?? "";
   if (!isValidMcpName(name)) {
     return NextResponse.json({ error: "имя: латиница/цифры/-/_ , до 64 символов" }, { status: 400 });
   }
   const parsed = parseTransport(body?.transport);
   if (!parsed.ok) return NextResponse.json({ error: parsed.error }, { status: 400 });
+  const parsedHooks = parseHooks(body?.hooks);
+  if (!parsedHooks.ok) return NextResponse.json({ error: parsedHooks.error }, { status: 400 });
 
-  ctx.state.mcp.servers[name] = { name, transport: parsed.transport, enabled: true };
+  ctx.state.mcp.servers[name] = { name, transport: parsed.transport, enabled: true, ...(parsedHooks.hooks ? { hooks: parsedHooks.hooks } : {}) };
   const results = await syncMcp(ctx.repoRoot, ctx.state);
   await ctx.saveState();
   invalidateDashboardCache();
-  return NextResponse.json({ ok: true, results: Object.values(results) });
+  const hooks = await runLifecycleHook({
+    repoRoot: ctx.repoRoot,
+    workspace: mandatoryWorkspace(ctx.state),
+    domain: "mcp",
+    name,
+    op: "install",
+    hooks: parsedHooks.hooks,
+  });
+  return NextResponse.json({ ok: true, results: Object.values(results), hookErrors: hooks.errors.length ? hooks.errors : undefined });
 }
 
-/** PATCH /api/mcp - транспорт, глобальный toggle или override рантайма, затем синк. */
+/** PATCH /api/mcp - транспорт, хуки, глобальный toggle или override рантайма, затем синк.
+ *  Переключение выполняет hook enable/disable (cwd - обязательная рабочая папка). */
 export async function PATCH(request: Request) {
   const ctx = await serverContext();
   const body = (await request.json().catch(() => null)) as
-    | { name?: string; enabled?: boolean; transport?: unknown; runtimeOverride?: { runtime: string; value: boolean | null } }
+    | { name?: string; enabled?: boolean; transport?: unknown; hooks?: unknown; runtimeOverride?: { runtime: string; value: boolean | null } }
     | null;
   const name = body?.name ?? "";
   const def = ctx.state.mcp.servers[name];
@@ -74,8 +94,12 @@ export async function PATCH(request: Request) {
   if (parsedTransport && !parsedTransport.ok) {
     return NextResponse.json({ error: parsedTransport.error }, { status: 400 });
   }
+  const parsedHooks = parseHooks(body?.hooks);
+  if (!parsedHooks.ok) return NextResponse.json({ error: parsedHooks.error }, { status: 400 });
 
   if (parsedTransport) def.transport = parsedTransport.transport;
+  if (parsedHooks.hooks) def.hooks = parsedHooks.hooks;
+  const wasEnabled = def.enabled;
   if (typeof body?.enabled === "boolean") def.enabled = body.enabled;
   const ro = body?.runtimeOverride;
   if (ro && typeof ro.runtime === "string" && typeof ro.value === "boolean") {
@@ -87,19 +111,41 @@ export async function PATCH(request: Request) {
   const results = await syncMcp(ctx.repoRoot, ctx.state);
   await ctx.saveState();
   invalidateDashboardCache();
-  return NextResponse.json({ ok: true, server: def, results: Object.values(results) });
+  let hookErrors: string[] | undefined;
+  if (typeof body?.enabled === "boolean" && wasEnabled !== body.enabled) {
+    const hooks = await runLifecycleHook({
+      repoRoot: ctx.repoRoot,
+      workspace: mandatoryWorkspace(ctx.state),
+      domain: "mcp",
+      name,
+      op: body.enabled ? "enable" : "disable",
+      hooks: def.hooks,
+    });
+    hookErrors = hooks.errors.length ? hooks.errors : undefined;
+  }
+  return NextResponse.json({ ok: true, server: def, results: Object.values(results), hookErrors });
 }
 
-/** DELETE /api/mcp?name= - убрать из реестра и из всех файлов. */
+/** DELETE /api/mcp?name= - hook remove, затем убрать из реестра и из всех файлов. */
 export async function DELETE(request: Request) {
   const ctx = await serverContext();
   const name = new URL(request.url).searchParams.get("name") ?? "";
-  if (!ctx.state.mcp.servers[name]) {
+  const def = ctx.state.mcp.servers[name];
+  if (!def) {
     return NextResponse.json({ error: `сервер не найден: ${name}` }, { status: 404 });
   }
+  // hook remove - до удаления записи (команды могут ссылаться на сервер)
+  const hooks = await runLifecycleHook({
+    repoRoot: ctx.repoRoot,
+    workspace: mandatoryWorkspace(ctx.state),
+    domain: "mcp",
+    name,
+    op: "remove",
+    hooks: def.hooks,
+  });
   delete ctx.state.mcp.servers[name];
   const results = await syncMcp(ctx.repoRoot, ctx.state);
   await ctx.saveState();
   invalidateDashboardCache();
-  return NextResponse.json({ ok: true, results: Object.values(results) });
+  return NextResponse.json({ ok: true, results: Object.values(results), hookErrors: hooks.errors.length ? hooks.errors : undefined });
 }

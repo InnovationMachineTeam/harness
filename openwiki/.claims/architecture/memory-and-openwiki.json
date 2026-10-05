@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:4ec1fcd926c1c2405db1210571f81e3f1b0edddbac7151427ab652e6d9351a27",
+  "claims": [
+    {
+      "id": "claim_4a23d15bb0fe45a3a36b670626ad9d81",
+      "statement": "startWikiBuild спавнит openwiki CLI отвязанным процессом без оболочки с аргументами --language <язык>, --init/--update и инструкцией «Веди вики на русском языке.»; вывод идёт в openwiki/.console-build.log, а pid, режим и время старта записываются в openwiki/.console-build.json.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L390-L429",
+          "version": "repo-lines-v1:sha256:2c258977119b39135f00615ded1e1b9b5666fa73e4c5348ab1db280ced2bc056:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiYTk4YzliY2UxOTFiYzYwOWVjMzRkYTAzYzVmNTc3NTFmOTFjMzU1MGQxZWI2NGRhMjZlNThkY2U1YjY1NGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImExNDliOWZhZjE4M2VhNzEzYzk4ZTJkNzNlMmY3YjMwZDYxNjQzY2YyZGVlMWU5ZDE0ODMzNGE0NDljNDBiZjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZkMzNkYTJlMDRiNDNlY2RhOTg3NWFkMjg0ZGJmZDVhMmQ0NTlmMjI5OTVhMGMyMDg3YzUyOTRkMTc1ZWUxZWYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_33a27f255c1e421b9977698a0281da4a",
+      "statement": "План сборки wikiBuildPlan выбирает init при отсутствии openwiki/index.md и update иначе; целевой язык жёстко задан как ru, а прерванная сборка (status interrupted + .run.json) возобновляется в собственном режиме и языке, блокируя смену языка до следующего обновления.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L336-L378",
+          "version": "repo-lines-v1:sha256:e12a0ae75cf3253c30ccc0e4e67ee3290587aeb96377123ed11a9027b45316aa:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmYTlkZTFmMGQxMTM2NGQ0ZmVmM2E4ZjdiMjFiZGQ5MDVkY2QwYjMxMjQxNmUwZDViMTEwODY0YjY3OTc0OGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjNmU2OTYyZDZjNjY5NzNiM2ZlYmMzZGJlZTcwYjFiZjY0ZDQ4OWUyMmVhMzc4OTFjN2MyMWJlODA5MjJlZmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3d8d33254000477d93bebf8cffa0fc9e",
+      "statement": "Агентский режим сборки делегирует запуск headless-сессии рантайма функции launchAgentWikiBuild из core/prompts.ts (скилл openwiki + MCP-инструменты жизненного цикла), а проектные каталоги скилла wikiIntegrationDir определены для claude, codex, opencode и cursor.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L433-L484",
+          "version": "repo-lines-v1:sha256:15dbb34d81b6398cf9583eec69848653815141874177ee0376ad75a07774af75:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkYzVkM2M4ODI5YjRiYWEyM2MzYTZlNDEzNTkyZDcyY2ViOTAzM2MwZTAyNzkzMzVlNDE3YmM5ZDhlMjZmMjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkMzNkYTJlMDRiNDNlY2RhOTg3NWFkMjg0ZGJmZDVhMmQ0NTlmMjI5OTVhMGMyMDg3YzUyOTRkMTc1ZWUxZWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlNGI2ZDcxMjE0ZTk4YmU4ZDRlOTc4NDIwNTgyNzY0MTQ1NTMzZTEwMjFhNjg2ZDdmNGM5MGUzOWY3NTdkNTcifQ"
+        },
+        {
+          "resource": "repo://apps/console/src/core/prompts.ts#L197-L285",
+          "version": "repo-lines-v1:sha256:9b003b24f2502a58e97e501a46ee292fc415a0a3e9400a5c1f6415e816e8954f:eyJzZWxlY3RlZExpbmVDb3VudCI6ODksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVhZjIyY2YwNzMyNTkyYzI0NzE0MWNiZTYxZWZhMTEwMTI2MTJmNWEzMTIyYjlhZjliYmFmNTJmNTcyNGQxOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlNGJhNmZiNjI1ZGFiYjI1ZGQyNzVkNmU5ODFiMzllZjFmMGJjZjYyNTdiMWNhODEwMGEwNTJjMmMwMWY3ZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6795f8e8f5ef4bc1a6a113c4c8a43b84",
+      "statement": "The wiki workspace registry is ~/.openwiki/wiki-workspaces.json (or $OPENWIKI_CONFIG_DIR); the console edits it directly, requires at least two wikis per workspace, and writes atomically.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/openwikiWorkspaces.ts",
+          "version": "repo-file-v1:sha256:b0a057c549d16f5eb9b23c5bfe3619b402f709f75126bebf17e37b388b05553d"
+        }
+      ]
+    },
+    {
+      "id": "claim_8c15fac90e3a4202b8df6b63be3716c6",
+      "statement": "Статический визуализатор — пять фиксированных файлов (index.html, client.js, client-lib.js, styles.css, graph.json), экспортируемых openwiki visualize и публикуемых syncVisualizerPublic в apps/console/public/visualizers/<slug>/ по 12-символьному hex-слагу sha256 пути папки.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L486-L545",
+          "version": "repo-lines-v1:sha256:3e3dbc9176dd508292f4f3b78125041cc7afa9564f6e31dd489fb5c6dfdf8bb6:eyJzZWxlY3RlZExpbmVDb3VudCI6NjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyMDMzM2MyYmIyZjk1NzU5MWNiMThiZDM0MjIxOGMwMDExNDFkNjBkMmQ0YzQ2NmI5NTE3MjEwZWQ2MjY0MGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyMDQwZTA5NWE5NGUyYWRhNzRlNDIxZjM3MTg3NTFhOTFhODEwYmZkNjZmNDhmNGU5MzljN2I3NDgwZWI2NzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIyZTY1ZmU4OGFmMjI4ZjZiMjE3NTE2OGZjMjE0NjdjMDk0YzhlMzRhZGYwNTcwM2ExYzU4NjIxMGFmMTNmNmIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b501656d2af54ed69cccace1dfa0bc9e",
+      "statement": "Чтение файлов идёт через readPolicy и checkReadPath: абсолютные лексически нормализованные пути, realpath-контейн внутри разрешённых корней, запрет скрытых компонент, потолок MAX_READ_BYTES (1 МиБ), только markdown в корнях рабочих папок.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L624-L710",
+          "version": "repo-lines-v1:sha256:c6e5027a5b639109baaa076662a68fb7b2c0e66e22c423b37a8ef048e7af4be1:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzNjU1MTk1NTU3NmM4NzQ3MmFhYmIxNDg4MGQ1Njk4YzBlNzA3MDEwMTdjYjRlYzRmNjUwZjVhM2QyNThlMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI1NjU4MzRhOTY0YTc1OGVhN2RmYzM1ZGE5Yjc4MDg5NjkwNWVkNWNmNjNiODE5MmMyYjNmYWJhNWI0ODY2NjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4YzA0NThkNmQwNGQ5Y2JjMzEzNTU0ZjZmMjcyZTZlMjYyNDVkODU5NzE0MmIyOWZlMjdkMmE3N2E1NjNkOTMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_93bff6db086548cf95168e9e6e7e4223",
+      "statement": "OpenWikiTab polls /api/memory/openwiki every 4000 ms while any enabled folder has a running build.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/components/memory/OpenWikiTab.tsx",
+          "version": "repo-file-v1:sha256:e8c33ad1295c6c0c61860e349da35f272b8b765ea9d206414d197c4464adeb9b"
+        }
+      ]
+    },
+    {
+      "id": "claim_f0e8273ca7384f2f9bcf1f661069b83d",
+      "statement": "processAlive проверяет pid через kill(pid, 0) и трактует ошибку EPERM как «процесс жив, но чужой»; роут сборки отклоняет запуск с 409, если мета .console-build.json указывает на живой pid.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/app/api/memory/openwiki/build/route.ts#L59-L62",
+          "version": "repo-lines-v1:sha256:66fb4ed77a4120104fae4f52ef608efd45139868e71ccd19c797e0f99ce6df39:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiN2FmYjc1YzAxMzFhNTBlOWYxODI5NGJiNDgyYjFmMDdmMmRjZThmNDA4YmRhMjhjNGI0ODViYTUwYjcxNTNhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjdlNTc4OGQ1ZDlkNzNkMjRhODFkYmMwYTVhNzRiZmE4MmM5YzNiM2FmOTllNTJhZjc5NmU5MGI0NjhhOGEzZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2JmMjZmNjZjMDQyOWE1MmMzY2Y3Y2Q0Nzk5NDFjMzE1ZjkyY2RhOWViODJjM2NkZTY2NjZlYWJmYzgxNGY3YyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWQyOGY1NzBhZTEzMTQ4N2Q1MmJjYTU3MWQ3YTk1N2JiMTg2YjE5ZjM5OWVlYTI2MjAwMTQ3NWMzN2Y5YWM1OSJ9"
+        },
+        {
+          "resource": "repo://apps/console/src/core/memory.ts#L229-L238",
+          "version": "repo-lines-v1:sha256:d1314e9c22e473543a6bf8bfc71a9191a0ef6b7844550ddb67984031e30871da:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljMDllYTc5YmZhMjRlN2JhNGRhZDUzZTY5YzNlNTlhYTE4Mjc5NWNkNTQ3YTQwNjZmMGY5ZGE4ODA0NjRiOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkY2EwZWI1NmRmNDM2MWQ4MGVhYzJkNjU1YjI2ZjM1N2IxMDA2M2Y3M2U1ZjE1ZjRhNjA1NDQxNzczYzAyY2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bced7223637c4439bf48bf5dbb40d0dc",
+      "statement": "Мультирепозиторный реестр вики-воркспейсов (~/.openwiki/wiki-workspaces.json) консоль правит напрямую (openwiki link — интерактивный TUI): slug-идентификаторы, минимум две вики на воркспейс, вики = git-репозиторий с openwiki/.last-update.json, атомарная запись (tmp+rename, 0600); состав влияет только на области поиска openwiki_search, не на --init/--update.",
+      "evidence": [
+        {
+          "resource": "repo://apps/console/src/core/openwikiWorkspaces.ts#L1-L67",
+          "version": "repo-lines-v1:sha256:e234f7636639f5d0f82bd679bf95748cf8b05b0200214da6e8904c20318e52bd:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5ZjJlYjNkZDM1NGI4NDYwNjBlNzllYWMyYmIxY2FjYWQ3ZjllOWU3ZTc4MDcwZDc2MjI0NTllMDA3OTMyNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0ZjQxNWQwZjUzMDAzYjI3MWExNDk3ZjFkMWI4YWY1ODY1YWFhODdkYzczMTE0NTlmZGUyNGI1YWY4MDBkZTIifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.6.1",
+    "at": "2026-10-01T21:22:27.721Z"
+  }
+}

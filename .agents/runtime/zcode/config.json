@@ -3,10 +3,10 @@
   "id": "zcode",
   "vendorAdapter": ".zcode/config.json",
   "guard": {
-    "command": "node .agents/runtime/guard.mjs",
+    "command": "bun .guardrails/src/cli.ts evaluate",
     "hooksSupport": "native",
-    "notes": ".zcode/config.json sets hooks.enabled=true and registers a PreToolUse hook (matcher Bash|Write|Edit|Read|Grep|Glob) that runs the guard with AGENT_RUNTIME=zcode and AGENT_RUNTIME_CONFIG=.agents/runtime/zcode/config.json via ${ZCODE_PROJECT_DIR} paths; exit 0 allows, exit 2 blocks. The policy engine is .agents/runtime/guard.mjs, local to this repository.",
-    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | node .agents/runtime/guard.mjs"
+    "notes": ".zcode/config.json sets hooks.enabled=true and registers a PreToolUse hook that calls bun .guardrails/src/cli.ts evaluate with AGENT_RUNTIME=zcode. Exit 0 allows and exit 2 blocks.",
+    "verifyCommand": "echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | bun .guardrails/src/cli.ts evaluate"
   },
   "capabilities": {
     "subagentSpawn": "unknown",

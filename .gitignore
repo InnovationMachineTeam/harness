@@ -11,6 +11,7 @@ secrets/
 node_modules/
 .next/
 out/
+.nx/
 
 # ===== Локальные артефакты сессий, сканера и ОС =====
 .DS_Store
@@ -22,9 +23,23 @@ out/
 # ===== .agents: игнорируем зону, но трекаем конфигурацию harness =====
 # всё под .agents по умолчанию не версионируется…
 .agents/*
-# …кроме канонических конфигов рантаймов и установленных навыков
+# …кроме канонических конфигов рантаймов, установленных навыков и настроек провайдеров
 !.agents/runtime/
 !.agents/skills/
+!.agents/providers/
+!.agents/workflows/
+!.agents/roles/
+!.agents/adapters/
+!.agents/internal-skills/
+!.agents/roadmap/
+# каталог цен подписок и моделей консоли - версионируется (docs/pricing.md)
+!.agents/pricing/
+# настройки провайдеров: settings.json - в git; ключи (key.env) и сертификаты (ca.pem и производные) - вне git
+.agents/providers/*/key.env
+.agents/providers/*/*.pem
+.agents/providers/*/*.crt
+.agents/providers/*/*.cer
+.agents/providers/*/*.key
 # состояние консоли (.agents/console/) - локальное машинное состояние
 # (MCP-реестр, настройки, рабочие папки с путями этой машины), в git не попадает
 .agents/.tmp/
@@ -47,7 +62,26 @@ apps/console/public/graphify/
 # артефакты инструментов (пересоздаются консолью и pre-commit)
 graphify-out/
 docs/graphify-out/
+# нативные слэш-команды рантаймов (пересоздаются синком команд консоли)
+.claude/commands/
+.zcode/commands/
+.cursor/commands/
+.opencode/command/
+# команды codex/kimi доставляются навыками (генерируются тем же синком)
+.codex/skills/master/
+.codex/skills/master-*
+.codex/skills/workflow/
+.codex/skills/workflow-*
+
+# хранилище воркспейсов graphify консоли (графы рабочих папок)
+/graphify/
 
 # метки сборок консоли (openwiki/graphify)
 **/.console-build.json
 **/.console-build.log
+**/.console-wiki.json
+**/.console-wiki.log
+
+.agentplane/cache.sqlite
+.agentplane/cache.sqlite-wal
+.agentplane/cache.sqlite-shm

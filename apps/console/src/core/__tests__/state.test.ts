@@ -3,9 +3,12 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import {
+  agentHistoryLimit,
   defaultState,
   expandHome,
   loadConsoleState,
+  normalizeAgentExecutor,
+  normalizeAgentHistoryLimit,
   saveConsoleState,
   validateWorkspaces,
   workspaceDirs,
@@ -103,6 +106,7 @@ describe("хранилище состояния", () => {
     expect(loaded.mcp.servers["smoke"]?.runtimeOverrides?.cursor).toBe(true);
     expect(loaded.workspaces.additional).toEqual(["/repo/docs", "/repo/sources", "/extra/dir"]);
     expect(workspaceDirs(loaded)).toEqual(["/repo", "/repo/docs", "/repo/sources", "/extra/dir"]);
+    expect(loaded.settings.workflows.capabilities.defaultPolicy).toBe("block");
 
     delete process.env.HARNESS_CONSOLE_STATE;
   });
@@ -113,6 +117,15 @@ describe("хранилище состояния", () => {
     const loaded = await loadConsoleState("/repo");
     expect(loaded.mcp.servers).toEqual({});
     expect(loaded.workspaces.mandatory).toBe("/repo");
+    delete process.env.HARNESS_CONSOLE_STATE;
+  });
+
+  test("старый state без capability policy мигрирует в block", async () => {
+    process.env.HARNESS_CONSOLE_STATE = join(dir, "legacy.json");
+    await writeFile(join(dir, "legacy.json"), JSON.stringify({ settings: { workflows: { privacy: "full" } } }), "utf8");
+    const loaded = await loadConsoleState("/repo");
+    expect(loaded.settings.workflows.privacy).toBe("full");
+    expect(loaded.settings.workflows.capabilities).toEqual({ defaultPolicy: "block", workspacePolicies: {} });
     delete process.env.HARNESS_CONSOLE_STATE;
   });
 
@@ -128,5 +141,48 @@ describe("хранилище состояния", () => {
     expect(loaded.workspaces.mandatory).toBe(join(home, "work/project"));
     expect(loaded.workspaces.openwiki).toEqual([join(home, "work/project")]);
     delete process.env.HARNESS_CONSOLE_STATE;
+  });
+});
+
+describe("normalizeAgentExecutor", () => {
+  test("допустимые значения сохраняются", () => {
+    expect(normalizeAgentExecutor("provider")).toBe("provider");
+    expect(normalizeAgentExecutor("provider:ollama")).toBe("provider:ollama");
+    expect(normalizeAgentExecutor("zcode")).toBe("zcode");
+    expect(normalizeAgentExecutor(" provider ")).toBe("provider");
+  });
+
+  test("недопустимые значения - null", () => {
+    expect(normalizeAgentExecutor(null)).toBeNull();
+    expect(normalizeAgentExecutor(42)).toBeNull();
+    expect(normalizeAgentExecutor("")).toBeNull();
+    expect(normalizeAgentExecutor("rm -rf /")).toBeNull();
+    expect(normalizeAgentExecutor("provider:bad id")).toBeNull();
+    expect(normalizeAgentExecutor("provider:")).toBeNull();
+  });
+});
+
+describe("normalizeAgentHistoryLimit", () => {
+  test("целые числа в границах сохраняются", () => {
+    expect(normalizeAgentHistoryLimit(0)).toBe(0);
+    expect(normalizeAgentHistoryLimit(20)).toBe(20);
+    expect(normalizeAgentHistoryLimit(500)).toBe(500);
+  });
+
+  test("некорректные значения - null", () => {
+    expect(normalizeAgentHistoryLimit(null)).toBeNull();
+    expect(normalizeAgentHistoryLimit("20")).toBeNull();
+    expect(normalizeAgentHistoryLimit(12.7)).toBeNull();
+    expect(normalizeAgentHistoryLimit(-1)).toBeNull();
+    expect(normalizeAgentHistoryLimit(501)).toBeNull();
+  });
+});
+
+describe("agentHistoryLimit", () => {
+  test("null в состоянии - значение по умолчанию, 0 - без ограничения", () => {
+    const base = defaultState("/repo");
+    expect(agentHistoryLimit(base)).toBe(20);
+    expect(agentHistoryLimit({ ...base, settings: { ...base.settings, agentHistoryLimit: 0 } })).toBe(0);
+    expect(agentHistoryLimit({ ...base, settings: { ...base.settings, agentHistoryLimit: 35 } })).toBe(35);
   });
 });

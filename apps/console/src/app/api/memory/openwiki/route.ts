@@ -7,7 +7,7 @@ import {
   visualizerStatus,
   wikiStatus,
 } from "@/core/memory";
-import { workspaceDirs } from "@/core/state";
+import { workspaceDirs, mandatoryWorkspace } from "@/core/state";
 import { serverContext } from "@/lib/server-context";
 import { fsSignals } from "@/lib/signals/fs";
 
@@ -38,5 +38,5 @@ export async function GET() {
     }
   }
   await pruneVisualizerPublic(publicRoot, publishedSlugs);
-  return NextResponse.json({ cli, folders });
+  return NextResponse.json({ cli, folders, mandatoryWorkspace: mandatoryWorkspace(state) });
 }

@@ -1,0 +1,20 @@
+name: Guardrails
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun .guardrails/src/cli.ts check
+      - run: bun test ./.guardrails/tests
+      - name: Content scan of changed lines
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          git diff origin/${{ github.base_ref }}...HEAD -- . ':(exclude).guardrails/rules' ':(exclude).guardrails/generated' ':(exclude).guardrails/tests' ':(exclude).guardrails/src/content' | bun .guardrails/src/cli.ts scan-diff
