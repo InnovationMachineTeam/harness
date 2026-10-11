@@ -51,7 +51,7 @@ export const MCP_PRESETS: McpPreset[] = [
     name: "deepwiki",
     displayName: "DeepWiki",
     description: "Документация любых GitHub-репозиториев (deepwiki.com) - удалённый HTTP MCP.",
-    transport: { type: "http", url: "https://mcp.deepwiki.com/" },
+    transport: { type: "http", url: "https://mcp.deepwiki.com/mcp" },
     docsUrl: "https://deepwiki.com/",
   },
   {

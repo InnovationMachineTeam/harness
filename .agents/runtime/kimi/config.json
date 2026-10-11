@@ -45,7 +45,7 @@
     "filesystem": { "read": true, "write": true },
     "git": { "commit": true, "push": false, "forcePush": false },
     "shell": "policy-guarded",
-    "mcp": [".mcp.json"],
+    "mcp": [".mcp.json", "~/.kimi-code/mcp.json"],
     "notes": "At first launch in Kimi: ask the user to mirror .kimi/config.toml into ~/.kimi-code/config.toml, and ask for the model mapping and how approvals are granted. Structural changes to roles, agents or skills always need explicit user approval, in every mode."
   }
 }

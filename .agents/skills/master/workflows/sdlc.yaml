@@ -10,7 +10,7 @@ inputs:
 defaults:
   privacy: metadata
   runtime:
-    candidates: [provider:ollama, zcode, cursor]
+    candidates: [provider:ollama, codex, zcode, cursor]
 nodes:
   - id: intake
     title: Intake и roadmap
@@ -20,14 +20,14 @@ nodes:
     roles: [product-analyst]
     inputControl:
       roles: [product-analyst]
-      prompt: Проверь запрос пользователя как вход цикла.
+      prompt: "Проверь запрос пользователя как вход цикла. Запрос считается готовым (pass), если в нём различимы цель и хотя бы примерные границы или аудитория. Неопределённости не возвращай на доработку - перечисли их в задании первого шага как открытые вопросы. fail - только если вход пуст или противоречит себе."
       dor:
-        - цель сформулирована
-        - границы определены
+        - цель различима в запросе
+        - границы обозначены хотя бы примерно
         - критерии успеха заданы или уточняемы
-      maxAttempts: 10
+      maxAttempts: 3
     execution:
-      prompt: Зафиксируй цель, границы, аудиторию, критерии успеха и связь с backlog.
+      prompt: "Зафиксируй цель, границы, аудиторию, критерии успеха и связь с backlog. Отвечай финальным текстом без вызова инструментов - входа достаточно. Неопределённости перечисли в разделе 'Открытые вопросы', не останавливая документ. Не создавай файлов."
       confirmPlan: false
     inputs: [request]
     outputs: [intake]
@@ -42,7 +42,7 @@ nodes:
     dependsOn: [intake]
     roles: [researcher]
     execution:
-      prompt: "Собери проверяемый контекст: инвентаризация кода, документация, доказательства. Используй навык codebase-research."
+      prompt: "Собери проверяемый контекст: инвентаризация кода, документация, доказательства. Навык codebase-research используй только для вопросов о нашем коде; ограничься существенным для требований, без полного обхода репозитория. На каждый ключевой факт дай ссылку (file:line для кода, путь к файлу для документации) и отметь уверенность. Структура ответа: 'Инвентарь кода', 'Документация', 'Доказательства', 'Открытые вопросы'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     inputs: [intake]
     outputs: [evidence]
@@ -58,14 +58,14 @@ nodes:
     roles: [requirements-engineer]
     inputControl:
       roles: [requirements-engineer]
-      prompt: Проверь контекст как основу для требований.
+      prompt: "Проверь evidence как основу для требований. pass - если контекст отвечает на вопрос 'что строим' хотя бы частично и источники читаемы; пробелы фиксируй как допущения в задании исполнителю, а не возвратом входа. fail - только если evidence пуст или противоречит себе."
       dor:
-        - контекст полон
+        - контекст достаточен для формулировки требований
         - источники указаны
         - открытые вопросы перечислены
-      maxAttempts: 10
+      maxAttempts: 3
     execution:
-      prompt: Сформулируй функциональные и нефункциональные требования, edge cases и NFR. Используй навык requirements-clarifier.
+      prompt: "Сформулируй функциональные и нефункциональные требования, edge cases и NFR. Навык requirements-clarifier задаёт формат требований; новые поиски не нужны - опирайся на evidence. Структура ответа: 'Функциональные требования', 'NFR', 'Edge cases', 'Открытые вопросы'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
@@ -76,8 +76,9 @@ nodes:
         - NFR заданы
       ac:
         - каждое требование имеет критерий проверки
+        - функциональные требования, NFR и edge cases отделены друг от друга
       manualReview: true
-      maxAttempts: 10
+      maxAttempts: 5
     inputs: [evidence]
     outputs: [requirements]
     runtime: { tier: strong, effort: high }
@@ -91,7 +92,7 @@ nodes:
     dependsOn: [requirements]
     roles: [approver]
     execution:
-      prompt: Сверь requirements с критериями gate и подготовь решение.
+      prompt: "Сверь requirements с критериями gate и подготовь решение. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [approver]
@@ -99,12 +100,12 @@ nodes:
       dod:
         - требования готовы к дизайну
       manualReview: true
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [requirements]
     outputs: [requirements-approval]
     runtime: { tier: standard, effort: medium }
     timeoutMs: 600000
-    retry: { maxAttempts: 1 }
+    retry: { maxAttempts: 2 }
     resources: { workspace: read }
   - id: ux-design
     title: Product и UX design
@@ -113,7 +114,7 @@ nodes:
     dependsOn: [requirements-gate]
     roles: [ux-designer, frontend-web]
     execution:
-      prompt: Подготовь пользовательские потоки, состояния, accessibility и визуальный контракт. Инструмент open-design используй для UX артефактов.
+      prompt: "Подготовь пользовательские потоки, состояния, accessibility и визуальный контракт. Опирайся на requirements; новые поиски не нужны. Структура ответа: 'Потоки', 'Состояния', 'Accessibility', 'Визуальный контракт'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
@@ -122,8 +123,10 @@ nodes:
         - потоки описаны
         - состояния перечислены
         - accessibility учтена
+      ac:
+        - разделы 'Потоки', 'Состояния', 'Accessibility', 'Визуальный контракт' присутствуют
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [requirements]
     outputs: [ux-design]
     runtime: { tier: strong, effort: high }
@@ -137,7 +140,7 @@ nodes:
     dependsOn: [requirements-gate]
     roles: [system-architect]
     execution:
-      prompt: Спроектируй архитектуру, API, модель данных, безопасность и наблюдаемость. Используй навык system-design.
+      prompt: "Спроектируй архитектуру, API, модель данных, безопасность и наблюдаемость. Навык system-design задаёт формат решения; новые поиски не нужны - опирайся на requirements и evidence. Структура ответа: 'Архитектура и ADR', 'API и данные', 'Безопасность', 'Наблюдаемость'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
@@ -146,8 +149,10 @@ nodes:
         - архитектура и ADR зафиксированы
         - API и данные описаны
         - безопасность и наблюдаемость учтены
+      ac:
+        - разделы 'Архитектура и ADR', 'API и данные', 'Безопасность', 'Наблюдаемость' присутствуют
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [requirements, evidence]
     outputs: [system-design]
     runtime: { tier: strong, effort: high }
@@ -161,7 +166,7 @@ nodes:
     dependsOn: [system-design]
     roles: [system-architect, frontend-web]
     execution:
-      prompt: "Детализируй техническое решение: компоненты, контракты, миграции, риски."
+      prompt: "Детализируй техническое решение в границах system-design: компоненты, контракты, миграции, риски. Новые поиски не нужны. Структура ответа: 'Компоненты', 'Контракты', 'Миграции', 'Риски'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
@@ -169,8 +174,10 @@ nodes:
       dod:
         - компоненты и контракты определены
         - риски и миграции перечислены
+      ac:
+        - разделы 'Компоненты', 'Контракты', 'Миграции', 'Риски' присутствуют
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [requirements, system-design]
     outputs: [technical-design]
     runtime: { tier: strong, effort: high }
@@ -184,7 +191,7 @@ nodes:
     dependsOn: [ux-design, system-design, technical-design]
     roles: [approver]
     execution:
-      prompt: Сверь дизайн-артефакты с критериями gate и подготовь решение.
+      prompt: "Сверь дизайн-артефакты с критериями gate и подготовь решение. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [approver]
@@ -192,12 +199,12 @@ nodes:
       dod:
         - дизайн согласован и готов к планированию
       manualReview: true
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [ux-design, system-design, technical-design]
     outputs: [design-approval]
     runtime: { tier: standard, effort: medium }
     timeoutMs: 600000
-    retry: { maxAttempts: 1 }
+    retry: { maxAttempts: 2 }
     resources: { workspace: read }
   - id: plan
     title: Planning
@@ -206,7 +213,7 @@ nodes:
     dependsOn: [design-gate]
     roles: [planner]
     execution:
-      prompt: "Сформируй исполнимый dependency plan: декомпозиция, критерии приёмки каждой задачи, план проверок."
+      prompt: "Сформируй исполнимый dependency plan: декомпозиция, критерии приёмки каждой задачи, план проверок. Не выполняй поиски и не вызывай инструменты - план строй из requirements и дизайн-артефактов. План делай обозримым: список задач в порядке исполнения, у каждой задачи одно предложение объёма и критерий приёмки; детали решения остаются в дизайн-артефактах, в план не дублируются."
       confirmPlan: true
     outputControl:
       roles: [verifier]
@@ -215,8 +222,10 @@ nodes:
         - декомпозиция полна
         - у каждой задачи есть критерий приёмки
         - порядок исполнения определён
+      ac:
+        - каждая задача плана прослеживается к требованию или дизайн-артефакту
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [requirements, ux-design, technical-design, system-design]
     outputs: [plan, tasks]
     runtime: { tier: strong, effort: high }
@@ -242,7 +251,7 @@ nodes:
       ac:
         - все задачи плана закрыты
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [plan, tasks]
     outputs: [implementation]
     runtime: { tier: standard, effort: medium }
@@ -256,7 +265,7 @@ nodes:
     dependsOn: [execute]
     roles: [verifier, quality-general]
     execution:
-      prompt: "Независимо проверь результат: ревью, тесты, трассируемость к требованиям."
+      prompt: "Независимо проверь результат: ревью, тесты, трассируемость к требованиям. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
@@ -265,7 +274,7 @@ nodes:
         - трассируемость к требованиям показана
         - проверки пройдены
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [requirements, implementation]
     outputs: [verification]
     runtime: { tier: strong, effort: high }
@@ -279,7 +288,7 @@ nodes:
     dependsOn: [verify]
     roles: [approver]
     execution:
-      prompt: Сверь verification и release-критерии, подготовь решение.
+      prompt: "Сверь verification и release-критерии, подготовь решение. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [approver]
@@ -287,12 +296,12 @@ nodes:
       dod:
         - выпуск готов
       manualReview: true
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [verification]
     outputs: [release-approval]
     runtime: { tier: standard, effort: medium }
     timeoutMs: 600000
-    retry: { maxAttempts: 1 }
+    retry: { maxAttempts: 2 }
     resources: { workspace: read }
   - id: close
     title: Close
@@ -301,7 +310,7 @@ nodes:
     dependsOn: [release-gate]
     roles: [release-manager]
     execution:
-      prompt: "Закрой выпуск: evidence, заметки выпуска, закрытие задач."
+      prompt: "Закрой выпуск: evidence, заметки выпуска, закрытие задач. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     inputs: [release-approval, verification]
     outputs: [release]

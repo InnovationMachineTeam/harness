@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: self-review
+title: Self-review
+description: Используй этот навык перед коммитом значимых изменений или созданием pull request: проверь дифф, качество, логику, тесты, документацию и безопасность; найденное исправь до передачи на ревью.
+source:
+  version: 1.0.0
+  hash: builtin-self-review-1
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [review, pre-commit, diff, quality, security, самопроверка]

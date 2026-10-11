@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: agent-handoff
+title: Agent handoff
+description: Используй этот навык в конце рабочей сессии, перед переключением на другую задачу и при передаче работы другому агенту или разработчику: зафиксируй состояние так, чтобы следующий исполнитель продолжил работу без устных пояснений.
+source:
+  version: 1.0.0
+  hash: builtin-agent-handoff-1
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [handoff, session-end, todo, notes, передача-контекста]

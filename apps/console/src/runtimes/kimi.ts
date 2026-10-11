@@ -9,6 +9,7 @@ import { anyExists } from "@/lib/signals/fs";
 export const kimiAdapter: RuntimeAdapter = {
   id: "kimi",
   displayName: "Kimi Code",
+  country: "cn",
   processPattern: /kimi-code|(^|[/\s])kimi(\s|$)/,
   isInstalled: (ctx) => anyExists([join(ctx.home, ".kimi-code")]),
 

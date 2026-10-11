@@ -1,87 +1,87 @@
-# ===== Секреты (вне git - как и в guard-политике AGENTS.md §3) =====
-.env
-.env.*
-!.env.example
-*.pem
-id_rsa
-id_rsa.*
-secrets/
-
-# ===== Зависимости и сборка =====
-node_modules/
-.next/
-out/
-.nx/
-
-# ===== Локальные артефакты сессий, сканера и ОС =====
-.DS_Store
-*.log
-.mimosa/
-.zcode/plans/
-.claude/settings.local.json
-
-# ===== .agents: игнорируем зону, но трекаем конфигурацию harness =====
-# всё под .agents по умолчанию не версионируется…
+# .agents: исключение зоны, затем negation канонических конфигов -
+# порядок значим: последний совпавший паттерн выигрывает
 .agents/*
-# …кроме канонических конфигов рантаймов, установленных навыков и настроек провайдеров
-!.agents/runtime/
-!.agents/skills/
-!.agents/providers/
-!.agents/workflows/
-!.agents/roles/
+.agents/.tmp/
 !.agents/adapters/
 !.agents/internal-skills/
-!.agents/roadmap/
-# каталог цен подписок и моделей консоли - версионируется (docs/pricing.md)
+!.agents/mcp.json
 !.agents/pricing/
-# настройки провайдеров: settings.json - в git; ключи (key.env) и сертификаты (ca.pem и производные) - вне git
-.agents/providers/*/key.env
-.agents/providers/*/*.pem
-.agents/providers/*/*.crt
-.agents/providers/*/*.cer
-.agents/providers/*/*.key
-# состояние консоли (.agents/console/) - локальное машинное состояние
-# (MCP-реестр, настройки, рабочие папки с путями этой машины), в git не попадает
-.agents/.tmp/
-
-# артефакт инкрементальной сборки TS
-*.tsbuildinfo
-
-# публикуемые экспорты визуализатора OpenWiki (пересоздаются консолью)
-apps/console/public/visualizers/
-
-# локальные клоны проектов для работы агентов
-sources/
-
-# бэкапы/локи инсталляторов инструментов
-*.graphify-bak
-.claude/.headroom_wrap_settings.lock
-.codegraph/
-apps/console/public/graphify/
-
-# артефакты инструментов (пересоздаются консолью и pre-commit)
-graphify-out/
-docs/graphify-out/
-# нативные слэш-команды рантаймов (пересоздаются синком команд консоли)
-.claude/commands/
-.zcode/commands/
-.cursor/commands/
-.opencode/command/
-# команды codex/kimi доставляются навыками (генерируются тем же синком)
-.codex/skills/master/
-.codex/skills/master-*
-.codex/skills/workflow/
-.codex/skills/workflow-*
-
-# хранилище воркспейсов graphify консоли (графы рабочих папок)
-/graphify/
-
-# метки сборок консоли (openwiki/graphify)
+!.agents/providers/
+!.agents/roadmap/
+!.agents/roles/
+!.agents/runtime/
+!.agents/skills/
+!.agents/workflows/
+!.env.example
+# context workspace
 **/.console-build.json
 **/.console-build.log
 **/.console-wiki.json
 **/.console-wiki.log
-
+*.graphify-bak
+*.log
+*.pem
+*.tsbuildinfo
+.DS_Store
+.agentplane/.release
+.agentplane/.upgrade
+.agentplane/agents/*.bak-*
+.agentplane/by-owner
+.agentplane/by-status
+.agentplane/by-tag
+.agentplane/cache
 .agentplane/cache.sqlite
-.agentplane/cache.sqlite-wal
 .agentplane/cache.sqlite-shm
+.agentplane/cache.sqlite-wal
+.agentplane/context/service/
+.agentplane/context/service/cache/
+.agentplane/context/service/embeddings/
+.agentplane/context/service/remotes/
+.agentplane/generated/obsidian
+.agentplane/index.md
+.agentplane/local-backups
+.agentplane/policy/**/*.bak-*
+.agentplane/recipes-cache
+.agentplane/tasks.json
+.agentplane/tasks.md
+.agentplane/tasks/*/handoff
+.agentplane/tmp
+.agentplane/upgrade
+.agentplane/worktrees
+.agents/providers/*/*.cer
+.agents/providers/*/*.crt
+.agents/providers/*/*.key
+.agents/providers/*/*.pem
+.agents/providers/*/key.env
+.claude/.headroom_wrap_settings.lock
+.claude/commands/
+.claude/settings.local.json
+.codegraph/
+.codex/skills/master-*
+.codex/skills/master/
+.codex/skills/workflow-*
+.codex/skills/workflow/
+.cursor/commands/
+.cursor/skills/
+.env
+.env.*
+.mimosa/
+.next/
+.nx/
+.opencode/command/
+.playwright-mcp/
+.zcode/commands/
+.zcode/plans/
+/graphify/
+AGENTS.md.bak-*
+CLAUDE.md.bak-*
+apps/console/public/graphify/
+apps/console/public/visualizers/
+docs/graphify-out/
+graphify-out/
+id_rsa
+id_rsa.*
+node_modules/
+out/
+secrets/
+sources/

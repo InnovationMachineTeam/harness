@@ -22,6 +22,14 @@ import type { ProviderEntry, ProviderPreset } from "../providers";
 /** Guard по умолчанию: общий реестр значений сессии на процесс консоли. */
 const guard = createLlmGuard();
 
+/**
+ * Guard агентного цикла workflow: инъекция блокируется на границе цикла
+ * (стартовое задание, core/agentLoop.ts), а текст в истории раундов - данные
+ * (вывод инструментов, ответы модели) и цикл не останавливает. Редактирование
+ * персональных данных и секретов работает как в основном guard'е.
+ */
+const loopGuard = createLlmGuard({ blockOnInjection: false });
+
 const IDENTITY_REFRESH_MS = 60 * 60 * 1000;
 let identityLearnedAt = 0;
 
@@ -107,4 +115,10 @@ export function chatModelRawForProvider(opts: ChatModelOptions): BaseChatModel {
 export function chatModelForProvider(opts: ChatModelOptions): BaseChatModel {
   learnIdentity();
   return withLlmGuard(chatModelRawForProvider(opts), guard);
+}
+
+/** Модель агентного цикла workflow: guard без блокировки инъекций в истории раундов. */
+export function chatModelForAgentLoop(opts: ChatModelOptions): BaseChatModel {
+  learnIdentity();
+  return withLlmGuard(chatModelRawForProvider(opts), loopGuard);
 }

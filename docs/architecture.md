@@ -79,6 +79,8 @@
 | `POST/DELETE /api/plugins/marketplace` | Добавить/убрать marketplace |
 | `GET /api/processes?runtime=` | Процессы рантайма (uptime/cpu/mem/kind) |
 | `POST /api/processes/action` | stop (SIGTERM→SIGKILL) / restart (только .app) |
+| `GET /api/monitoring/processes` | Все процессы консоли (рантаймы/MCP/провайдеры/инструменты) с ресурсами и маркером "безопасно"; детали - [operations.md](operations.md) ("Мониторинг: процессы") |
+| `POST /api/monitoring/processes/action` | stop процесса инвентаризации с перепроверкой PID классификатором |
 | `GET /api/sessions?runtime=&dir=&id=` | Список сессий / детали-превью; `runtime` - один рантайм или список через запятую, без параметра - объединённый список всех рантаймов с историей (сортировка по свежести, лимит 500); `id` - только при одном рантайме |
 | `POST /api/sessions/reply` | Headless-ответ в сессию (resume) |
 | `POST /api/prompts/run` | Промт в новой сессии (рантайм задачи/★) или провайдеру задачи (`provider:<id>`, in-process запрос, ответ в лог runs) |
@@ -127,6 +129,8 @@
 | `GET /api/memory/file?path=` | Чтение файла из разрешённых корней памяти (allowlist) |
 | `POST /api/memory/openwiki/visualizer` | Экспорт статического визуализатора + публикация в public/visualizers (без LLM) |
 | `GET /api/monitoring/tasks` | Реестр задач консоли (промты, запросы провайдерам, сборки OpenWiki/Graphify), новые сверху; финализация running-задач при чтении (`core/tasks.ts`) |
+| `GET /api/monitoring/processes` | Инвентаризация процессов консоли - рантаймы, MCP-серверы, локальные провайдеры, инструменты; cpu/mem/uptime, источник, маркер "безопасно остановить" с причиной (`core/processInventory.ts`) |
+| `POST /api/monitoring/processes/action` | stop (SIGTERM→SIGKILL); перед сигналом PID перепроверяется классификатором инвентаризации по свежему ps |
 | `GET /api/stats/heatmap?metric=tasks|tokens|cost&period=1w|1m|3m|6m|1y|all` | Использование harness по дням. `tasks` - каждая задача консоли - отсчёт, группировка по локальному дню и исполнителю (`runtime:<id>`, `provider:<id>`, `tool:<id>`) со статусами и типами задач; источник - меты задач `.agents/console/tasks` (`readTaskMetas`). `tokens`/`cost` - дневные суммы `usage_receipts` всех workspace-хранилищ; стоимость - зафиксированная плюс оценка по каталогу цен. Без `period` действует прежнее окно `?months=1-24` |
 | `GET /api/memory/openwiki/workspaces` | Вики-воркспейсы openwiki: состав + активность по рабочим папкам (реестр `~/.openwiki/wiki-workspaces.json`) |
 | `POST /api/memory/openwiki/workspaces` | Действия: `link` (создать из ≥2 папок с собранной вики), `use`/`clear` (активный воркспейс папки), `delete` |

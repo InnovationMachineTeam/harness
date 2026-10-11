@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { rm } from "node:fs/promises";
 import path from "node:path";
 import { resolveWorkflowWorkspace } from "@/core/workflows/http";
+import { sprintRefForRun, sprintView } from "@/core/workflows/sprint";
 import { WorkflowStore } from "@/core/workflows/storage";
 import { serverContext } from "@/lib/server-context";
 
 export const dynamic = "force-dynamic";
 
-/** GET: детали шага не здесь - это обзор прогона: run, события, попытки, артефакты, lessons. */
+/** GET: детали шага не здесь - это обзор прогона: run, события, попытки, артефакты, lessons; для спринта - блок sprint. */
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const ctx = await serverContext();
   const { id } = await params;
@@ -23,8 +24,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     if (lessonsArtifact) {
       try { lessons = JSON.parse(lessonsArtifact.content || "[]"); } catch { lessons = []; }
     }
+    const sprint = run && run.input.sprint ? await sprintView(ctx.repoRoot, run.workspaceDir, store, run) : null;
+    const sprintRef = run && !run.input.sprint ? await sprintRefForRun(run.workspaceDir, store, run) : null;
     store.close();
-    return run ? NextResponse.json({ run, events, attempts, artifacts, lessons }) : NextResponse.json({ error: "run не найден" }, { status: 404 });
+    return run ? NextResponse.json({ run, events, attempts, artifacts, lessons, sprint, sprintRef }) : NextResponse.json({ error: "run не найден" }, { status: 404 });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
   }

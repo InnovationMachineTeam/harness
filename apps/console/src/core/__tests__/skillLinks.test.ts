@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { lstat, mkdir, mkdtemp, readdir, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
+import { lstat, mkdir, mkdtemp, readdir, readFile, realpath, rm, stat, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { canonicalSkills, desiredSkillLinks, ensureSkillLink, removeSkillLink, skillLinksStatus, syncSkillLinks } from "../skillLinks";
@@ -183,5 +183,68 @@ describe("skillLinksStatus", () => {
     expect(opencode.missing).toContain("pub-skill");
     const externalEntry = statuses.find((status) => status.runtime === "claude")!.entries.find((entry) => entry.name === "external-link");
     expect(externalEntry?.points).toBe("вне .agents/skills");
+  });
+});
+
+describe("mirror-стратегия Cursor", () => {
+  test("синк создаёт зеркало с hardlink'ами и маркером вместо симлинка", async () => {
+    const reports = await syncSkillLinks(root, state);
+    const cursor = reports.find((report) => report.runtime === "cursor")!;
+    expect(cursor.errors).toEqual([]);
+    const mirrorDir = path.join(root, ".cursor", "skills", "pub-skill");
+    const info = await lstat(mirrorDir);
+    expect(info.isDirectory()).toBe(true);
+    // hardlink: файл зеркала и файл канона - один inode
+    const canonicalStat = await stat(path.join(root, ".agents", "skills", "pub-skill", "SKILL.md"));
+    const mirrorStat = await stat(path.join(mirrorDir, "SKILL.md"));
+    expect(mirrorStat.ino).toBe(canonicalStat.ino);
+    const marker = JSON.parse(await readFile(path.join(mirrorDir, ".harness-mirror.json"), "utf8")) as { target: string };
+    expect(marker.target.endsWith(path.join(".agents", "skills", "pub-skill"))).toBe(true);
+  });
+
+  test("синк обновляет зеркало: новые файлы канона появляются, исчезнувшие убираются", async () => {
+    const canonical = path.join(root, ".agents", "skills", "pub-skill");
+    const mirrorDir = path.join(root, ".cursor", "skills", "pub-skill");
+    await writeFile(path.join(canonical, "extra.md"), "# extra");
+    await syncSkillLinks(root, state);
+    await expect(readFile(path.join(mirrorDir, "extra.md"), "utf8")).resolves.toContain("extra");
+    await rm(path.join(canonical, "extra.md"));
+    await syncSkillLinks(root, state);
+    await expect(lstat(path.join(mirrorDir, "extra.md"))).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("removeSkillLink удаляет зеркало по маркеру и отказывается трогать чужой каталог", async () => {
+    const mirrorDir = path.join(root, ".cursor", "skills", "pub-skill");
+    const outcome = await removeSkillLink(root, "cursor", "pub-skill");
+    expect(outcome.errors).toEqual([]);
+    await expect(lstat(mirrorDir)).rejects.toMatchObject({ code: "ENOENT" });
+    const foreign = path.join(root, ".cursor", "skills", "own-skill");
+    await mkdir(foreign, { recursive: true });
+    await writeFile(path.join(foreign, "SKILL.md"), "# свой");
+    const outcome2 = await removeSkillLink(root, "cursor", "own-skill");
+    expect(outcome2.errors.join(" ")).toContain("маркера");
+    await expect(lstat(foreign)).resolves.toBeTruthy();
+  });
+
+  test("зеркало навыка, исчезнувшего из канона, уходит в бэкап при синке", async () => {
+    const mirrorDir = path.join(root, ".cursor", "skills", "ghost-skill");
+    await mkdir(mirrorDir, { recursive: true });
+    await writeFile(path.join(mirrorDir, ".harness-mirror.json"), JSON.stringify({ target: path.join(await realpath(root), ".agents", "skills", "ghost-skill"), syncedAt: new Date().toISOString() }));
+    await writeFile(path.join(mirrorDir, "SKILL.md"), "# ghost");
+    const reports = await syncSkillLinks(root, state);
+    const cursor = reports.find((report) => report.runtime === "cursor")!;
+    expect(cursor.removed).toContain("ghost-skill");
+    await expect(lstat(mirrorDir)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  test("skillLinksStatus классифицирует зеркало и показывает цель", async () => {
+    await syncSkillLinks(root, state);
+    const statuses = await skillLinksStatus(root, state);
+    const cursorStatus = statuses.find((status) => status.runtime === "cursor")!;
+    const entry = cursorStatus.entries.find((item) => item.name === "pub-skill");
+    expect(entry?.kind).toBe("mirror");
+    expect(entry?.points).toBe(path.join("pub-skill"));
+    // чужой каталог без маркера остаётся real
+    expect(cursorStatus.entries.find((item) => item.name === "own-skill")?.kind).toBe("real");
   });
 });

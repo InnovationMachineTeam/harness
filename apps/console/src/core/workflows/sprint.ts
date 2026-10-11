@@ -8,9 +8,9 @@ import { listRoadmapItems, saveRoadmapItem } from "./roadmap";
 import { workflowSchema, type WorkflowDefinition, type WorkflowStep } from "./schema";
 import type { WorkflowStore, WorkflowRunRecord } from "./storage";
 
-/** Динамический сегмент пути: идентификаторы без разделителей и обхода вверх. */
+/** Динамический сегмент пути: идентификаторы без разделителей и обхода вверх; ведущая точка разрешена для служебных каталогов (.agents). */
 function safeId(value: string): string {
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/.test(value) || value.includes("..")) throw new Error("недопустимый идентификатор: " + value.slice(0, 60));
+  if (!/^[a-zA-Z0-9.][a-zA-Z0-9._-]*$/.test(value) || value.includes("..")) throw new Error("недопустимый идентификатор: " + value.slice(0, 60));
   return value;
 }
 
@@ -168,6 +168,17 @@ export function parseTaskList(output: string): Array<{ title: string; descriptio
 
 /* ------------------------------ служебные шаги ------------------------------ */
 
+/**
+ * Сообщение о невыполненных задачах закрытого спринта по событию sprint.completed
+ * или null, если все задачи завершены. Основа терминального статуса прогона-оркестратора:
+ * прогон с невыполненными задачами не завершается как успешный.
+ */
+export function sprintRunFailure(close: { total?: unknown; failed?: unknown } | null | undefined): string | null {
+  const failed = Number(close?.failed ?? 0);
+  if (!Number.isFinite(failed) || failed <= 0) return null;
+  return `задачи спринта не выполнены: ${failed} из ${Number(close?.total ?? 0)}`;
+}
+
 interface SprintTaskState {
   itemId: string;
   taskRunId: string;
@@ -314,4 +325,125 @@ export async function runSprintNode(node: WorkflowStep, ctx: SprintNodeCtx): Pro
   if (node.kind === "sprint-close") return runClose(ctx, sprint);
   if (node.kind === "sprint-retrospective") return runRetrospective(ctx, node, sprint);
   throw new Error("неизвестный служебный шаг спринта: " + node.kind);
+}
+
+/* ------------------------------ данные sprint-view ------------------------------ */
+
+export interface SprintTaskStepView {
+  id: string;
+  title: string;
+  /** Последнее конечное событие шага задачи: step.completed | step.failed | step.skipped | null. */
+  end: string | null;
+}
+
+export interface SprintTaskView {
+  itemId: string;
+  title: string;
+  workflowId: string;
+  bucket: number;
+  order: number;
+  boardStatus: string;
+  taskRunId: string | null;
+  taskRunStatus: string | null;
+  worktree: string | null;
+  steps: SprintTaskStepView[];
+}
+
+export interface SprintViewData {
+  id: string;
+  title: string;
+  status: string;
+  tasks: SprintTaskView[];
+}
+
+/** Спринт, к которому относится прогон задачи: данные кнопки "К спринту". */
+export interface SprintRef {
+  id: string;
+  title: string;
+  /** Прогон спринта - страница с режимом спринта. */
+  runId: string;
+  status: string;
+}
+
+/**
+ * Спринт прогона задачи: прогон относится к спринту, если среди событий sprint-прогонов
+ * есть sprint.task-started с этим taskRunId. Прогон самого спринта и посторонние прогоны
+ * дают null.
+ */
+export async function sprintRefForRun(workspaceDir: string, store: WorkflowStore, run: WorkflowRunRecord): Promise<SprintRef | null> {
+  for (const candidate of store.listRuns(200)) {
+    if (!candidate.workflowId.startsWith("sprint:") || candidate.id === run.id) continue;
+    const started = store.listEvents(candidate.id, 0, 10_000).some((event) => event.type === "sprint.task-started" && event.payload.taskRunId === run.id);
+    if (!started) continue;
+    const sprint = sprintViewInput(candidate);
+    const id = sprint?.id ?? safeId(candidate.workflowId.slice("sprint:".length));
+    const record = (await loadSprints(workspaceDir)).find((entry) => entry.id === id);
+    return { id, title: record?.title ?? sprint?.title ?? id, runId: candidate.id, status: record?.status ?? candidate.status };
+  }
+  return null;
+}
+
+function sprintViewInput(run: WorkflowRunRecord): SprintInput | null {
+  const sprint = run.input.sprint as SprintInput | undefined;
+  if (!sprint || !Array.isArray(sprint.rows)) return null;
+  return { id: safeId(sprint.id), title: String(sprint.title ?? ""), rows: sprint.rows };
+}
+
+/**
+ * Данные экрана спринта для GET прогона: строки по корзинам с заголовками roadmap,
+ * статусами доски, прогонами задач и их шагами. До старта задачи шаги берутся
+ * из workflow задачи каталога, после старта - из snapshot и событий её прогона.
+ */
+export async function sprintView(repoRoot: string, workspaceDir: string, store: WorkflowStore, run: WorkflowRunRecord): Promise<SprintViewData | null> {
+  const sprint = sprintViewInput(run);
+  if (!sprint) return null;
+  const started = new Map<string, { taskRunId: string; worktree: string | null }>();
+  const finished = new Map<string, { taskRunId: string; status: string; boardStatus: string }>();
+  const worktrees = new Map<string, string>();
+  for (const event of store.listEvents(run.id, 0, 10_000)) {
+    const itemId = typeof event.payload?.itemId === "string" ? event.payload.itemId : "";
+    if (!itemId) continue;
+    if (event.type === "sprint.worktree-ready") worktrees.set(itemId, String(event.payload.worktree ?? ""));
+    if (event.type === "sprint.task-started") started.set(itemId, { taskRunId: String(event.payload.taskRunId ?? ""), worktree: typeof event.payload.worktree === "string" ? event.payload.worktree : null });
+    if (event.type === "sprint.task-finished") finished.set(itemId, { taskRunId: String(event.payload.taskRunId ?? ""), status: String(event.payload.status ?? ""), boardStatus: String(event.payload.boardStatus ?? "") });
+  }
+  const items = await listRoadmapItems(workspaceDir);
+  const catalog = await loadWorkflowCatalog(repoRoot, workspaceDir);
+  const tasks: SprintTaskView[] = [];
+  for (const row of [...sprint.rows].sort((a, b) => a.bucket - b.bucket || a.order - b.order)) {
+    const item = items.find((candidate) => candidate.id === row.itemId);
+    const task = started.get(row.itemId) ?? null;
+    const finishedTask = finished.get(row.itemId);
+    // Финиш применяется только к актуальному прогону задачи: после перезапуска
+    // задачи новым прогоном старое событие финиша не описывает её состояние.
+    const currentFinished = finishedTask && (!finishedTask.taskRunId || finishedTask.taskRunId === task?.taskRunId) ? finishedTask : null;
+    let steps: SprintTaskStepView[] = [];
+    let taskRunStatus: string | null = null;
+    if (task?.taskRunId) {
+      const taskRun = store.getRun(task.taskRunId);
+      if (taskRun) {
+        taskRunStatus = currentFinished?.status ?? taskRun.status;
+        const ends = new Map(store.stepEndStates(task.taskRunId).map((end) => [end.stepId, end.type]));
+        steps = taskRun.snapshot.nodes.filter((node) => !node.hidden).map((node) => ({ id: node.id, title: node.title, end: ends.get(node.id) ?? null }));
+      }
+    }
+    if (!steps.length) {
+      const entry = catalog.get(row.workflowId);
+      steps = (entry?.value.nodes ?? []).filter((node) => !node.hidden).map((node) => ({ id: node.id, title: node.title, end: null }));
+    }
+    tasks.push({
+      itemId: row.itemId,
+      title: item?.title ?? row.itemId,
+      workflowId: row.workflowId,
+      bucket: row.bucket,
+      order: row.order,
+      boardStatus: currentFinished?.boardStatus ?? item?.status ?? "ready",
+      taskRunId: task?.taskRunId ?? null,
+      taskRunStatus,
+      worktree: task?.worktree ?? worktrees.get(row.itemId) ?? null,
+      steps,
+    });
+  }
+  const record = (await loadSprints(workspaceDir)).find((candidate) => candidate.id === sprint.id);
+  return { id: sprint.id, title: record?.title ?? sprint.title, status: record?.status ?? "created", tasks };
 }

@@ -1,0 +1,26 @@
+apiVersion: harness/v1
+kind: RoadmapItem
+id: TASK-D4947E3D98BA4246
+title: Resume для interrupted-сборок знаний
+description: "Распознавание состояния interrupted у прерванных сборок знаний и предложение resume в UI; поведение возобновления задокументировано в docs/operations.md. Трассировка: Ф2→N3←T2 (S2). Проверка (DoD): воспроизводимый сценарий прерывания сборки распознаётся как interrupted и предлагает resume (AC Ф2 4); документация соответствует фактическому поведению. Зависимости: карточка состояния failed-задачи (общая поверхность состояний)."
+type: task
+status: inbox
+priority: normal
+estimate:
+  value: 4
+  effort: 1
+labels:
+  - backlog
+  - feature-discovery
+dependencies: []
+acceptanceCriteria: []
+workflowId: feature-discovery
+runIds:
+  - run-1791492180504-9e4d95d5
+taskRefs: []
+provenance:
+  source: workflow-plan
+  runId: run-1791492180504-9e4d95d5
+  fingerprint: d4947e3d98ba4246
+createdAt: 2026-10-09T19:46:55.783Z
+updatedAt: 2026-10-09T19:46:55.783Z

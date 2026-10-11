@@ -6,7 +6,8 @@ import type { BaseChatModel, BindToolsInput } from "@langchain/core/language_mod
 import { executeTool, BUILTIN_TOOL_SPECS, type ToolContext, type ToolResult } from "./agentTools";
 import { withProviderAuth } from "./providerAuth";
 import { parseMcpQualifiedName } from "./mcp/client";
-import { chatModelForProvider, CHAT_REQUEST_TIMEOUT_MS } from "./langchain/chatModel";
+import { chatModelForAgentLoop, CHAT_REQUEST_TIMEOUT_MS } from "./langchain/chatModel";
+import { scanText } from "@harness/guardrails";
 
 /**
  * Агентный цикл (function calling) для провайдеров из реестра консоли.
@@ -55,6 +56,14 @@ export interface AgentLoopUsage {
   toolCalls: number;
 }
 
+/** Прогресс раунда цикла: источник события step.progress в ledger. */
+export interface AgentLoopProgress {
+  round: number;
+  maxRounds: number;
+  toolCalls: number;
+  elapsedMs: number;
+}
+
 export interface AgentLoopResult {
   ok: boolean;
   /** Финальный текст ответа; пустой при ошибке цикла. */
@@ -79,6 +88,10 @@ export interface AgentLoopOptions {
   /** Общий бюджет цикла (timeoutMs шага). */
   timeoutMs: number;
   maxRounds?: number;
+  /** Внешняя отмена (статус прогона): проверяется в начале каждого раунда, цикл завершается ошибкой. */
+  shouldAbort?: () => boolean;
+  /** Наблюдатель прогресса: вызывается в начале каждого раунда (событие step.progress). */
+  onProgress?: (progress: AgentLoopProgress) => void;
   /** Дополнительные инструменты MCP (полные имена mcp__<server>__<tool>). */
   mcpTools?: LoopTool[];
   /** Исполнитель MCP-инструментов (core/mcp/client.ts); нет - только встроенные. */
@@ -201,7 +214,7 @@ type InvocableModel = {
 function boundModel(opts: AgentLoopOptions, tools: LoopTool[], token: string, fetchImpl: typeof fetch | undefined, signal: AbortSignal): InvocableModel {
   const model = opts.buildModel
     ? opts.buildModel(tools, token, fetchImpl, signal)
-    : chatModelForProvider({
+    : chatModelForAgentLoop({
         preset: opts.preset,
         entry: opts.entry,
         model: opts.model,
@@ -210,6 +223,17 @@ function boundModel(opts: AgentLoopOptions, tools: LoopTool[], token: string, fe
       });
   const specs = toolSpecs(tools);
   return specs.length && model.bindTools ? (model.bindTools(specs) as InvocableModel) : model;
+}
+
+/**
+ * Стартовое задание цикла проверяется на инъекции как промпт; текст в истории
+ * раундов (вывод инструментов, ответы модели) - данные и блокировкой не
+ * останавливает цикл. Формат сообщения совпадает с GuardBlockedError guard'а.
+ */
+export function initialPromptBlockMessage(system: string | undefined, prompt: string): string | null {
+  const finding = scanText([system?.trim(), prompt].filter(Boolean).join("\n"), "prompt")
+    .find((item) => item.patternId.startsWith("inj."));
+  return finding ? `guardrails: BLOCKED by prompt.injection - Промпт содержит "${finding.title}".` : null;
 }
 
 /**
@@ -223,6 +247,7 @@ export async function runAgentLoop(opts: AgentLoopOptions): Promise<AgentLoopRes
   const tools = [...builtinLoopTools(), ...(opts.mcpTools ?? [])];
   const ctx: ToolContext = { cwd: opts.toolCwd, repoRoot: opts.repoRoot };
   const messages: LoopMessage[] = [{ role: "user", text: opts.prompt }];
+  const startedAt = Date.now();
   const usage: AgentLoopUsage = { inputTokens: 0, outputTokens: 0, cacheTokens: 0, totalTokens: 0, rounds: 0, toolCalls: 0 };
   const system = opts.system?.trim();
 
@@ -239,7 +264,12 @@ export async function runAgentLoop(opts: AgentLoopOptions): Promise<AgentLoopRes
     return { ok: false, text: "", error, usage, transcriptFile };
   };
 
+  const promptBlock = initialPromptBlockMessage(system, opts.prompt);
+  if (promptBlock) return fail(promptBlock);
+
   for (let round = 1; round <= maxRounds; round += 1) {
+    if (opts.shouldAbort?.()) return fail("run отменён оператором");
+    opts.onProgress?.({ round, maxRounds, toolCalls: usage.toolCalls, elapsedMs: Date.now() - startedAt });
     const remaining = deadline - Date.now();
     if (remaining <= 0) return fail(`бюджет времени цикла исчерпан (${opts.timeoutMs} ms)`);
     usage.rounds = round;

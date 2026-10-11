@@ -1,0 +1,26 @@
+apiVersion: harness/v1
+kind: RoadmapItem
+id: TASK-EFBC17DEF3C18A63
+title: "Карточка failed-задачи: класс ошибки и человекочитаемая причина"
+description: "Классификация root-cause для failed-задач (первичный набор классов, расширяемый после закрытия Q3) и отображение на карточке: класс ошибки + краткая человекочитаемая причина из хвоста лога; неклассифицируемая ошибка — сырой хвост лога с пометкой «класс не определён». Трассировка: Ф2→N3←T2 (S2; 63 failed из 315 задач = 20% — крупнейший класс отказов выборки). Проверка (DoD): на тест-выборке failed-задач карточка показывает класс и причину; для неклассифицируемой — хвост лога + пометка (AC Ф2 1, 6). Зависимости: нет; оценка effort провизионна до закрытия Q3."
+type: task
+status: inbox
+priority: normal
+estimate:
+  value: 5
+  effort: 2
+labels:
+  - backlog
+  - feature-discovery
+dependencies: []
+acceptanceCriteria: []
+workflowId: feature-discovery
+runIds:
+  - run-1791492180504-9e4d95d5
+taskRefs: []
+provenance:
+  source: workflow-plan
+  runId: run-1791492180504-9e4d95d5
+  fingerprint: efbc17def3c18a63
+createdAt: 2026-10-09T19:46:53.566Z
+updatedAt: 2026-10-09T19:46:53.566Z

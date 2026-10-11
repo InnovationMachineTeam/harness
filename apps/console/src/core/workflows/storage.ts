@@ -248,9 +248,12 @@ export class WorkflowStore {
       .run(new Date().toISOString(), runId, type, JSON.stringify(payload));
   }
 
-  takeCommands(limit = 20): Array<{ id: number; runId: string; type: string; payload: Record<string, unknown> }> {
-    const rows = this.db.prepare("SELECT id, run_id, type, payload_json FROM commands WHERE consumed_at IS NULL ORDER BY id ASC LIMIT ?")
-      .all(limit) as Array<{ id: number; run_id: string; type: string; payload_json: string }>;
+  /** Команды берутся в порядке постановки; прогоны из excludeRunIds остаются в очереди - их команды уже исполняются. */
+  takeCommands(limit = 20, options?: { excludeRunIds?: ReadonlySet<string> }): Array<{ id: number; runId: string; type: string; payload: Record<string, unknown> }> {
+    const skip = options?.excludeRunIds;
+    const rows = (this.db.prepare("SELECT id, run_id, type, payload_json FROM commands WHERE consumed_at IS NULL ORDER BY id ASC").all() as Array<{ id: number; run_id: string; type: string; payload_json: string }>)
+      .filter((row) => !skip || !skip.has(row.run_id))
+      .slice(0, limit);
     const mark = this.db.prepare("UPDATE commands SET consumed_at = ? WHERE id = ?");
     const now = new Date().toISOString();
     this.db.transaction(() => rows.forEach((row) => mark.run(now, row.id)))();
@@ -280,6 +283,13 @@ export class WorkflowStore {
   finishAttempt(id: string, status: StepStatus, error: string | null = null, usage?: { inputTokens: number; outputTokens: number; cacheTokens: number; costValue?: number; costCurrency?: string }) {
     this.db.prepare("UPDATE attempts SET status = ?, finished_at = ?, error = ?, input_tokens = ?, output_tokens = ?, cache_tokens = ?, cost_value = ?, cost_currency = ? WHERE id = ?")
       .run(status, new Date().toISOString(), error, usage?.inputTokens ?? 0, usage?.outputTokens ?? 0, usage?.cacheTokens ?? 0, usage?.costValue ?? null, usage?.costCurrency ?? null, id);
+  }
+
+  /** Закрытие висящих попыток прогона (finished_at NULL): воркер умер посреди секции, результат попытки недостоверен. */
+  failStaleAttempts(runId: string, error: string): number {
+    const result = this.db.prepare("UPDATE attempts SET status = 'failed', finished_at = ?, error = ? WHERE run_id = ? AND finished_at IS NULL")
+      .run(new Date().toISOString(), error, runId);
+    return Number(result.changes);
   }
 
   recordUsage(input: { receiptId: string; runId?: string; stepId?: string; provider: string; runtime?: string; model?: string; inputTokens: number; outputTokens: number; cacheTokens?: number; costValue?: number; costCurrency?: string; pricingCoverage?: number; raw: unknown }): boolean {

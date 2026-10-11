@@ -1,0 +1,27 @@
+apiVersion: harness/v1
+kind: RoadmapItem
+id: TASK-039C62E04E028818
+title: Карточка домена чата и индикатор redaction
+description: "Карточка назначения и границ домена прямого чата при первом открытии (скрываемая, повторно открываемая); индикатор redaction объясняет факт редактирования PII без раскрытия содержимого; сама карточка не содержит PII (privacy-инвариант). Трассировка: Ф8→H3←T4 (S1, S3, гипотеза — старт после гейта; базовый фон: 2 вопроса за пределами домена с отредактированными персональными данными). Проверка (DoD): карточка открывается, скрывается и переоткрывается; индикатор не раскрывает PII; статический контент проверен на отсутствие PII (AC Ф8 1–3). Зависимости: валидация гипотез."
+type: task
+status: review
+priority: normal
+estimate:
+  value: 2
+  effort: 1
+labels:
+  - backlog
+  - feature-discovery
+  - sprint:sprint-mv1jvzta
+dependencies: []
+acceptanceCriteria: []
+workflowId: feature-discovery
+runIds:
+  - run-1791492180504-9e4d95d5
+taskRefs: []
+provenance:
+  source: workflow-plan
+  runId: run-1791492180504-9e4d95d5
+  fingerprint: 039c62e04e028818
+createdAt: 2026-10-09T19:47:01.684Z
+updatedAt: 2026-10-09T23:23:07.359Z

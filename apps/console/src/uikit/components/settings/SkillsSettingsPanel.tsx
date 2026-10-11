@@ -252,12 +252,14 @@ function SkillLinksSection({ onChanged }: { onChanged?: () => void }) {
           {status.statuses.map((entry) => {
             const real = entry.entries.filter((item) => item.kind === "real").length;
             const broken = entry.entries.filter((item) => item.kind === "broken").length;
+            const mirrors = entry.entries.filter((item) => item.kind === "mirror").length;
             const foreign = entry.entries.filter((item) => item.points === "вне .agents/skills").length;
             return (
               <div key={entry.runtime} className="flex items-baseline justify-between gap-3 text-[11px]">
                 <span className="text-fg">{entry.runtime}</span>
                 <span className="text-fg-faint">
-                  {entry.relDir} - симлинков: {entry.entries.length - real - broken}
+                  {entry.relDir} - симлинков: {entry.entries.length - real - broken - mirrors}
+                  {mirrors ? ` - зеркал: ${mirrors}` : ""}
                   {real ? ` - реальных каталогов: ${real}` : ""}
                   {broken ? ` - битых: ${broken}` : ""}
                   {foreign ? ` - вне канона: ${foreign}` : ""}
@@ -273,10 +275,11 @@ function SkillLinksSection({ onChanged }: { onChanged?: () => void }) {
       {message && <p className="mt-2 text-[11px] text-fg-muted">{message}</p>}
       <p className="mt-3 text-[10px] leading-relaxed text-fg-faint">
         Основное хранилище навыков - .agents/skills (публичные - в корне, internal - master/skills, design - design/skills);
-        каталоги рантаймов содержат только симлинки. Жизненный цикл: включение/выключение (toggle) создаёт и удаляет
-        симлинки, установка кладёт канонический каталог и подключает симлинки, удаление снимает симлинки и убирает
-        канонический каталог. Реальные каталоги на пути симлинка переносятся в бэкап .agents/.tmp/skill-links-backup;
-        чужие записи без канонического аналога не трогаются. Kimi симлинков не получает - он читает .agents/skills нативно.
+        каталоги рантаймов содержат ссылки на канон: симлинки, у Cursor - зеркала с hardlink'ами файлов (Cursor не следует
+        симлинкам). Жизненный цикл: включение/выключение (toggle) создаёт и удаляет ссылки, установка кладёт канонический
+        каталог и подключает ссылки, удаление снимает ссылки и убирает канонический каталог. Реальные каталоги на пути
+        ссылки переносятся в бэкап .agents/.tmp/skill-links-backup; чужие записи без канонического аналога не трогаются.
+        Kimi ссылок не получает - он читает .agents/skills нативно.
       </p>
     </Panel>
   );

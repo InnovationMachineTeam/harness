@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Background, Controls, Handle, Position, ReactFlow, type Connection, type Edge, type Node, type NodeProps } from "@xyflow/react";
 import YAML from "yaml";
-import { Button, Chip, confirmDialog, Input, Modal, Select, Textarea } from "@/uikit";
+import { Button, Chip, confirmDialog, Input, Modal, Notice, Select, Textarea } from "@/uikit";
 import { NodeEditorModal, useRuntimeCandidateOptions, type RoleOption } from "./NodeEditorModal";
 import { asRecord, asStringList, ChipsField, parseYamlSafe, removeNodeFromYaml, spliceEntity } from "./editor-shared";
 
@@ -39,6 +39,9 @@ export function WorkflowStudio() {
   const [newWfTitle, setNewWfTitle] = useState("");
   const [cloneOpen, setCloneOpen] = useState(false);
   const [cloneNewId, setCloneNewId] = useState("");
+  const [addOpen, setAddOpen] = useState(false);
+  const [addSourceId, setAddSourceId] = useState("");
+  const [addStepId, setAddStepId] = useState("");
   const [runtimeOpen, setRuntimeOpen] = useState(false);
   const runtimeCandidateOptions = useRuntimeCandidateOptions();
   const lastLoadedId = useRef("");
@@ -207,31 +210,61 @@ export function WorkflowStudio() {
       setSelected(id);
     }
   };
+  const addSource = workflows.find((w) => w.id === addSourceId);
+  // Полные шаги источника: yaml списка содержит весь текст workflow.
+  const addSourceSteps = useMemo<Array<Record<string, unknown>>>(() => {
+    if (!addSource) return [];
+    const parsed = parseYamlSafe(addSource.yaml);
+    if (!parsed.ok || !parsed.value || typeof parsed.value !== "object") return [];
+    const list = asRecord(parsed.value).nodes;
+    return Array.isArray(list) ? list.map(asRecord) : [];
+  }, [addSource]);
+  const uniqueNodeId = (base: string) => {
+    const existing = new Set(graphItems.map((node) => node.id));
+    let id = base;
+    for (let i = 2; existing.has(id); i += 1) id = `${base}-${i}`;
+    return id;
+  };
+  const insertNode = (node: Record<string, unknown>) => {
+    const next = spliceEntity(yaml, "nodes", node);
+    if (next === null) { setMessage("YAML файла не парсится - шаг не добавлен"); return false; }
+    setYaml(next);
+    setEditorNodeId(String(node.id));
+    setMessage(`Шаг ${String(node.id)} добавлен; сохраните YAML кнопкой Validate & save`);
+    return true;
+  };
   const addNode = () => {
     if (!workflow) return;
-    const existing = new Set(graphItems.map((node) => node.id));
-    let id = "new-step";
-    for (let i = 2; existing.has(id); i += 1) id = `new-step-${i}`;
-    const node = {
-      id,
-      title: "Новый шаг",
-      phase: "draft",
-      description: "",
-      dependsOn: [],
-      roles: [],
-      runtime: { candidates: [] },
-      execution: { prompt: "", confirmPlan: false },
-      inputs: [],
-      outputs: [],
-      timeoutMs: 900_000,
-      retry: { maxAttempts: 3 },
-      resources: { workspace: "read" },
-    };
-    const next = spliceEntity(yaml, "nodes", node);
-    if (next === null) { setMessage("YAML файла не парсится - шаг не добавлен"); return; }
-    setYaml(next);
-    setEditorNodeId(id);
-    setMessage(`Шаг ${id} добавлен; сохраните YAML кнопкой Validate & save`);
+    setAddSourceId("");
+    setAddStepId("");
+    setAddOpen(true);
+  };
+  const submitAdd = () => {
+    if (!addSourceId) {
+      const inserted = insertNode({
+        id: uniqueNodeId("new-step"),
+        title: "Новый шаг",
+        phase: "draft",
+        description: "",
+        dependsOn: [],
+        roles: [],
+        runtime: { candidates: [] },
+        execution: { prompt: "", confirmPlan: false },
+        inputs: [],
+        outputs: [],
+        timeoutMs: 900_000,
+        retry: { maxAttempts: 3 },
+        resources: { workspace: "read" },
+      });
+      if (inserted) setAddOpen(false);
+      return;
+    }
+    const step = addSourceSteps.find((item) => String(item.id) === addStepId);
+    if (!step) { setMessage("Выберите шаг источника"); return; }
+    // Копия шага: роли, контролы и промпты переносятся; позиция и связи - нет (связи проставляются на канве).
+    const { ui: _ui, dependsOn: _dependsOn, inputs: _inputs, ...copy } = step;
+    const inserted = insertNode({ ...copy, id: uniqueNodeId(String(step.id)) });
+    if (inserted) setAddOpen(false);
   };
   const deleteNode = async (id: string) => {
     if (!workflow) return;
@@ -273,6 +306,13 @@ export function WorkflowStudio() {
     </div>
     {editorNodeId && workflow ? <NodeEditorModal key={editorNodeId} nodeId={editorNodeId} workflow={{ id: workflow.id, title: workflow.title, fileName: workflow.fileName }} yaml={yaml} roleOptions={roleOptions} onYamlChange={setYaml} onRename={(newId) => setEditorNodeId(newId)} onDelete={() => deleteNode(editorNodeId)} onClose={() => setEditorNodeId("")} onSave={save} /> : null}
     {conflict && <section className="rounded-xl border border-warning/50 bg-surface p-3"><h2 className="mb-2 text-sm font-semibold">Конфликт внешнего изменения: base / current / draft</h2><div className="grid gap-2 lg:grid-cols-3">{([['Base', conflict.base], ['Current', conflict.current], ['Draft', conflict.draft]] as const).map(([label, value]) => <label key={label} className="text-[10px] text-fg-muted">{label}<Textarea readOnly value={value} rows={10} className="mt-1 w-full font-mono text-[10px]" /></label>)}</div></section>}
+    <Modal open={addOpen} onClose={() => setAddOpen(false)} title={`Добавить шаг: ${workflow?.title ?? ""}`} description="Пустой шаг или копия шага из существующего workflow: роли, контролы и промпты копируются; связи проставляются мышью на канве." width="max-w-lg" footer={<><Button variant="ghost" onClick={() => setAddOpen(false)}>Отмена</Button><Button variant="primary" onClick={submitAdd}>{addSourceId ? "Скопировать шаг" : "Добавить пустой"}</Button></>}>
+      <div className="space-y-3">
+        <Select value={addSourceId} onChange={(value) => { setAddSourceId(value); setAddStepId(""); }} options={[{ value: "", label: "Пустой шаг" }, ...workflows.map((w) => ({ value: w.id, label: `${w.title} (${w.id})` }))]} className="w-full" ariaLabel="Workflow-источник шага" />
+        {addSourceId ? <Select value={addStepId} onChange={setAddStepId} options={addSourceSteps.map((item) => ({ value: String(item.id), label: `${String(item.title ?? item.id)} (${String(item.id)})` }))} className="w-full" ariaLabel="Шаг-источник" /> : null}
+        {addSourceId && !addSourceSteps.length ? <Notice>Шагов в источнике нет: YAML не парсится или список узлов пуст.</Notice> : null}
+      </div>
+    </Modal>
     <Modal open={newWfOpen} onClose={() => setNewWfOpen(false)} title="Новый workflow" description="Создаётся пустой файл; шаги добавляются кнопкой Добавить шаг, связи - мышью на канве." width="max-w-lg" footer={<><Button variant="ghost" onClick={() => setNewWfOpen(false)}>Отмена</Button><Button variant="primary" onClick={createWorkflow}>Создать</Button></>}>
       <div className="space-y-3">
         <Input placeholder="id, например my-flow (a-z0-9)" value={newWfId} onChange={(e) => setNewWfId(e.target.value)} className="w-full font-mono text-xs" />

@@ -25,6 +25,9 @@ export async function GET(request: Request) {
     const store = new WorkflowStore(ctx.repoRoot, workspace);
     const runs = store.listRuns(100);
     store.close();
+    // Открытие списка прогонов поднимает умершего воркера (проверка pid внутри):
+    // crash-recovery при старте воркера возобновляет осиротевшие прогоны.
+    await ensureWorkflowWorker(ctx.repoRoot).catch(() => undefined);
     return NextResponse.json({ workspace, runs, worker: await workflowWorkerStatus(ctx.repoRoot) });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });

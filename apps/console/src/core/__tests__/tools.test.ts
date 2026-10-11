@@ -172,7 +172,7 @@ describe("реестр инструментов", () => {
     const context7 = bun.find((p) => p.name === "context7")!;
     expect(context7.transport).toEqual({ type: "stdio", command: "bunx", args: ["@upstash/context7-mcp"] });
     const deepwiki = bun.find((p) => p.name === "deepwiki")!;
-    expect(deepwiki.transport).toEqual({ type: "http", url: "https://mcp.deepwiki.com/" });
+    expect(deepwiki.transport).toEqual({ type: "http", url: "https://mcp.deepwiki.com/mcp" });
     const figma = bun.find((p) => p.name === "figma")!;
     expect(figma.transport).toEqual({ type: "http", url: "https://mcp.figma.com/mcp" });
     // od - не npx: пресет не адаптируется под менеджер пакетов

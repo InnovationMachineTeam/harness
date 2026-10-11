@@ -6,6 +6,7 @@ import type { PricingCatalogDTO } from "@/core/pricingCatalog";
 import type { BillingDeposit, BillingSelection } from "@/core/state";
 import { formatTokens } from "@/lib/format";
 import { EmptyState, Loading, Segmented } from "@/uikit";
+import { COUNTRY_FILTERS, matchesCountry, type CountryFilter } from "@/uikit/components/countries";
 import { ProviderCard, type ProviderBillingProps, type ProviderUsageChip } from "./ProviderCard";
 
 interface ProvidersData {
@@ -82,6 +83,7 @@ export function ProvidersPanel({ onCounts }: { onCounts?: (active: number, total
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<ProviderFilter>("all");
   const [kindFilter, setKindFilter] = useState<ProviderKindFilter>("all");
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>("all");
   const [nowMs, setNowMs] = useState(() => Date.now());
 
   const load = useCallback(async () => {
@@ -208,34 +210,47 @@ export function ProvidersPanel({ onCounts }: { onCounts?: (active: number, total
     return { tokens, calls };
   }, [usageByProvider]);
 
-  // фильтры накладываются; счётчики каждого фильтра учитывают выбранное значение другого
+  // фильтры накладываются; счётчики каждого фильтра учитывают выбранные значения двух других
   const filtered = useMemo(
-    () => (data ? data.providers.filter((p) => matchesKind(p, kindFilter) && matchesFilter(p, filter)) : []),
-    [data, filter, kindFilter],
+    () =>
+      data
+        ? data.providers.filter((p) => matchesKind(p, kindFilter) && matchesFilter(p, filter) && matchesCountry(p.country, countryFilter))
+        : [],
+    [data, filter, kindFilter, countryFilter],
   );
 
   const statusCounts = useMemo(() => {
     if (!data) return null;
-    const inKind = data.providers.filter((p) => matchesKind(p, kindFilter));
-    const counts: Record<ProviderFilter, number> = { all: inKind.length, "not-installed": 0, installed: 0, "not-running": 0, active: 0 };
-    for (const p of inKind) {
+    const inScope = data.providers.filter((p) => matchesKind(p, kindFilter) && matchesCountry(p.country, countryFilter));
+    const counts: Record<ProviderFilter, number> = { all: inScope.length, "not-installed": 0, installed: 0, "not-running": 0, active: 0 };
+    for (const p of inScope) {
       for (const f of FILTERS) {
         if (f.key !== "all" && matchesFilter(p, f.key)) counts[f.key] += 1;
       }
     }
     return counts;
-  }, [data, kindFilter]);
+  }, [data, kindFilter, countryFilter]);
 
   const kindCounts = useMemo(() => {
     if (!data) return null;
-    const inStatus = data.providers.filter((p) => matchesFilter(p, filter));
-    const counts: Record<ProviderKindFilter, number> = { all: inStatus.length, online: 0, local: 0 };
-    for (const p of inStatus) {
+    const inScope = data.providers.filter((p) => matchesFilter(p, filter) && matchesCountry(p.country, countryFilter));
+    const counts: Record<ProviderKindFilter, number> = { all: inScope.length, online: 0, local: 0 };
+    for (const p of inScope) {
       if (matchesKind(p, "online")) counts.online += 1;
       if (matchesKind(p, "local")) counts.local += 1;
     }
     return counts;
-  }, [data, filter]);
+  }, [data, filter, countryFilter]);
+
+  // счётчик страны учитывает выбранные состояние и тип
+  const countryCounts = useMemo(() => {
+    const counts: Record<CountryFilter, number> = { all: 0, us: 0, eu: 0, ru: 0, cn: 0, world: 0 };
+    if (!data) return counts;
+    const inScope = data.providers.filter((p) => matchesFilter(p, filter) && matchesKind(p, kindFilter));
+    counts.all = inScope.length;
+    for (const p of inScope) counts[p.country ?? "world"] += 1;
+    return counts;
+  }, [data, filter, kindFilter]);
 
   if (error) {
     return <p className="rounded-xl border border-dashed border-line p-8 text-center text-sm text-danger">{error}</p>;
@@ -276,6 +291,17 @@ export function ProvidersPanel({ onCounts }: { onCounts?: (active: number, total
             value={kindFilter}
             onChange={setKindFilter}
             ariaLabel="Фильтр провайдеров по типу (cloud/local)"
+          />
+          <Segmented
+            options={COUNTRY_FILTERS.map((f) => ({
+              key: f.key,
+              label: f.label,
+              title: f.title,
+              count: countryCounts[f.key],
+            }))}
+            value={countryFilter}
+            onChange={setCountryFilter}
+            ariaLabel="Фильтр провайдеров по стране"
           />
         </div>
       </div>

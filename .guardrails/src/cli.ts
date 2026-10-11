@@ -23,7 +23,8 @@ function root(): string {
   return process.cwd();
 }
 
-function settings(repo: string): void {
+/** Машиночитаемые настройки рантайма (команда context): один источник с текстовым settings. */
+function settingsData(repo: string): Record<string, unknown> {
   const runtime = process.env.AGENT_RUNTIME ?? "claude";
   const rootConfig = JSON.parse(readFileSync(join(repo, ".agents/runtime/config.json"), "utf8")) as Record<string, any>;
   const configPath = resolve(repo, process.env.AGENT_RUNTIME_CONFIG ?? `.agents/runtime/${runtime}/config.json`);
@@ -31,19 +32,43 @@ function settings(repo: string): void {
   const profileName = process.env.AGENT_PROFILE ?? "default";
   const profile = rootConfig.profiles?.[profileName] ?? {};
   const limits = { ...(rootConfig.limits ?? {}), ...(profile.limits ?? {}) };
+  return {
+    runtime,
+    adapter: String(vendor.vendorAdapter ?? ""),
+    hooksSupport: String(vendor.guard?.hooksSupport ?? ""),
+    guard: String(rootConfig.guard ?? ""),
+    profile: { name: profileName, defaultModel: String(profile.defaultModel ?? "") },
+    models: (Object.entries(vendor.models ?? {}) as Array<[string, any]>).map(([tier, model]) => ({
+      tier,
+      model: String(model.model ?? ""),
+      thinkingLevel: String(model.thinkingLevel ?? ""),
+      verified: Boolean(model.verified),
+    })),
+    limits,
+    verification: rootConfig.verification ?? {},
+  };
+}
+
+function settings(repo: string): void {
+  const data = settingsData(repo) as {
+    runtime: string; adapter: string; hooksSupport: string; guard: string;
+    profile: { name: string; defaultModel: string };
+    models: Array<{ tier: string; model: string; thinkingLevel: string; verified: boolean }>;
+    limits: Record<string, unknown>; verification: Record<string, unknown>;
+  };
   console.log("========================================================================");
   console.log("AGENT RUNTIME SETTINGS");
-  console.log(`runtime:            ${runtime}`);
-  console.log(`adapter:            ${vendor.vendorAdapter ?? "-"}`);
-  console.log(`hooksSupport:       ${vendor.guard?.hooksSupport ?? "-"}`);
-  console.log(`guard:              ${rootConfig.guard ?? "-"}`);
-  console.log(`profile:            ${profileName} (defaultModel: ${profile.defaultModel ?? "-"})`);
+  console.log(`runtime:            ${data.runtime}`);
+  console.log(`adapter:            ${data.adapter || "-"}`);
+  console.log(`hooksSupport:       ${data.hooksSupport || "-"}`);
+  console.log(`guard:              ${data.guard || "-"}`);
+  console.log(`profile:            ${data.profile.name} (defaultModel: ${data.profile.defaultModel || "-"})`);
   console.log("models:");
-  for (const [tier, model] of Object.entries(vendor.models ?? {}) as Array<[string, any]>) console.log(`  ${tier.padEnd(11)} ${String(model.model).padEnd(34)} ${model.thinkingLevel ?? ""} [${model.verified ? "verified" : "NOT verified"}]`);
+  for (const model of data.models) console.log(`  ${model.tier.padEnd(11)} ${model.model.padEnd(34)} ${model.thinkingLevel} [${model.verified ? "verified" : "NOT verified"}]`);
   console.log("limits:");
-  for (const [key, value] of Object.entries(limits)) console.log(`  ${key.padEnd(22)} ${value}`);
+  for (const [key, value] of Object.entries(data.limits)) console.log(`  ${key.padEnd(22)} ${value}`);
   console.log("verification:");
-  for (const [key, value] of Object.entries(rootConfig.verification ?? {})) console.log(`  ${key.padEnd(12)} ${value}`);
+  for (const [key, value] of Object.entries(data.verification)) console.log(`  ${key.padEnd(12)} ${value}`);
   console.log("========================================================================");
 }
 
@@ -197,6 +222,7 @@ async function main() {
   if (command === "prompt") return promptStdin(repo);
   if (command === "scan-diff") return scanDiffStdin(repo);
   if (command === "settings") { settings(repo); return; }
+  if (command === "context") { console.log(JSON.stringify(settingsData(repo), null, 2)); return; }
   if (command === "generate") { generate(repo); console.log("Guardrails: документы и реестр обновлены."); return; }
   if (command === "audit") { console.log(JSON.stringify(buildAudit(repo), null, args.includes("--json") ? 2 : 2)); return; }
   if (command === "list") { for (const item of RULES) console.log(`${item.meta.id}\t${item.meta.effect}\t${item.meta.severity}\t${item.meta.title}`); return; }

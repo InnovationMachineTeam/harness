@@ -20,18 +20,18 @@ nodes:
     roles: [product-analyst]
     inputControl:
       roles: [product-analyst]
-      prompt: "Проверь запрос пользователя как вход продуктового цикла."
+      prompt: "Проверь запрос пользователя как вход продуктового цикла. Запрос считается готовым (pass), если в нём различимы проблема или возможность и хотя бы примерная аудитория. Неопределённости не возвращай на доработку - перечисли их в задании первого шага как открытые вопросы. fail - только если вход пуст или противоречит себе."
       dor:
-        - проблема или возможность сформулирована
-        - целевая аудитория обозначена
-      maxAttempts: 10
+        - проблема или возможность различима в запросе
+        - целевая аудитория обозначена хотя бы примерно
+      maxAttempts: 3
     execution:
-      prompt: Зафиксируй проблему, сегменты аудитории, гипотезу ценности и критерии успеха продукта.
+      prompt: "Зафиксируй проблему, сегменты аудитории, гипотезу ценности и критерии успеха продукта. Отвечай финальным текстом без вызова инструментов - входа достаточно. Неопределённости перечисли в разделе 'Открытые вопросы', не останавливая документ. Не создавай файлов."
       confirmPlan: false
     inputs: [request]
     outputs: [discovery]
     runtime: { tier: standard, effort: medium }
-    timeoutMs: 3600000
+    timeoutMs: 900000
     retry: { maxAttempts: 2 }
     resources: { workspace: read }
   - id: research
@@ -42,26 +42,30 @@ nodes:
     roles: [researcher]
     inputControl:
       roles: [product-analyst]
-      prompt: "Проверь discovery как основу исследования."
+      prompt: "Проверь discovery как основу исследования. pass - если гипотеза ценности и сегменты читаемы; замечания к формулировкам передай исполнителю в задании, а не возвратом входа."
       dor:
         - гипотеза ценности сформулирована
         - сегменты аудитории определены
-      maxAttempts: 10
+      maxAttempts: 3
     execution:
-      prompt: "Собери проверяемые доказательства: объём рынка, конкуренты, пользовательские боли и данные существующих решений. Используй навык codebase-research для внутренней аналитики."
+      prompt: "Собери проверяемые доказательства: объём рынка, конкуренты, пользовательские боли и данные существующих решений. Ограничься 5-8 ключевыми источниками; на каждый ключевой факт дай ссылку (URL с датой для внешних, file:line для внутренних) и отметь уверенность. Для внешних рынков используй веб-источники; навык codebase-research - только для вопросов о нашем продукте. Структура ответа: 'Факты', 'Конкуренты', 'Выводы', 'Открытые вопросы'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
       tests: []
       dod:
-        - источники указаны
-        - выводы отвечают гипотезе ценности
+        - каждый ключевой факт имеет источник (URL с датой или file:line)
+        - выводы отвечают гипотезе ценности из discovery
+        - источников не более 8 и все использованы в тексте
+      ac:
+        - разделы 'Факты', 'Конкуренты', 'Выводы', 'Открытые вопросы' присутствуют
+        - каждый ключевой факт сопровождён ссылкой и датой
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [discovery]
     outputs: [research]
     runtime: { tier: standard, effort: medium }
-    timeoutMs: 3600000
+    timeoutMs: 900000
     retry: { maxAttempts: 2 }
     resources: { workspace: read }
   - id: concept
@@ -71,7 +75,7 @@ nodes:
     dependsOn: [research]
     roles: [product-analyst, ux-designer]
     execution:
-      prompt: "Сформулируй концепцию: позиционирование, value proposition, ключевые пользовательские сценарии и измеримые метрики успеха."
+      prompt: "Сформулируй концепцию: позиционирование, value proposition, ключевые пользовательские сценарии и измеримые метрики успеха. Опирайся на discovery и research; новые поиски не нужны - завершай финальным текстом без вызова инструментов. Не создавай файлов."
       confirmPlan: false
     outputControl:
       roles: [verifier]
@@ -79,13 +83,16 @@ nodes:
       dod:
         - концепция отвечает на гипотезу из discovery
         - сценарии покрывают основной сегмент аудитории
-        - метрики успеха измеримы
+        - метрики успеха имеют целевые значения
+      ac:
+        - присутствуют позиционирование, value proposition, сценарии и метрики
+        - метрики имеют целевые значения
       manualReview: true
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [discovery, research]
     outputs: [concept]
     runtime: { tier: strong, effort: high }
-    timeoutMs: 3600000
+    timeoutMs: 900000
     retry: { maxAttempts: 1 }
     resources: { workspace: read }
   - id: planning
@@ -95,7 +102,7 @@ nodes:
     dependsOn: [concept]
     roles: [planner]
     execution:
-      prompt: "Спланируй задачи продукта по концепции и research. Заверши ответ блоком ```json со списком задач: [{\"title\":\"...\",\"description\":\"...\",\"value\":1-5,\"effort\":1-5}] - value это ценность для продукта, effort это трудозатраты, оба по шкале 1-5."
+      prompt: "Спланируй задачи продукта по концепции и research. Заверши ответ блоком ```json со списком задач: [{\"title\":\"...\",\"description\":\"...\",\"value\":1-5,\"effort\":1-5}] - value это ценность для продукта, effort это трудозатраты, оба по шкале 1-5. Не выполняй поиски и не вызывай инструменты - план строй из концепции и research."
       confirmPlan: true
       producesTasks: true
     outputControl:
@@ -104,11 +111,14 @@ nodes:
       dod:
         - каждая задача проверяема и ведёт к метрикам концепции
         - у каждой задачи есть оценка value и effort
+      ac:
+        - ответ завершается блоком ```json со списком задач
+        - у каждой задачи заполнены title, description, value, effort
       manualReview: false
-      maxAttempts: 10
+      maxAttempts: 3
     inputs: [concept, research]
     outputs: [plan, tasks]
     runtime: { tier: strong, effort: high }
-    timeoutMs: 3600000
+    timeoutMs: 900000
     retry: { maxAttempts: 1 }
     resources: { workspace: read }

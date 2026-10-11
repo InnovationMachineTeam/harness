@@ -7,6 +7,7 @@ import { serenaRemind, serenaSessionEnd, serenaSessionStart } from "./indexes/se
 import { docsCheck, docsWrite } from "./registry";
 import { validateHooks } from "./validate";
 import { hookBudgetReport } from "./doctor";
+import { auditSkillLinks } from "./skill-links";
 
 type HookFn = (root: string, raw: string, input: HookInput) => HookOutcome;
 
@@ -47,6 +48,12 @@ async function main(): Promise<number> {
     const problems = hookBudgetReport(root);
     process.stdout.write(problems.length ? `hook-budget fail\n${problems.map((line) => `  ${line}`).join("\n")}\n` : "hook-budget ok\n");
     return problems.length ? 1 : 0;
+  }
+
+  if (tool === "skill-links") {
+    const audit = await auditSkillLinks(root);
+    process.stdout.write(JSON.stringify(audit, null, 2) + "\n");
+    return 0;
   }
 
   const key = `${tool}/${sub}`;

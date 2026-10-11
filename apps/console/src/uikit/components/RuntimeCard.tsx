@@ -6,6 +6,7 @@ import { runtimePluginOrDefault } from "@/plugins/runtimes/registry";
 import { relativeTime, scopeLabel } from "@/lib/format";
 import { useConsoleStore } from "@/store/console";
 import { Chip, SectionLabel } from "@/uikit";
+import { countryLabel } from "./countries";
 import { CapabilityChips } from "./CapabilityChips";
 import { ModelTable } from "./ModelTable";
 import { StatusBadge } from "./StatusBadge";
@@ -138,6 +139,7 @@ export function RuntimeCard({
         </header>
 
         <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+          <Chip title="страна вендора рантайма">{countryLabel(snapshot.country)}</Chip>
           <Chip>hooks: {snapshot.vendor?.hooksSupport ?? "?"}</Chip>
           <IssuesBadge snapshot={snapshot} />
           {snapshot.adapterKind === "generic" ? (

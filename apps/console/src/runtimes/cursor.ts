@@ -8,6 +8,7 @@ import { anyExists } from "@/lib/signals/fs";
 export const cursorAdapter: RuntimeAdapter = {
   id: "cursor",
   displayName: "Cursor",
+  country: "us",
   processPattern: /Cursor\.app/,
   isInstalled: (ctx) =>
     anyExists([join(ctx.home, ".cursor"), join(ctx.home, "Library", "Application Support", "Cursor")]),

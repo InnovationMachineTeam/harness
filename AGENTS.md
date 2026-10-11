@@ -333,10 +333,12 @@ The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do
 
 Файлы дизайн-контекста этой папки:
 - DESIGN.md - визуальные токены (формат @google/design.md: front matter + гайд); прочитай его перед задачами интерфейса.
+- BRAND.md - бренд-паспорт (имя, аудитория, тон коммуникации, фирменные элементы); прочитай перед задачами бренда, текстов и интерфейса.
 - design/ui-kit.md - правила интерфейса web и mobile.
 - design/components.json - реестр компонентов проекта.
 
 Ключевые токены: palette: accent: #50fa7b; page: #282a36; surface: #2d2f3d; raised: #353846; line: #44475a; fg: #f8f8f2; fg-muted: #a9adcd | radii: md 6px, lg 8px, xl 12px.
+Бренд задан: имя и тон бери из BRAND.md; противоречия между BRAND.md и DESIGN.md решает BRAND.md в вопросах смысла, DESIGN.md - в вопросах значений токенов.
 
 Правила:
 - Код web и mobile ведётся по токенам DESIGN.md и примитивам кита проекта; хардкод цветов и радиусов не применяется.

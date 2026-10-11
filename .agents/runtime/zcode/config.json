@@ -45,7 +45,7 @@
     "filesystem": { "read": true, "write": true },
     "git": { "commit": true, "push": false, "forcePush": false },
     "shell": "policy-guarded",
-    "mcp": [".mcp.json"],
+    "mcp": [".agents/mcp.json"],
     "notes": "Reads and writes go through the host's own permission prompt; shell runs in its sandbox on top of the guard policy. Structural changes to roles, agents or skills, destructive actions and releases always need explicit user approval, in every mode."
   }
 }

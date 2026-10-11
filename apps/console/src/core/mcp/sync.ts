@@ -13,7 +13,8 @@ import { removeMcpSection, upsertMcpSection } from "@/lib/toml";
  * но остаётся в реестре (toggle обратно вернёт его).
  *
  * Проектный .mcp.json получает серверы с глобальным enabled; пользовательские
- * конфиги рантаймов - серверы с учётом override рантайма (override ?? enabled).
+ * конфиги рантаймов и проектные файлы отдельных рантаймов - серверы с учётом
+ * override рантайма (override ?? enabled).
  */
 
 /** Имя MCP-сервера допускает только безопасный набор символов (без shell/путей). */
@@ -58,6 +59,18 @@ function desiredFor(state: ConsoleState, runtimeId: string | null): Map<string, 
     if (enabled) out.set(def.name, def);
   }
   return out;
+}
+
+/** Kimi Code: транспорт выводится из наличия command/url, поля type в схеме нет. */
+function kimiEntry(t: McpTransport): JsonEntry {
+  if (t.type === "http") {
+    const headers = t.headers && Object.keys(t.headers).length > 0 ? { headers: t.headers } : {};
+    return { url: t.url, ...headers };
+  }
+  const base: JsonEntry = { command: t.command };
+  if (t.args?.length) base.args = t.args;
+  if (t.env && Object.keys(t.env).length > 0) base.env = t.env;
+  return base;
 }
 
 function registryNames(state: ConsoleState): string[] {
@@ -134,7 +147,9 @@ const targets: Target[] = [
   {
     id: "project",
     label: "проектный .mcp.json",
-    runtimes: ["claude", "codex", "zcode", "cursor", "kimi", "opencode"],
+    // repo-root .mcp.json реально читают только Claude Code и Kimi Code;
+    // у остальных рантаймов свои таргеты ниже
+    runtimes: ["claude", "kimi"],
     runtimeId: null,
     async apply(repoRoot, state, managedNames) {
       await mergeJsonMap(
@@ -232,6 +247,39 @@ const targets: Target[] = [
         managedNames,
         desiredFor(state, "opencode"),
         (t) => stdioOrHttp(t, "opencode"),
+      );
+    },
+  },
+  {
+    id: "zcode-project",
+    label: "ZCode (.agents/mcp.json)",
+    runtimes: ["zcode"],
+    runtimeId: "zcode",
+    async apply(repoRoot, state, managedNames) {
+      // ZCode читает этот файл, только если в .zcode/config.json нет секции
+      // mcp.servers - при её появлении файл перестаёт действовать
+      await mergeJsonMap(
+        path.join(repoRoot, ".agents", "mcp.json"),
+        "mcpServers",
+        managedNames,
+        desiredFor(state, "zcode"),
+        (t) => stdioOrHttp(t, "mcpServers"),
+      );
+    },
+  },
+  {
+    id: "kimi-global",
+    label: "Kimi (~/.kimi-code/mcp.json)",
+    runtimes: ["kimi"],
+    runtimeId: "kimi",
+    async apply(_repoRoot, state, managedNames) {
+      const home = process.env.KIMI_CODE_HOME || path.join(homedir(), ".kimi-code");
+      await mergeJsonMap(
+        path.join(home, "mcp.json"),
+        "mcpServers",
+        managedNames,
+        desiredFor(state, "kimi"),
+        kimiEntry,
       );
     },
   },

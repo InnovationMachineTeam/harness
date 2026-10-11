@@ -14,6 +14,7 @@ function claudeProjectSlug(repoRoot: string): string {
 export const claudeAdapter: RuntimeAdapter = {
   id: "claude",
   displayName: "Claude Code",
+  country: "us",
   processPattern: /Claude\.app|(^|[/\s])claude(\s|$)/,
   isInstalled: (ctx) => anyExists([join(ctx.home, ".claude")]),
 

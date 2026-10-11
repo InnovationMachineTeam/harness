@@ -1,12 +1,15 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import YAML from "yaml";
 import { createRole, deleteRole, loadInternalSkills, loadRoles, loadWorkflowCatalog, partialNodeClosure, saveRoleFile, saveWorkflowYaml, validateWorkflowGraph, workflowNodeRange } from "@/core/workflows/catalog";
+import { relaunchRunFromCatalog } from "@/core/workflows/relaunch";
 import { parseJsonEnvelope } from "@/core/workflows/engine";
 import { listRoadmapItems, saveRoadmapItem } from "@/core/workflows/roadmap";
-import { buildSprintWorkflow, createSprint, parseTaskList } from "@/core/workflows/sprint";
+import { buildSprintWorkflow, createSprint, parseTaskList, runSprintNode, sprintRefForRun, sprintRunFailure, sprintView } from "@/core/workflows/sprint";
 import { WorkflowStore } from "@/core/workflows/storage";
 import { workflowSchema } from "@/core/workflows/schema";
 import { resolveCapabilityPolicy, workflowPreflight } from "@/core/workflows/preflight";
@@ -52,6 +55,42 @@ const base = workflowSchema.parse({
 });
 
 describe("workflow catalog", () => {
+  test("предустановленные workflow парсятся и проходят DAG-валидацию", () => {
+    const presetsDir = path.resolve(import.meta.dir, "../../../../../.agents/skills/master/workflows");
+    for (const name of ["sdlc.yaml", "pdlc.yaml", "feature-discovery.yaml"]) {
+      const file = path.join(presetsDir, name);
+      if (!existsSync(file)) continue;
+      const workflow = workflowSchema.parse(YAML.parse(readFileSync(file, "utf8")));
+      expect(validateWorkflowGraph(workflow)).toEqual([]);
+    }
+  });
+
+  test("feature-discovery заканчивается planning с поставкой задач", () => {
+    const file = path.resolve(import.meta.dir, "../../../../../.agents/skills/master/workflows/feature-discovery.yaml");
+    const workflow = workflowSchema.parse(YAML.parse(readFileSync(file, "utf8")));
+    const last = workflow.nodes.at(-1);
+    expect(last?.id).toBe("planning");
+    expect(last?.execution.producesTasks).toBe(true);
+    expect(last?.execution.confirmPlan).toBe(true);
+    // Ручной отбор фич - пауза оператора перед планированием.
+    const features = workflow.nodes.find((node) => node.id === "features");
+    expect(features?.outputControl?.manualReview).toBe(true);
+  });
+
+  test("sdlc ограничивает циклы контролей и сохраняет ручные гейты", () => {
+    const file = path.resolve(import.meta.dir, "../../../../../.agents/skills/master/workflows/sdlc.yaml");
+    const workflow = workflowSchema.parse(YAML.parse(readFileSync(file, "utf8")));
+    for (const node of workflow.nodes) {
+      if (node.inputControl) expect(node.inputControl.maxAttempts).toBeLessThanOrEqual(5);
+      if (node.outputControl) expect(node.outputControl.maxAttempts).toBeLessThanOrEqual(5);
+    }
+    // Ручные гейты - паузы оператора, не автоматические возвраты.
+    for (const id of ["requirements-gate", "design-gate", "release-gate"]) {
+      expect(workflow.nodes.find((node) => node.id === id)?.outputControl?.manualReview).toBe(true);
+    }
+    expect(workflow.nodes.find((node) => node.id === "plan")?.execution.confirmPlan).toBe(true);
+  });
+
   test("наследование переопределяет шаг по id", async () => {
     await writeFile(path.join(root, ".agents", "workflows", "base.yaml"), YAML.stringify(base));
     const child = { ...base, id: "child", title: "Child", extends: "base", nodes: [step("b", { title: "B2", dependsOn: ["a"], inputs: ["a"] })] };
@@ -324,6 +363,19 @@ describe("workflow store", () => {
     store.close();
   });
 
+  test("takeCommands пропускает прогоны в excludeRunIds и оставляет их команды в очереди", () => {
+    const store = new WorkflowStore(root, root);
+    const first = store.createRun({ workspaceDir: root, workflow: base, title: "Первый" });
+    const second = store.createRun({ workspaceDir: root, workflow: base, title: "Второй" });
+    // Порядок постановки: start первого, start второго, retry первого.
+    store.enqueueCommand(first.id, "retry", {});
+    const batch = store.takeCommands(10, { excludeRunIds: new Set([first.id]) });
+    expect(batch.map((command) => command.runId)).toEqual([second.id]);
+    const rest = store.takeCommands(10);
+    expect(rest.map((command) => command.runId)).toEqual([first.id, first.id]);
+    store.close();
+  });
+
   test("fork сохраняет capability policy и resolution исходного snapshot", () => {
     const store = new WorkflowStore(root, root);
     const snapshot = workflowSchema.parse({
@@ -372,6 +424,20 @@ describe("workflow store", () => {
     const usage = { receiptId: "receipt-1", runId: "run", stepId: "a", provider: "codex", inputTokens: 10, outputTokens: 5, raw: {} };
     expect(store.recordUsage(usage)).toBe(true);
     expect(store.recordUsage(usage)).toBe(false);
+    store.close();
+  });
+
+  test("failStaleAttempts закрывает только попытки без финала", () => {
+    const store = new WorkflowStore(root, root);
+    const run = store.createRun({ workspaceDir: root, workflow: base, title: "Висящие попытки" });
+    const open = store.beginAttempt(run.id, "a", { roles: ["worker-role"], section: "исполнение", skills: [], mcp: [] });
+    const done = store.beginAttempt(run.id, "a", { roles: ["worker-role"], section: "план", skills: [], mcp: [] });
+    store.finishAttempt(done, "completed");
+    expect(store.failStaleAttempts(run.id, "worker был перезапущен; результат попытки недостоверен")).toBe(1);
+    const attempts = store.listAttempts(run.id) as Array<{ id: string; status: string; error: string | null }>;
+    expect(attempts.find((row) => row.id === open)?.status).toBe("failed");
+    expect(attempts.find((row) => row.id === open)?.error).toContain("перезапущен");
+    expect(attempts.find((row) => row.id === done)?.status).toBe("completed");
     store.close();
   });
 
@@ -491,6 +557,14 @@ describe("sprints", () => {
     expect(parseTaskList("без блока")).toEqual([]);
   });
 
+  test("sprintRunFailure: невыполненные задачи дают сообщение, полный успех - null", () => {
+    expect(sprintRunFailure({ total: 3, failed: 3 })).toBe("задачи спринта не выполнены: 3 из 3");
+    expect(sprintRunFailure({ total: 2, failed: 1 })).toBe("задачи спринта не выполнены: 1 из 2");
+    expect(sprintRunFailure({ total: 2, failed: 0 })).toBeNull();
+    expect(sprintRunFailure(null)).toBeNull();
+    expect(sprintRunFailure(undefined)).toBeNull();
+  });
+
   test("createSprint помечает задачи лейблом и строит служебный граф", async () => {
     await saveRoadmapItem(root, item("TASK-1", "Первая"));
     await saveRoadmapItem(root, item("TASK-2", "Вторая"));
@@ -512,5 +586,105 @@ describe("sprints", () => {
 
   test("задача не попадает в два спринта", async () => {
     await expect(createSprint(root, { title: "S2", rows: [{ itemId: "TASK-1", workflowId: "base", bucket: 1, order: 0 }] })).rejects.toThrow("уже в спринте");
+  });
+
+  test("шаг worktrees создаёт worktrees под .agents/.worktrees", async () => {
+    const git = (args: string) => execSync("git " + args, { cwd: root, stdio: "ignore" });
+    git("init -q");
+    git("-c user.name=test -c user.email=test@example.test commit -q --allow-empty -m init");
+    await saveRoadmapItem(root, item("TASK-WT", "Задача под worktree"));
+    const sprint = await createSprint(root, { title: "Спринт worktrees", rows: [{ itemId: "TASK-WT", workflowId: "base", bucket: 1, order: 0 }] });
+    const workflow = buildSprintWorkflow(sprint);
+    const store = new WorkflowStore(root, root);
+    const run = store.createRun({ workspaceDir: root, workflow, title: "Спринт", values: { sprint: { id: sprint.id, title: sprint.title, rows: sprint.rows } } });
+    const result = await runSprintNode(workflow.nodes.find((node) => node.id === "worktrees")!, {
+      repoRoot: root, workspaceDir: root, store, run, state: { artifacts: {} }, executeWorkflowCommand: async () => {},
+    });
+    expect(result.completed).toEqual(["worktrees"]);
+    const map = JSON.parse(result.artifacts.worktrees) as Record<string, string>;
+    expect(map["TASK-WT"]).toContain(path.join(".agents", ".worktrees", sprint.id));
+    expect(existsSync(map["TASK-WT"])).toBe(true);
+    store.close();
+  });
+
+  test("sprintView собирает задачи, шаги и статусы прогонов", async () => {
+    await saveWorkflowYaml({ root, fileName: "base-view.yaml", yaml: YAML.stringify(base) });
+    await saveRoadmapItem(root, item("TASK-VW", "Задача для view"));
+    const sprint = await createSprint(root, { title: "Спринт view", rows: [{ itemId: "TASK-VW", workflowId: "base", bucket: 2, order: 0 }] });
+    const store = new WorkflowStore(root, root);
+    const run = store.createRun({ workspaceDir: root, workflow: buildSprintWorkflow(sprint), title: "Спринт", values: { sprint: { id: sprint.id, title: sprint.title, rows: sprint.rows } } });
+    // До старта задачи шаги берутся из workflow каталога.
+    const initial = await sprintView(root, root, store, run);
+    expect(initial?.title).toBe("Спринт view");
+    expect(initial?.tasks[0]?.steps.map((step) => step.id)).toEqual(["a", "b"]);
+    expect(initial?.tasks[0]?.steps.every((step) => step.end === null)).toBe(true);
+    expect(initial?.tasks[0]?.taskRunId).toBeNull();
+    // Старт задачи: шаги из snapshot прогона задачи с конечными событиями.
+    const taskRun = store.createRun({ workspaceDir: root, workflow: base, title: "Задача для view", values: {}, roadmapItemId: "TASK-VW" });
+    store.appendEvent(run.id, "sprint.task-started", { itemId: "TASK-VW", taskRunId: taskRun.id, workflowId: "base", worktree: path.join(root, ".agents", ".worktrees", "view-1") }, { stepId: "bucket-2" });
+    store.appendEvent(taskRun.id, "step.completed", {}, { stepId: "a" });
+    const started = await sprintView(root, root, store, run);
+    expect(started?.tasks[0]?.taskRunId).toBe(taskRun.id);
+    expect(started?.tasks[0]?.taskRunStatus).toBe("queued");
+    expect(started?.tasks[0]?.steps[0]).toEqual({ id: "a", title: "A", end: "step.completed" });
+    expect(started?.tasks[0]?.steps[1]).toEqual({ id: "b", title: "B", end: null });
+    // Финиш задачи: статусы прогона и доски обновлены.
+    store.appendEvent(run.id, "sprint.task-finished", { itemId: "TASK-VW", taskRunId: taskRun.id, status: "completed", boardStatus: "done" }, { stepId: "bucket-2" });
+    const finished = await sprintView(root, root, store, run);
+    expect(finished?.tasks[0]?.taskRunStatus).toBe("completed");
+    expect(finished?.tasks[0]?.boardStatus).toBe("done");
+    // Перезапуск задачи новым прогоном: старое событие финиша не применяется,
+    // статусы берутся из актуального прогона и доски.
+    await saveRoadmapItem(root, { ...item("TASK-VW", "Задача для view"), status: "review", updatedAt: new Date().toISOString() });
+    const retryRun = store.createRun({ workspaceDir: root, workflow: base, title: "Задача для view - повтор", values: {}, roadmapItemId: "TASK-VW" });
+    store.appendEvent(run.id, "sprint.task-started", { itemId: "TASK-VW", taskRunId: retryRun.id, workflowId: "base", worktree: path.join(root, ".agents", ".worktrees", "view-2") }, { stepId: "bucket-2" });
+    store.updateRun(retryRun.id, "waiting", {});
+    const restarted = await sprintView(root, root, store, run);
+    expect(restarted?.tasks[0]?.taskRunId).toBe(retryRun.id);
+    expect(restarted?.tasks[0]?.taskRunStatus).toBe("waiting");
+    expect(restarted?.tasks[0]?.boardStatus).toBe("review");
+    // Прогон без sprint-входа не даёт sprint-view.
+    const plain = store.createRun({ workspaceDir: root, workflow: base, title: "Обычный прогон" });
+    expect(await sprintView(root, root, store, plain)).toBeNull();
+    store.close();
+  });
+
+  test("relaunchRunFromCatalog создаёт прогон из актуальной версии каталога", async () => {
+    await saveWorkflowYaml({ root, fileName: "relaunch-base.yaml", yaml: YAML.stringify({ ...base, title: "Актуальная версия" }) });
+    const store = new WorkflowStore(root, root);
+    // Исходный прогон: замороженный снапшот с другим заголовком, чем в каталоге.
+    const source = store.createRun({ workspaceDir: root, workflow: { ...base, title: "Старый снапшот" }, title: "Задача relaunch", values: { request: "сделать" }, roadmapItemId: "TASK-RL" });
+    store.updateRun(source.id, "failed", { error: "упал" });
+    const relaunched = await relaunchRunFromCatalog({ repoRoot: root, store, source: store.getRun(source.id)!, reason: "обновлён workflow" });
+    expect(relaunched.id).not.toBe(source.id);
+    expect(relaunched.status).toBe("queued");
+    expect(relaunched.snapshot.title).toBe("Актуальная версия");
+    expect(relaunched.input).toEqual({ request: "сделать" });
+    expect(relaunched.roadmapItemId).toBe("TASK-RL");
+    expect(store.listEvents(relaunched.id, 0, 100).some((event) => event.type === "run.relaunched" && event.payload?.sourceRunId === source.id)).toBe(true);
+    // Перезапуск доступен только из терминального статуса.
+    store.updateRun(source.id, "running", {});
+    await expect(relaunchRunFromCatalog({ repoRoot: root, store, source: store.getRun(source.id)!, reason: "повтор" })).rejects.toThrow("терминального статуса");
+    store.close();
+  });
+
+  test("sprintRefForRun определяет спринт прогона задачи", async () => {    await saveRoadmapItem(root, item("TASK-REF", "Задача для ссылки"));
+    const sprint = await createSprint(root, { title: "Спринт ref", rows: [{ itemId: "TASK-REF", workflowId: "base", bucket: 1, order: 0 }] });
+    const store = new WorkflowStore(root, root);
+    const sprintRun = store.createRun({ workspaceDir: root, workflow: buildSprintWorkflow(sprint), title: "Спринт", values: { sprint: { id: sprint.id, title: sprint.title, rows: sprint.rows } } });
+    const taskRun = store.createRun({ workspaceDir: root, workflow: base, title: "Задача для ссылки", values: {}, roadmapItemId: "TASK-REF" });
+    // До старта задачи спринтом спринт не определён.
+    expect(await sprintRefForRun(root, store, taskRun)).toBeNull();
+    store.appendEvent(sprintRun.id, "sprint.task-started", { itemId: "TASK-REF", taskRunId: taskRun.id, workflowId: "base", worktree: path.join(root, ".agents", ".worktrees", "ref-1") }, { stepId: "bucket-1" });
+    const ref = await sprintRefForRun(root, store, taskRun);
+    expect(ref?.id).toBe(sprint.id);
+    expect(ref?.runId).toBe(sprintRun.id);
+    expect(ref?.title).toBe("Спринт ref");
+    // Прогон самого спринта не ссылается на спринт.
+    expect(await sprintRefForRun(root, store, sprintRun)).toBeNull();
+    // Прогон вне спринта не даёт ссылки.
+    const plain = store.createRun({ workspaceDir: root, workflow: base, title: "Обычный прогон" });
+    expect(await sprintRefForRun(root, store, plain)).toBeNull();
+    store.close();
   });
 });

@@ -71,8 +71,10 @@ export function buildInstallSteps(opts: {
   if (useMcpMode) {
     // только регистрация MCP - per-runtime шагов нет
   } else if (def.perRuntime && (def.perRuntime.available?.() ?? true)) {
-    // интеграция-сервис (headroom): один detached-шаг на всех рантаймов
-    if (def.perRuntime.detachedInstall && def.dashboardCommand) {
+    // сервис-инструменты (headroom, agentplane): сервис запускается
+    // программно (startDashboard с пробой порта) - detached-шаг job'а
+    // породил бы дубликат процесса на занятом порту
+    if (def.perRuntime.detachedInstall && def.dashboardCommand && !def.uninstallStopsDashboard) {
       steps.push({ label: `Сервис: ${def.title}`, command: def.dashboardCommand, detached: true });
     }
     for (const runtime of runtimes) {
@@ -84,7 +86,7 @@ export function buildInstallSteps(opts: {
         ...(def.perRuntime.detachedInstall ? { detached: true } : {}),
       });
     }
-  } else if (def.dashboardCommand) {
+  } else if (def.dashboardCommand && !def.uninstallStopsDashboard) {
     // инструмент с долгоживущим сервисом: detached-шаг
     steps.push({ label: `Сервис: ${def.title}`, command: def.dashboardCommand, detached: true });
   }

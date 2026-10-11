@@ -1,0 +1,122 @@
+apiVersion: harness/v1
+kind: Workflow
+id: feature-discovery
+title: Feature Discovery
+description: Поиск фич для продукта - сигналы, потребности, отбор фич оператором и планирование; задачи попадают в backlog.
+inputs:
+  request:
+    type: string
+    required: true
+defaults:
+  privacy: metadata
+  runtime:
+    candidates: [provider:ollama, zcode, cursor]
+nodes:
+  - id: signals
+    title: Сигналы продукта
+    phase: discovery
+    description: Собрать и систематизировать сигналы - обратная связь, поддержка, аналитика, конкуренты.
+    dependsOn: []
+    roles: [user-researcher]
+    inputControl:
+      roles: [product-analyst]
+      prompt: "Проверь запрос пользователя как вход поиска фич. pass - если понятен продукт и где искать сигналы; недостающие источники фиксируй как допущения в задании первого шага, а не возвратом. fail - только если продукт не различим."
+      dor:
+        - продукт и его назначение различимы в запросе
+        - источники сигналов названы или запрос допускает внешние источники
+      maxAttempts: 3
+    execution:
+      prompt: "Собери сигналы продукта: обращения пользователей, отзывы, тикеты поддержки, поведенческая аналитика, сигналы от конкурентов. Сгруппируй по темам; по каждой теме - частота, источник, цитата или ссылка. Для внешних источников используй веб; внутренние данные читай через codebase-research. Структура ответа: 'Темы сигналов', 'Метод сбора', 'Ограничения данных'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
+      confirmPlan: false
+    inputs: [request]
+    outputs: [signals]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: needs
+    title: Потребности и сегменты
+    phase: research
+    description: Превратить сигналы в потребности с частотой, важностью и сегментами аудитории.
+    dependsOn: [signals]
+    roles: [product-analyst]
+    inputControl:
+      roles: [product-analyst]
+      prompt: "Проверь signals как основу анализа потребностей. pass - если темы сигналов читаемы; пробелы данных фиксируй как ограничения в задании исполнителю, а не возвратом."
+      dor:
+        - темы сигналов сгруппированы
+        - по темам есть источники или цитаты
+      maxAttempts: 3
+    execution:
+      prompt: "Преврати сигналы в потребности: формулировка, сегмент, частота, важность (1-5), доказательство (ссылка на тему сигналов). Отдели явные потребности от гипотез. Структура ответа: 'Потребности', 'Сегменты', 'Топ-5 по важности'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - каждая потребность связана с темой сигналов и имеет оценку важности
+        - сегменты названы и различимы
+      ac:
+        - разделы 'Потребности', 'Сегменты', 'Топ-5 по важности' присутствуют
+        - у каждой потребности указаны сегмент и важность
+      manualReview: false
+      maxAttempts: 3
+    inputs: [signals]
+    outputs: [needs]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: features
+    title: Фичи и отбор
+    phase: concept
+    description: Сформулировать фичи - ценность, сценарий, критерии; оператор отбирает фичи вручную.
+    dependsOn: [needs]
+    roles: [product-manager, ux-designer]
+    execution:
+      prompt: "Сформулируй 5-10 фич по потребностям: название, пользовательский сценарий, ценность для сегмента, критерии приёмки, черновые оценки value и effort (1-5). Порядок - по ценности. Новые поиски не нужны - завершай финальным текстом без вызова инструментов. Не создавай файлов."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - каждая фича отвечает конкретной потребности из needs
+        - у каждой фичи есть сценарий, критерии приёмки и оценки value/effort
+      ac:
+        - фич от 5 до 10, порядок по ценности
+        - каждая фича ссылается на потребность и сегмент
+      manualReview: true
+      maxAttempts: 3
+    inputs: [needs]
+    outputs: [features]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }
+  - id: planning
+    title: Planning
+    phase: planning
+    description: "Финальный шаг цикла: спланировать задачи по отобранным фичам; задачи попадают в backlog."
+    dependsOn: [features]
+    roles: [planner]
+    execution:
+      prompt: "Спланируй задачи продукта по отобранным фичам и потребностям. Заверши ответ блоком ```json со списком задач: [{\"title\":\"...\",\"description\":\"...\",\"value\":1-5,\"effort\":1-5}] - value это ценность для продукта, effort это трудозатраты, оба по шкале 1-5. Не выполняй поиски и не вызывай инструменты - план строй из фич и потребностей."
+      confirmPlan: true
+      producesTasks: true
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - каждая задача проверяема и ведёт к принятой фиче
+        - у каждой задачи есть оценка value и effort
+      ac:
+        - ответ завершается блоком ```json со списком задач
+        - у каждой задачи заполнены title, description, value, effort
+      manualReview: false
+      maxAttempts: 3
+    inputs: [features, needs]
+    outputs: [plan, tasks]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: read }

@@ -22,6 +22,40 @@ const SECTION_SUBSECTIONS: Record<RunSectionView, string[]> = {
   output: ["критерии приёмки", "выходной контроль"],
 };
 
+/** Типы событий, означающие живое исполнение секции шага. */
+const ACTIVITY_EVENT_TYPES = new Set(["step.started", "step.progress", "step.tool-call", "step.executed"]);
+
+/** Текущая активность прогона: последняя запущенная секция, рантайм и времена старта/последнего события. */
+export interface RunActivity {
+  stepId: string;
+  section: string;
+  runtime: string;
+  model: string;
+  startedAt: string;
+  lastAt: string;
+}
+
+/** Активность по событиям прогона; null - живых событий нет. */
+export function runActivity(events: RunSectionEvent[]): RunActivity | null {
+  let started: RunSectionEvent | null = null;
+  let last: RunSectionEvent | null = null;
+  for (const event of events) {
+    if (!event.stepId || !ACTIVITY_EVENT_TYPES.has(event.type)) continue;
+    if (event.type === "step.started") started = event;
+    last = event;
+  }
+  if (!last) return null;
+  const start = started ?? last;
+  return {
+    stepId: start.stepId!,
+    section: String(last.payload.section ?? start.payload.section ?? ""),
+    runtime: String(last.payload.runtime ?? start.payload.runtime ?? ""),
+    model: String(last.payload.model ?? start.payload.model ?? ""),
+    startedAt: start.at,
+    lastAt: last.at,
+  };
+}
+
 /** Ключ сопоставления критерия: нижний регистр, без ё и знаков. */
 function criterionKey(value: string): string {
   return value.toLowerCase().replace(/ё/g, "е").replace(/[^\p{L}\p{N}]+/gu, " ").trim();

@@ -67,6 +67,19 @@ export function graphifyOutDir(workspaceDir: string): string {
   return path.join(workspaceDir, GRAPHIFY_OUT);
 }
 
+/** Имя виртуального воркспейса All-in-One (объединённый граф рабочих папок). */
+export const GRAPHIFY_ALL_IN_ONE = "all-in-one";
+
+/**
+ * Каталог воркспейса All-in-One: <repoRoot>/graphify-out/all-in-one -
+ * виртуальный воркспейс внутри корневого graphify-out (артефакты - в
+ * <каталог>/graphify-out, как у папок); корневой graph.json репозитория
+ * (интеграционный граф, pre-commit) не затрагивается.
+ */
+export function graphifyAllInOneDir(repoRoot: string): string {
+  return path.join(repoRoot, GRAPHIFY_OUT, GRAPHIFY_ALL_IN_ONE);
+}
+
 let graphifyCliCache: { at: number; installed: boolean } | null = null;
 
 /** Сброс кеша (тесты). */
@@ -190,6 +203,79 @@ export async function startGraphifyBuild(opts: GraphifyBuildOptions): Promise<Gr
     }).catch(() => undefined);
   }
   return { ok: true, mode, detail: `сборка графа (${mode}) запущена (PID ${child.pid ?? "?"}); лог: ${logFile}` };
+}
+
+export interface GraphifyMergeOptions {
+  /** Пути graph.json воркспейсов-источников (cwd процесса - repoRoot). */
+  sources: string[];
+  /** cwd процесса и база записи задачи. */
+  repoRoot: string;
+  task?: { model: string | null };
+}
+
+/**
+ * Объединить графы воркспейсов в All-in-One: `graphify merge-graphs
+ * <источники> --out <all-in-one>/graphify-out/graph.json` и следом
+ * `graphify cluster-only <all-in-one> --no-label` - cluster-only пишет
+ * graph.html и GRAPH_REPORT.md в <all-in-one>/graphify-out. merge-graphs
+ * принимает два и более графа; один источник - копия его graph.json.
+ * Повторный merge передаёт `--previous` - community id объединённого графа
+ * сохраняются между сборками. merge-graphs помечает узлы атрибутом `repo`
+ * (тег источника). Процесс отвязанный, вывод - в
+ * graphify-out/.console-build.log, pid/режим - в .console-build.json (статус
+ * читает graphifyStatus от каталога All-in-One).
+ */
+export async function startGraphifyMergeBuild(opts: GraphifyMergeOptions): Promise<GraphifyBuildResult> {
+  const { sources, repoRoot } = opts;
+  const dir = graphifyAllInOneDir(repoRoot);
+  const root = graphifyOutDir(dir);
+  let mode: GraphifyBuildMeta["mode"] = "init";
+  try {
+    if ((await stat(path.join(root, "graph.json"))).isFile()) mode = "update";
+  } catch {
+    /* объединённого графа ещё нет - инициализируем */
+  }
+  await mkdir(root, { recursive: true });
+  const logFile = path.join(root, ".console-build.log");
+  const fh = await open(logFile, "a");
+  const out = path.join(root, "graph.json");
+  const mergeArgs = ["merge-graphs", ...sources.map(shellArg), "--out", shellArg(out)];
+  if (mode === "update") mergeArgs.push("--previous", shellArg(out));
+  const chain = [
+    // один источник: merge-graphs не примет - копия graph.json
+    sources.length === 1 ? `cp -f ${shellArg(sources[0])} ${shellArg(out)}` : `graphify ${mergeArgs.join(" ")}`,
+    `graphify cluster-only ${shellArg(dir)} --no-label`,
+  ].join(" && ");
+  const child = spawn("sh", ["-c", chain], {
+    cwd: repoRoot,
+    env: process.env,
+    detached: true,
+    stdio: ["ignore", fh.fd, fh.fd] as ["ignore", number, number],
+  });
+  child.on("error", () => {
+    /* ENOENT: CLI пропал между проверкой и спавном - статус сборки покажет */
+  });
+  child.unref();
+  const meta: GraphifyBuildMeta = { pid: child.pid ?? -1, startedAt: new Date().toISOString(), mode };
+  await writeFile(path.join(root, ".console-build.json"), `${JSON.stringify(meta, null, 2)}\n`, "utf8");
+  await fh.close();
+  if (opts.task) {
+    await saveTaskMeta(repoRoot, {
+      kind: "graphify-build",
+      title: `Сборка All-in-One (${mode})`,
+      executor: { type: "tool", id: "graphify" },
+      model: opts.task.model ?? null,
+      pid: child.pid ?? null,
+      sessionRuntime: null,
+      logFile,
+      detail: `${sources.length} ист. → ${path.relative(repoRoot, dir) || dir}`,
+    }).catch(() => undefined);
+  }
+  return {
+    ok: true,
+    mode,
+    detail: `сборка All-in-One (${mode}) запущена (PID ${child.pid ?? "?"}); лог: ${logFile}`,
+  };
 }
 
 /* ---------------------------------- статус ---------------------------------- */

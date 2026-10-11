@@ -604,7 +604,7 @@ export function Segmented<T extends string>({
   ariaLabel,
   className,
 }: {
-  options: readonly { key: T; label: string; count?: number; countTone?: "neutral" | "danger" }[];
+  options: readonly { key: T; label: string; count?: number; countTone?: "neutral" | "danger"; title?: string }[];
   value: T;
   onChange: (key: T) => void;
   ariaLabel?: string;
@@ -623,6 +623,7 @@ export function Segmented<T extends string>({
             key={option.key}
             type="button"
             aria-pressed={value === option.key}
+            title={option.title}
             onClick={() => onChange(option.key)}
             className={cx(
               "flex shrink-0 items-center gap-1 whitespace-nowrap px-2 py-1 text-xs transition-colors",

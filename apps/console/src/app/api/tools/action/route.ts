@@ -1,7 +1,7 @@
 import { homedir } from "node:os";
 import { NextResponse } from "next/server";
 import { invalidateDashboardCache } from "@/core/cache";
-import { stopDashboard } from "@/core/dashboards";
+import { startDashboard, stopDashboard } from "@/core/dashboards";
 import { syncMcp } from "@/core/mcp/sync";
 import { buildInstallSteps, buildInitSteps, buildUninstallSteps, cleanupAfterUninstall, sanitizeRuntimes, sanitizeToolParams } from "@/core/toolActions";
 import { startToolJob, type ToolJobStep } from "@/core/toolJobs";
@@ -86,6 +86,15 @@ export async function POST(request: Request) {
     invalidateDashboardCache();
   };
 
+  // Сервис-инструменты (headroom, agentplane): сервис запускается/останавливается
+  // программно (startDashboard/stopDashboard с пробой порта), а не detached-шагами job'а.
+  const serviceDashboard = def.uninstallStopsDashboard === true && Boolean(def.dashboard);
+  const startService = async (): Promise<string> => {
+    if (!serviceDashboard) return "";
+    const result = await startDashboard(ctx.repoRoot, def.id);
+    return result.ok ? result.detail : `сервис не запущен: ${result.error}`;
+  };
+
   if (action === "install" || action === "reinstall") {
     const record = ctx.state.tools.installed[def.id];
     const params = action === "reinstall" && record ? sanitizeToolParams(record.params) : sanitizeToolParams(body?.params);
@@ -104,7 +113,8 @@ export async function POST(request: Request) {
       // внешних команд нет (CLI установлен, интеграции не требуются) -
       // синхронная регистрация MCP/записи без job'а
       await finalize({ runtimes, params, enabled: true, action });
-      return NextResponse.json({ ok: true, sync: true });
+      const service = await startService();
+      return NextResponse.json({ ok: true, sync: true, ...(service ? { service } : {}) });
     }
     const job = startToolJob({
       toolId: def.id,
@@ -113,7 +123,10 @@ export async function POST(request: Request) {
       defaultCwd: ctx.repoRoot,
       onDone: (code) => {
         if (code !== 0) return;
-        void finalize({ runtimes, params, enabled: true, action });
+        void (async () => {
+          await finalize({ runtimes, params, enabled: true, action });
+          await startService();
+        })();
       },
     });
     if ("error" in job) return NextResponse.json({ error: job.error }, { status: 400 });
@@ -257,6 +270,21 @@ export async function POST(request: Request) {
       : ({ ok: true as const, steps: buildUninstallSteps({ def, runtimes, params }) });
     if (!built.ok) return NextResponse.json({ error: built.error }, { status: 400 });
     if (body?.dryRun) return NextResponse.json({ ok: true, steps: built.steps });
+    if (built.steps.length === 0) {
+      // исполнять нечего: сервис-инструменты (headroom, agentplane)
+      // переключаются программно, без job'а
+      await finalize({ runtimes, params, enabled, action: "toggle" });
+      if (!enabled && serviceDashboard) {
+        const stopped = await stopDashboard(ctx.repoRoot, def.id);
+        await appendUsageEvent(ctx.repoRoot, { tool: def.id, action: "toggle", detail: stopped.detail });
+      } else if (enabled) {
+        const service = await startService();
+        if (service) {
+          await appendUsageEvent(ctx.repoRoot, { tool: def.id, action: "toggle", detail: service });
+        }
+      }
+      return NextResponse.json({ ok: true, sync: true });
+    }
     const job = startToolJob({
       toolId: def.id,
       action: "toggle",
@@ -264,7 +292,10 @@ export async function POST(request: Request) {
       defaultCwd: ctx.repoRoot,
       onDone: (code) => {
         if (code !== 0) return;
-        void finalize({ runtimes, params, enabled, action: "toggle" });
+        void (async () => {
+          await finalize({ runtimes, params, enabled, action: "toggle" });
+          if (enabled) await startService();
+        })();
       },
     });
     if ("error" in job) return NextResponse.json({ error: job.error }, { status: 400 });

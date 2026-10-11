@@ -80,7 +80,7 @@
     },
     "deepwiki": {
       "type": "http",
-      "url": "https://mcp.deepwiki.com/"
+      "url": "https://mcp.deepwiki.com/mcp"
     },
     "excalidraw": {
       "type": "http",

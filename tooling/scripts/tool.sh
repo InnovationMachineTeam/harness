@@ -87,6 +87,8 @@ case "$cmd" in
       state="$(env_state "$id" || true)"
       if [ -z "$state" ]; then
         if has_bin "$id"; then state="on (по PATH)"; else state="missing"; fi
+      elif [ "$state" = "on" ] && ! has_bin "$id"; then
+        state="on (бинарь отсутствует)"
       fi
       printf '%-11s %s\n' "$id" "$state"
     done

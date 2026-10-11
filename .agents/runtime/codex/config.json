@@ -53,7 +53,7 @@
     },
     "shell": "policy-guarded",
     "mcp": [
-      ".mcp.json"
+      "~/.codex/config.toml"
     ],
     "notes": "Sandbox and approval policy live in the user's ~/.codex/config.toml, not in this repository. Structural changes to roles, agents or skills always need explicit user approval, in every mode."
   }

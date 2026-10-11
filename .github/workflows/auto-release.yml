@@ -1,0 +1,48 @@
+name: Auto release
+
+# Изменение VERSION в main создаёт тег v<версия> и GitHub Release
+# с автоматическими заметками; существующий релиз не пересоздаётся.
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - name: Версия из VERSION
+        id: version
+        run: echo "version=$(tr -d '[:space:]' < VERSION)" >> "$GITHUB_OUTPUT"
+      - name: Проверка существования релиза
+        id: exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v${{ steps.version.outputs.version }}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Смоук-проверка CLI
+        if: steps.exists.outputs.skip != 'true'
+        run: |
+          bun .guardrails/src/cli.ts check
+          bun .guardrails/src/cli.ts context >/dev/null
+          bun tooling/harness/src/cli.ts validate
+      - name: GitHub Release
+        if: steps.exists.outputs.skip != 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true

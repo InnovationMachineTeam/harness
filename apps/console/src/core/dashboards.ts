@@ -145,11 +145,24 @@ export async function startDashboard(repoRoot: string, toolId: string): Promise<
       await fh.close();
       return { ok: false, error: `нет команды запуска дашборда для ${toolId}` };
   }
-  child.on("error", () => {
-    /* ENOENT - состояние покажет проба порта */
-  });
   child.unref();
   await fh.close();
+
+  // Окно на немедленную ошибку спавна (ENOENT - бинаря нет в PATH): запись
+  // pid пишем только после того, как процесс не упал сразу.
+  const spawnError = await new Promise<Error | null>((resolve) => {
+    const timer = setTimeout(() => resolve(null), 400);
+    child.once("error", (err) => {
+      clearTimeout(timer);
+      resolve(err instanceof Error ? err : new Error(String(err)));
+    });
+  });
+  if (spawnError) {
+    const map = await readDashboards(repoRoot);
+    delete map[toolId];
+    await writeDashboards(repoRoot, map);
+    return { ok: false, error: `${shown}: ${spawnError.message}` };
+  }
 
   const map = await readDashboards(repoRoot);
   map[toolId] = { pid: child.pid ?? -1, startedAt: new Date().toISOString() };
@@ -228,4 +241,14 @@ export async function dashboardManagedPid(repoRoot: string, toolId: string): Pro
   const record = (await readDashboards(repoRoot))[toolId];
   if (!record) return null;
   return processAlive(record.pid) ? record.pid : null;
+}
+
+/** Все живые управляемые PID: pid → toolId (инвентаризация процессов консоли). */
+export async function managedDashboardPids(repoRoot: string): Promise<Map<number, string>> {
+  const map = await readDashboards(repoRoot);
+  const result = new Map<number, string>();
+  for (const [toolId, record] of Object.entries(map)) {
+    if (record.pid > 1 && processAlive(record.pid)) result.set(record.pid, toolId);
+  }
+  return result;
 }

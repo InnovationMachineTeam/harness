@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { listProcesses, verifyPidFresh } from "@/lib/signals/processes";
+import { listProcesses, verifyPidWhere, type PsInfoFull } from "@/lib/signals/processes";
 
 export type { PsInfoFull } from "@/lib/signals/processes";
 export { parsePsLine, resetPsCache } from "@/lib/signals/processes";
@@ -26,7 +26,12 @@ function pidAlive(pid: number): boolean {
  * Перед сигналом перепроверяем по свежему ps, что PID всё ещё принадлежит рантайму.
  */
 export async function stopProcess(pid: number, pattern: RegExp): Promise<ActionResult> {
-  const info = verifyPidFresh(pid, pattern);
+  return stopProcessWhere(pid, (info) => pattern.test(info.command));
+}
+
+/** Останов по произвольному предикату принадлежности (инвентаризация процессов). */
+export async function stopProcessWhere(pid: number, matches: (info: PsInfoFull) => boolean): Promise<ActionResult> {
+  const info = verifyPidWhere(pid, matches);
   if (!info) {
     return { ok: false, action: "stop", pid, detail: "процесс не найден или больше не относится к рантайму" };
   }
@@ -61,7 +66,7 @@ export async function stopProcess(pid: number, pattern: RegExp): Promise<ActionR
  * Для CLI-процессов перезапуск не поддерживается - их запускает пользователь.
  */
 export async function restartProcess(pid: number, pattern: RegExp): Promise<ActionResult> {
-  const info = verifyPidFresh(pid, pattern);
+  const info = verifyPidWhere(pid, (candidate) => pattern.test(candidate.command));
   if (!info) {
     return { ok: false, action: "restart", pid, detail: "процесс не найден или больше не относится к рантайму" };
   }

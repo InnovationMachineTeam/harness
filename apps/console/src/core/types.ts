@@ -6,6 +6,21 @@
 export type ActivityStatus = "active-now" | "recently-active" | "inactive" | "disabled" | "unknown";
 export type ActivityScope = "repo" | "machine";
 
+/**
+ * Страна юрисдикции вендора рантайма или LLM-провайдера. "world" - все остальные
+ * страны, кроме перечисленных (локальные сервисы на машине пользователя - тоже "world").
+ */
+export type VendorCountry = "us" | "eu" | "ru" | "cn" | "world";
+
+/** Emoji-флаг и подпись страны для фильтра и карточек. */
+export const VENDOR_COUNTRY_META: Record<VendorCountry, { flag: string; label: string }> = {
+  us: { flag: "🇺🇸", label: "US" },
+  eu: { flag: "🇪🇺", label: "EU" },
+  ru: { flag: "🇷🇺", label: "RU" },
+  cn: { flag: "🇨🇳", label: "CN" },
+  world: { flag: "🌍", label: "World" },
+};
+
 /** Единичный след активности: когда, в каком масштабе и откуда он виден. */
 export interface ActivitySignal {
   at: Date;
@@ -74,6 +89,8 @@ export interface RuntimeAdapter {
   /** Совпадает с именем каталога в .agents/runtime/<id>/. */
   id: string;
   displayName: string;
+  /** Страна юрисдикции вендора рантайма; отсутствие - "world". */
+  country?: VendorCountry;
   /** Матчер строки ps для детектора запущенных процессов. */
   processPattern?: RegExp;
   /**
@@ -228,6 +245,8 @@ export interface RuntimeSnapshotDTO {
   displayName: string;
   adapterKind: "signals" | "generic";
   status: ActivityStatus;
+  /** Страна юрисдикции вендора (фильтр карточек рантаймов). */
+  country: VendorCountry;
   vendor: VendorCard | null;
   signals: { at: string; scope: ActivityScope; source: string }[];
   processes: ProcessInfo[];

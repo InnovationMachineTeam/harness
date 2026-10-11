@@ -1,0 +1,26 @@
+apiVersion: harness/v1
+kind: RoadmapItem
+id: TASK-17CE4EB5310EB15E
+title: Бейдж исполнителя хода в чате и на карточке задачи
+description: "Бейдж runtime + модель в каждом ходе чата и на карточке задачи без действия пользователя; клик раскрывает runtime, модель, sessionId; недоступные метаданные — явное состояние unknown; смена исполнителя внутри диалога помечена в следующем ходе; доступность: aria-метки, клавиатурная навигация, контраст. Трассировка: Ф1→N1←T1 (S3 — основной, 25 model-вопросов из 304 промпт-задач выборки; S1 — проверка идентичности без расхода хода). Проверка (DoD): AC Ф1 1–5 проходят на смоук-диалоге; сценарий S1 «какая у тебя модель» закрывается UI без промпта; метрика AC6 (доля model-вопросов ниже базовой 25/304) замеряется после пересчёта baseline. Зависимости: общий слой метаданных."
+type: task
+status: inbox
+priority: normal
+estimate:
+  value: 5
+  effort: 1
+labels:
+  - backlog
+  - feature-discovery
+dependencies: []
+acceptanceCriteria: []
+workflowId: feature-discovery
+runIds:
+  - run-1791492180504-9e4d95d5
+taskRefs: []
+provenance:
+  source: workflow-plan
+  runId: run-1791492180504-9e4d95d5
+  fingerprint: 17ce4eb5310eb15e
+createdAt: 2026-10-09T19:46:52.833Z
+updatedAt: 2026-10-09T19:46:52.833Z

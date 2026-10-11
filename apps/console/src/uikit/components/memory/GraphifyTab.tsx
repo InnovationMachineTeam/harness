@@ -42,17 +42,31 @@ interface GraphifyData {
   folders: GraphifyFolder[];
   /** Обязательная рабочая папка (write mode) - единственная цель сборки. */
   mandatoryWorkspace?: string;
+  /** Объединённый граф собранных папок (виртуальный воркспейс graphify-out/all-in-one). */
+  allInOne?: GraphifyAllInOne;
 }
 
-/** Открытый просмотр: граф (iframe публикации) или статьи wiki папки. */
-type TabView = { mode: "graph" | "wiki"; dir: string } | null;
+interface GraphifyAllInOne {
+  /** Воркспейс All-in-One относительно корня репозитория. */
+  dir: string;
+  /** Каталог артефактов относительно корня репозитория (<dir>/graphify-out). */
+  out: string;
+  graph: GraphifyFolderStatus;
+  wiki: GraphifyWikiStatus;
+  published: { exists: boolean; generatedAt: string | null; slug: string };
+}
+
+/** Открытый просмотр: граф или статьи wiki папки, либо All-in-One. */
+type TabView = { mode: "graph" | "wiki"; dir: string } | { mode: "merge-graph" | "merge-wiki" } | null;
 
 /**
  * Вкладка Graphify: графы знаний рабочих папок в хранилище
  * ./graphify/<имя>/graphify-out (graphify extract + cluster-only - отвязанная
  * сборка с graph.html), wiki из графа (graphify export wiki) с просмотром
  * статей, встроенный graph.html (публикация в public/graphify, iframe с того
- * же origin; vis-network грузится с CDN unpkg).
+ * же origin; vis-network грузится с CDN unpkg). Блок All-in-One вверху
+ * объединяет собранные графы папок (graphify merge-graphs + cluster-only) в
+ * graphify-out/all-in-one и собирает из него единую wiki.
  */
 export function GraphifyTab() {
   const [data, setData] = useState<GraphifyData | null>(null);
@@ -78,12 +92,14 @@ export function GraphifyTab() {
   }, [load]);
 
   const anyRunning =
-    data?.folders.some((folder) => folder.enabled && (folder.graph.build.running || folder.wiki.build.running)) ?? false;
+    data?.folders.some((folder) => folder.enabled && (folder.graph.build.running || folder.wiki.build.running)) ??
+    false;
+  const mergeRunning = data?.allInOne ? data.allInOne.graph.build.running || data.allInOne.wiki.build.running : false;
   useEffect(() => {
-    if (!anyRunning) return;
+    if (!anyRunning && !mergeRunning) return;
     const id = setInterval(() => void load(), 4000);
     return () => clearInterval(id);
-  }, [anyRunning, load]);
+  }, [anyRunning, mergeRunning, load]);
 
   const build = async (dir: string) => {
     setBusy(dir);
@@ -219,6 +235,50 @@ export function GraphifyTab() {
     setSelected(null);
   };
 
+  /** Объединить собранные графы папок в All-in-One (merge-graphs + cluster-only). */
+  const merge = async () => {
+    setBusy("all-in-one");
+    setActionError(null);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/memory/graphify/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const json = (await res.json()) as { detail?: string; error?: string };
+      if (!res.ok) setActionError(json.error ?? "не удалось запустить сборку All-in-One");
+      else setNotice(json.detail ?? "сборка All-in-One запущена");
+      await load();
+    } catch {
+      setActionError("не удалось запустить сборку All-in-One");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  /** Единая wiki из объединённого графа (graphify export wiki). */
+  const mergeWiki = async () => {
+    setBusy("all-in-one:wiki");
+    setActionError(null);
+    setNotice(null);
+    try {
+      const res = await fetch("/api/memory/graphify/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wiki: true }),
+      });
+      const json = (await res.json()) as { detail?: string; error?: string };
+      if (!res.ok) setActionError(json.error ?? "не удалось запустить сборку wiki All-in-One");
+      else setNotice(json.detail ?? "сборка wiki All-in-One запущена");
+      await load();
+    } catch {
+      setActionError("не удалось запустить сборку wiki All-in-One");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (loadError) return <Notice tone="error">{loadError}</Notice>;
   if (!data) return <Loading />;
 
@@ -244,7 +304,9 @@ export function GraphifyTab() {
     );
   }
 
-  const openFolder = view ? enabled.find((f) => f.dir === view.dir) ?? null : null;
+  const aio = data.allInOne;
+  const mergeSources = enabled.filter((folder) => folder.graph.exists);
+  const openFolder = view && "dir" in view ? enabled.find((f) => f.dir === view.dir) ?? null : null;
 
   return (
     <div className="space-y-4">
@@ -307,8 +369,148 @@ export function GraphifyTab() {
             </EmptyState>
           )}
         </Panel>
+      ) : view?.mode === "merge-graph" && aio ? (
+        <Panel
+          title="Граф знаний · All-in-One"
+          actions={
+            <>
+              {aio.graph.nodes !== null ? (
+                <Chip tone="sky">
+                  {aio.graph.nodes} узл. · {aio.graph.edges ?? "?"} рёб.
+                </Chip>
+              ) : null}
+              <Button size="xs" variant="neutral" onClick={() => void load()} title="Переопубликовать graph.html и перезагрузить">
+                Обновить
+              </Button>
+              <Button size="xs" variant="ghost" onClick={() => openView(null)}>
+                К папкам
+              </Button>
+            </>
+          }
+        >
+          {aio.published.exists ? (
+            <>
+              <iframe
+                key={aio.published.generatedAt ?? "empty"}
+                src={`/graphify/${aio.published.slug}/index.html`}
+                title="Граф знаний All-in-One"
+                sandbox="allow-scripts allow-same-origin"
+                className="h-[calc(100vh-20rem)] w-full rounded-lg border border-line"
+              />
+              <p className="mt-2 text-[11px] text-fg-faint">
+                Объединение собранных графов папок - узлы несут атрибут источника (repo). Библиотека графа (vis-network)
+                загружается с unpkg - для просмотра нужен интернет.
+              </p>
+            </>
+          ) : (
+            <EmptyState>Граф All-in-One не опубликован - кнопка "Собрать" в списке папок соберёт и опубликует его.</EmptyState>
+          )}
+        </Panel>
+      ) : view?.mode === "merge-wiki" && aio ? (
+        <MergeWikiView
+          wiki={aio.wiki}
+          out={aio.out}
+          busy={busy}
+          cliInstalled={data.cli.installed}
+          selected={selected}
+          onSelect={setSelected}
+          onRebuild={() => void mergeWiki()}
+          onBack={() => openView(null)}
+        />
       ) : (
         <div className="space-y-3">
+          {aio ? (
+            <Panel
+              as="article"
+              title="All-in-One"
+              actions={
+                <>
+                  <Chip tone="muted" title="собранные графы папок - источники объединения">
+                    {mergeSources.length} ист.
+                  </Chip>
+                  {aio.graph.build.running ? (
+                    <Chip tone="sky">сборка…</Chip>
+                  ) : aio.graph.exists ? (
+                    <Chip tone="emerald" title={aio.graph.lastBuild ? `собран: ${aio.graph.lastBuild}` : undefined}>
+                      {aio.graph.nodes !== null ? `${aio.graph.nodes} узл. · ${aio.graph.edges ?? "?"} рёб.` : "готов"}
+                    </Chip>
+                  ) : (
+                    <Chip tone="dashed">не собран</Chip>
+                  )}
+                  {aio.wiki.build.running ? (
+                    <Chip tone="sky">wiki…</Chip>
+                  ) : aio.wiki.exists ? (
+                    <Chip tone="emerald" title={aio.wiki.lastBuild ? `wiki собрана: ${aio.wiki.lastBuild}` : undefined}>
+                      wiki: {aio.wiki.articles ?? "?"} ст.
+                    </Chip>
+                  ) : null}
+                  {aio.graph.exists && aio.published.exists ? <Chip tone="muted">граф опубликован</Chip> : null}
+                  {aio.published.exists ? (
+                    <Button
+                      size="xs"
+                      variant="ghostDim"
+                      onClick={() => openView({ mode: "merge-graph" })}
+                      title="Открыть объединённый граф (iframe, та же публикация)"
+                    >
+                      Граф знаний
+                    </Button>
+                  ) : null}
+                  {aio.wiki.exists ? (
+                    <Button
+                      size="xs"
+                      variant="ghostDim"
+                      onClick={() => openView({ mode: "merge-wiki" })}
+                      title="Читать единую wiki по всем папкам"
+                    >
+                      Статьи wiki
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="xs"
+                    variant={aio.graph.exists ? "neutral" : "accent"}
+                    disabled={!data.cli.installed || mergeSources.length === 0 || aio.graph.build.running || aio.wiki.build.running}
+                    title="Объединение собранных графов папок: graphify merge-graphs … + cluster-only (локально, без LLM); корневой граф репозитория не затрагивается"
+                    onClick={() => void merge()}
+                  >
+                    {aio.graph.exists ? "Обновить" : "Собрать"}
+                  </Button>
+                  {aio.graph.exists ? (
+                    <Button
+                      size="xs"
+                      variant={aio.wiki.exists ? "neutral" : "accent"}
+                      disabled={!data.cli.installed || aio.graph.build.running || aio.wiki.build.running}
+                      title="Единая wiki из объединённого графа: graphify export wiki - статьи markdown в graphify-out/all-in-one/graphify-out/wiki/"
+                      onClick={() => void mergeWiki()}
+                    >
+                      {aio.wiki.exists ? "Wiki заново" : "Wiki"}
+                    </Button>
+                  ) : null}
+                </>
+              }
+            >
+              <p className="font-mono text-[11px] text-fg-faint" title="объединение графов папок в один граф">
+                graphify merge-graphs … --out {aio.out}/graph.json
+              </p>
+              {mergeSources.length > 0 ? (
+                <p className="mt-0.5 text-[11px] text-fg-faint">
+                  Источники: {mergeSources.map((f) => `${f.name} (${f.graph.nodes ?? "?"} узл.)`).join(", ")}
+                  {enabled.length > mergeSources.length
+                    ? `; нет графа: ${enabled.filter((f) => !f.graph.exists).map((f) => f.name).join(", ")} - пропущены`
+                    : ""}
+                </p>
+              ) : (
+                <p className="mt-0.5 text-xs text-fg-faint">
+                  Нет собранных графов папок - соберите граф хотя бы одной папки кнопкой "Собрать".
+                </p>
+              )}
+              {aio.graph.build.running || aio.wiki.build.running ? (
+                <pre className="mt-2 max-h-24 overflow-hidden whitespace-pre-wrap break-words rounded border border-line bg-page p-2 font-mono text-[10px] leading-snug text-fg-faint">
+                  {(aio.graph.build.running ? aio.graph.build.logTail : aio.wiki.build.logTail).trim() ||
+                    "graphify запускается…"}
+                </pre>
+              ) : null}
+            </Panel>
+          ) : null}
           {enabled.map((folder) => {
             const { graph, wiki, published } = folder;
             return (
@@ -495,6 +697,66 @@ function WikiView({
             nodes: folder.wiki.tree,
           },
         ]}
+        selected={selected}
+        onSelect={onSelect}
+      />
+    </Panel>
+  );
+}
+
+/** Просмотр единой wiki All-in-One: дерево слева, markdown справа. */
+function MergeWikiView({
+  wiki,
+  out,
+  busy,
+  cliInstalled,
+  selected,
+  onSelect,
+  onRebuild,
+  onBack,
+}: {
+  wiki: GraphifyWikiStatus;
+  out: string;
+  busy: string | null;
+  cliInstalled: boolean;
+  selected: string | null;
+  onSelect: (path: string) => void;
+  onRebuild: () => void;
+  onBack: () => void;
+}) {
+  // авто-выбор index.md - точки входа wiki
+  useEffect(() => {
+    if (selected) return;
+    const pick = findFileByName(wiki.tree, "index.md") ?? findFirstFile(wiki.tree);
+    if (pick) onSelect(pick);
+  }, [selected, wiki.tree, onSelect]);
+
+  return (
+    <Panel
+      title="Wiki Graphify · All-in-One"
+      actions={
+        <>
+          {wiki.build.running ? (
+            <Chip tone="sky">сборка…</Chip>
+          ) : (
+            <Chip tone="emerald">{wiki.articles ?? "?"} ст.</Chip>
+          )}
+          <Button
+            size="xs"
+            variant="neutral"
+            disabled={!cliInstalled || busy === "all-in-one:wiki" || wiki.build.running}
+            onClick={onRebuild}
+          >
+            Пересобрать
+          </Button>
+          <Button size="xs" variant="ghost" onClick={onBack}>
+            К папкам
+          </Button>
+        </>
+      }
+    >
+      <FileBrowser
+        groups={[{ key: "all-in-one", label: "All-in-One", hint: `${out}/wiki`, nodes: wiki.tree }]}
         selected={selected}
         onSelect={onSelect}
       />

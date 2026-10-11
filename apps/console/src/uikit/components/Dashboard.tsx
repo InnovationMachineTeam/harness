@@ -6,6 +6,7 @@ import type { ActivityStatus, DashboardDataDTO } from "@/core/types";
 import { relativeTime, WINDOW_OPTIONS } from "@/lib/format";
 import { useConsoleStore } from "@/store/console";
 import { Button, PageHeader, Segmented, Tabs } from "@/uikit";
+import { COUNTRY_FILTERS, matchesCountry, type CountryFilter } from "./countries";
 import { ProvidersPanel } from "./providers/ProvidersPanel";
 import { RuntimeCard } from "./RuntimeCard";
 
@@ -39,6 +40,7 @@ export function Dashboard({ initial }: { initial: DashboardDataDTO }) {
   const [nowMs, setNowMs] = useState(() => Date.now());
   const [tab, setTab] = useState<MainTab>("runtimes");
   const [providersActive, setProvidersActive] = useState(0);
+  const [countryFilter, setCountryFilter] = useState<CountryFilter>("all");
   const windowKey = useConsoleStore((s) => s.windowKey);
   const auto = useConsoleStore((s) => s.autoRefresh);
   const defaultRuntime = useConsoleStore((s) => s.defaultRuntime);
@@ -78,6 +80,17 @@ export function Dashboard({ initial }: { initial: DashboardDataDTO }) {
       unknown: 0,
     };
     for (const r of data.runtimes) acc[r.status] += 1;
+    return acc;
+  }, [data]);
+
+  // фильтр страны: видимые карточки и счётчик каждой страны (независимые от выбора)
+  const visibleRuntimes = useMemo(
+    () => data.runtimes.filter((r) => matchesCountry(r.country, countryFilter)),
+    [data, countryFilter],
+  );
+  const countryCounts = useMemo(() => {
+    const acc: Record<CountryFilter, number> = { all: data.runtimes.length, us: 0, eu: 0, ru: 0, cn: 0, world: 0 };
+    for (const r of data.runtimes) acc[r.country ?? "world"] += 1;
     return acc;
   }, [data]);
 
@@ -146,21 +159,38 @@ export function Dashboard({ initial }: { initial: DashboardDataDTO }) {
         className="mb-6 border-b border-line/60 pb-2"
       />
 
+      {tab === "runtimes" ? (
+        <div className="mb-4 flex">
+          <Segmented
+            options={COUNTRY_FILTERS.map((f) => ({ key: f.key, label: f.label, title: f.title, count: countryCounts[f.key] }))}
+            value={countryFilter}
+            onChange={setCountryFilter}
+            ariaLabel="Фильтр рантаймов по стране вендора"
+          />
+        </div>
+      ) : null}
+
       {tab === "providers" ? (
         <ProvidersPanel onCounts={setProvidersActive} />
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {data.runtimes.map((r) => (
+            {visibleRuntimes.map((r) => (
               <RuntimeCard key={r.id} snapshot={r} nowMs={nowMs} isDefault={defaultRuntime === r.id} />
             ))}
           </div>
 
-          {data.runtimes.length === 0 ? (
-            <p className="rounded-xl border border-dashed border-line p-8 text-center text-sm text-fg-faint">
-              Рантаймы не обнаружены: ожидается <span className="font-mono">.agents/runtime/&lt;vendor&gt;/config.json</span>{" "}
-              в корне репозитория.
-            </p>
+          {visibleRuntimes.length === 0 ? (
+            countryFilter === "all" ? (
+              <p className="rounded-xl border border-dashed border-line p-8 text-center text-sm text-fg-faint">
+                Рантаймы не обнаружены: ожидается <span className="font-mono">.agents/runtime/&lt;vendor&gt;/config.json</span>{" "}
+                в корне репозитория.
+              </p>
+            ) : (
+              <p className="rounded-xl border border-dashed border-line p-8 text-center text-sm text-fg-faint">
+                В выбранной стране рантаймов нет - выберите другое значение фильтра.
+              </p>
+            )
           ) : null}
 
           <footer className="mt-10 border-t border-line/60 pt-4 text-[11px] leading-relaxed text-fg-faint">

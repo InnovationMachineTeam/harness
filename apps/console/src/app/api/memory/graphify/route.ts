@@ -2,7 +2,9 @@ import path from "node:path";
 import { NextResponse } from "next/server";
 import { appendUsageEvent } from "@/core/toolsUsage";
 import {
+  graphifyAllInOneDir,
   graphifyCliInstalled,
+  graphifyOutDir,
   graphifyPublishStatus,
   graphifyStatus,
   graphifyStoreRoot,
@@ -24,7 +26,8 @@ export const dynamic = "force-dynamic";
  * собирается в хранилище воркспейсов <repoRoot>/graphify/<имя>/graphify-out
  * (имя - basename папки), публикация graph.html - в public/graphify/<slug>/
  * (статика Next, iframe). Для собранной wiki отдаётся дерево статей
- * (просмотр во вкладке Graphify).
+ * (просмотр во вкладке Graphify). Поле allInOne - статус объединённого графа
+ * собранных папок (виртуальный воркспейс graphify-out/all-in-one).
  */
 export async function GET() {
   const { state, repoRoot } = await serverContext();
@@ -59,12 +62,35 @@ export async function GET() {
       }
     }
   }
+  // All-in-One: объединённый граф собранных папок (виртуальный воркспейс
+  // graphify-out/all-in-one) - тот же статус/публикация/wiki, что у папок
+  const allInOneDir = graphifyAllInOneDir(repoRoot);
+  const allInOneGraph = await graphifyStatus(fsSignals, allInOneDir);
+  const allInOneWiki = {
+    ...(await graphifyWikiStatus(fsSignals, allInOneDir)),
+    tree: await graphifyWikiTree(fsSignals, allInOneDir),
+  };
+  let allInOnePublished = await graphifyPublishStatus(fsSignals, allInOneDir, publicRoot);
+  if (allInOneGraph.exists) {
+    const synced = await syncGraphifyPublic(allInOneDir, publicRoot);
+    if (synced) {
+      publishedSlugs.push(synced.slug);
+      allInOnePublished = { exists: true, ...synced };
+    }
+  }
   await pruneGraphifyPublic(publicRoot, publishedSlugs);
   return NextResponse.json({
     cli: { installed: graphifyCliInstalled() },
     store: path.relative(repoRoot, graphifyStoreRoot(repoRoot)) || graphifyStoreRoot(repoRoot),
     folders,
     mandatoryWorkspace: mandatoryWorkspace(state),
+    allInOne: {
+      dir: path.relative(repoRoot, allInOneDir) || allInOneDir,
+      out: path.relative(repoRoot, graphifyOutDir(allInOneDir)) || graphifyOutDir(allInOneDir),
+      graph: allInOneGraph,
+      wiki: allInOneWiki,
+      published: allInOnePublished,
+    },
   });
 }
 

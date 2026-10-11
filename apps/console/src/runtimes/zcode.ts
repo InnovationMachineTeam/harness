@@ -14,6 +14,7 @@ export const ZCODE_CLI = process.env.ZCODE_CLI ?? "/Applications/ZCode.app/Conte
 export const zcodeAdapter: RuntimeAdapter = {
   id: "zcode",
   displayName: "ZCode",
+  country: "cn",
   processPattern: /ZCode\.app|zcode-cli/,
   isInstalled: (ctx) => anyExists([join(ctx.home, ".zcode")]),
 

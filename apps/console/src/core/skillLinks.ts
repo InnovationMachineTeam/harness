@@ -1,4 +1,4 @@
-import { lstat, mkdir, readdir, realpath, rename, rm, stat, symlink, unlink } from "node:fs/promises";
+import { copyFile, link, lstat, mkdir, readdir, readFile, realpath, rename, rm, rmdir, stat, symlink, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { RUNTIME_SKILL_DIRS } from "./skillRegistry";
 import { collectHarnessSkills, skillEffective, type ConsoleStateLike } from "./skills";
@@ -8,9 +8,10 @@ import { fsSignals } from "@/lib/signals/fs";
 /**
  * Политика размещения навыков: каноническое хранилище - .agents/skills
  * (публичные - в корне, internal - master/skills, design - design/skills);
- * каталоги нативных навыков рантаймов (RUNTIME_SKILL_DIRS) содержат только
- * симлинки на канонические каталоги. Kimi симлинков не получает: он читает
- * .agents/skills нативно. Реальные каталоги и файлы на пути симлинка уходят
+ * каталоги нативных навыков рантаймов (RUNTIME_SKILL_DIRS) содержат ссылки
+ * на канонические каталоги: симлинки по умолчанию, зеркала - у рантаймов,
+ * которые не следуют симлинкам (Cursor). Kimi ссылок не получает: он читает
+ * .agents/skills нативно. Реальные каталоги и файлы на пути ссылки уходят
  * в бэкап .agents/.tmp/skill-links-backup; записи без канонического аналога
  * (чужие навыки, сгенерированные артефакты) синком не трогаются.
  */
@@ -25,6 +26,91 @@ const BACKUP_REL = path.join(".agents", ".tmp", "skill-links-backup");
  * каноническая копия в .agents/skills - отдельный общий вариант.
  */
 export const SKILL_LINK_EXCLUDED = new Set(["graphify"]);
+
+/** Стратегия доставки навыка в каталог рантайма: симлинк или зеркало. */
+export type LinkStrategy = "symlink" | "mirror";
+
+/**
+ * Стратегии по рантаймам: по умолчанию симлинк. Cursor получает зеркало -
+ * реальный каталог с hardlink'ами файлов канона: Cursor не следует симлинкам
+ * в своих каталогах навыков и правил, симлинк там невидим для агента.
+ */
+const LINK_STRATEGY: Record<string, LinkStrategy> = { cursor: "mirror" };
+
+function strategyFor(runtime: string): LinkStrategy {
+  return LINK_STRATEGY[runtime] ?? "symlink";
+}
+
+/** Маркер управляемого зеркала в корне зеркалируемого каталога навыка. */
+export const MIRROR_MARKER = ".harness-mirror.json";
+
+interface MirrorMarker {
+  target: string;
+  syncedAt: string;
+}
+
+async function readMirrorMarker(mirrorDir: string): Promise<MirrorMarker | null> {
+  try {
+    const parsed = JSON.parse(await readFile(path.join(mirrorDir, MIRROR_MARKER), "utf8")) as Partial<MirrorMarker>;
+    return typeof parsed.target === "string" ? { target: parsed.target, syncedAt: typeof parsed.syncedAt === "string" ? parsed.syncedAt : "" } : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Относительные пути всех файлов каталога (рекурсивно); при ошибках - пусто. */
+async function listFilesRel(dir: string, base = dir): Promise<string[]> {
+  const out: string[] = [];
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  for (const entry of entries) {
+    if (entry.isDirectory()) out.push(...(await listFilesRel(path.join(dir, entry.name), base)));
+    else if (entry.isFile()) out.push(path.relative(base, path.join(dir, entry.name)));
+  }
+  return out;
+}
+
+async function sameInode(a: string, b: string): Promise<boolean> {
+  const [sa, sb] = await Promise.all([stat(a).catch(() => null), stat(b).catch(() => null)]);
+  return !!sa && !!sb && sa.ino === sb.ino && sa.dev === sb.dev;
+}
+
+/** Доставить файл канона в зеркало: hardlink (правки канона видны сразу,
+ * один inode), при ошибке - копия; расходящийся файл замещается. */
+async function mirrorFile(src: string, dest: string): Promise<void> {
+  await mkdir(path.dirname(dest), { recursive: true }).catch(() => undefined);
+  if (await sameInode(src, dest)) return;
+  await rm(dest, { force: true }).catch(() => undefined);
+  try {
+    await link(src, dest);
+  } catch {
+    await copyFile(src, dest);
+  }
+}
+
+/** Удалить файл зеркала и опустевшие родительские каталоги до корня зеркала. */
+async function removeFileToRoot(rootDir: string, file: string): Promise<void> {
+  await rm(file, { force: true }).catch(() => undefined);
+  let dir = path.dirname(file);
+  while (dir.startsWith(rootDir + path.sep)) {
+    const emptied = await rmdir(dir).then(() => true).catch(() => false);
+    if (!emptied) break;
+    dir = path.dirname(dir);
+  }
+}
+
+/** Создать или обновить зеркало канонического навыка; возвращает число файлов канона. */
+async function ensureMirrorDir(linkPath: string, canonicalDir: string): Promise<number> {
+  await mkdir(linkPath, { recursive: true });
+  const wanted = new Set(await listFilesRel(canonicalDir));
+  for (const rel of wanted) await mirrorFile(path.join(canonicalDir, rel), path.join(linkPath, rel));
+  for (const rel of await listFilesRel(linkPath)) {
+    if (rel === MIRROR_MARKER || wanted.has(rel)) continue;
+    await removeFileToRoot(linkPath, path.join(linkPath, rel));
+  }
+  const marker: MirrorMarker = { target: canonicalDir, syncedAt: new Date().toISOString() };
+  await writeFile(path.join(linkPath, MIRROR_MARKER), JSON.stringify(marker, null, 2) + "\n");
+  return wanted.size;
+}
 
 export interface LinkOpResult {
   done: string[];
@@ -111,7 +197,8 @@ async function backupExisting(
   }
 }
 
-/** Создать или перенацелить симлинк; реальный каталог на пути уходит в бэкап. */
+/** Создать или обновить ссылку навыка (симлинк или зеркало по стратегии
+ * рантайма); реальный каталог без маркера на пути уходит в бэкап. */
 export async function ensureSkillLink(repoRoot: string, runtime: string, name: string, canonicalDir: string): Promise<LinkOpResult> {
   const done: string[] = [];
   const errors: string[] = [];
@@ -123,6 +210,27 @@ export async function ensureSkillLink(repoRoot: string, runtime: string, name: s
   const linkPath = skillLinkPath(root, runtime, name);
   if (!linkPath) return { done, errors };
   const target = path.resolve(canonicalDir);
+  const runMirror = async (): Promise<void> => {
+    const files = await ensureMirrorDir(linkPath, target);
+    done.push(`${path.relative(root, linkPath)} = зеркало ${path.relative(root, target)} (${files} файлов)`);
+  };
+  if (strategyFor(runtime) === "mirror") {
+    if (await readMirrorMarker(linkPath)) {
+      await runMirror().catch((error: unknown) => errors.push(`зеркало не обновлено: ${error instanceof Error ? error.message : String(error)}`));
+      return { done, errors };
+    }
+    const info = await lstat(linkPath).catch(() => null);
+    if (info?.isSymbolicLink()) {
+      await unlink(linkPath).catch(() => undefined);
+    } else if (info) {
+      const backup = await backupExisting(root, runtime, name, linkPath);
+      if (backup.error) errors.push(backup.error);
+      if (backup.note) done.push(backup.note);
+      if (!backup.moved) return { done, errors };
+    }
+    await runMirror().catch((error: unknown) => errors.push(`зеркало не создано: ${error instanceof Error ? error.message : String(error)}`));
+    return { done, errors };
+  }
   const info = await lstat(linkPath).catch(() => null);
   if (info?.isSymbolicLink()) {
     const points = await realpath(linkPath).catch(() => "");
@@ -141,7 +249,8 @@ export async function ensureSkillLink(repoRoot: string, runtime: string, name: s
   return { done, errors };
 }
 
-/** Удалить симлинк, только если он указывает в каноническое хранилище .agents/skills. */
+/** Удалить ссылку навыка, только если она управляемая: симлинк - указывающий
+ * в каноническое хранилище, зеркало - с валидным маркером. */
 export async function removeSkillLink(repoRoot: string, runtime: string, name: string): Promise<LinkOpResult> {
   const done: string[] = [];
   const errors: string[] = [];
@@ -154,6 +263,22 @@ export async function removeSkillLink(repoRoot: string, runtime: string, name: s
   if (!linkPath) return { done, errors };
   const info = await lstat(linkPath).catch(() => null);
   if (!info) return { done, errors };
+  if (strategyFor(runtime) === "mirror") {
+    const marker = await readMirrorMarker(linkPath);
+    if (!marker) {
+      errors.push(`${path.relative(root, linkPath)}: занят реальным каталогом без маркера зеркала - выполните синк симлинков`);
+      return { done, errors };
+    }
+    const points = await realpath(marker.target).catch(() => "");
+    if (!insideCanonicalStorage(root, points)) {
+      errors.push(`${path.relative(root, linkPath)}: маркер зеркала указывает вне .agents/skills - не удаляю`);
+      return { done, errors };
+    }
+    await rm(linkPath, { recursive: true, force: true })
+      .then(() => done.push(`${path.relative(root, linkPath)} (зеркало) удалён`))
+      .catch((error: unknown) => errors.push(`зеркало не удалено: ${error instanceof Error ? error.message : String(error)}`));
+    return { done, errors };
+  }
   if (!info.isSymbolicLink()) {
     errors.push(`${path.relative(root, linkPath)}: занят реальным каталогом - выполните синк симлинков`);
     return { done, errors };
@@ -251,12 +376,13 @@ export async function syncSkillLinks(repoRoot: string, state: ConsoleStateLike):
           continue;
         }
         if (entry.isDirectory() && canonicalByName.has(entry.name)) {
-          // реальный каталог канонического навыка: заменяется симлинком (желаемый)
+          // реальный каталог канонического навыка: заменяется ссылкой (желаемый)
           // или убирается в бэкап (выключенный)
           if (desired.has(entry.name)) {
+            const hadMarker = strategyFor(runtime) === "mirror" && !!(await readMirrorMarker(linkPath));
             const outcome = await ensureSkillLink(root, runtime, entry.name, desired.get(entry.name)!);
             report.errors.push(...outcome.errors);
-            report.normalized.push(entry.name);
+            if (!hadMarker) report.normalized.push(entry.name);
             report.linked.push(entry.name);
           } else {
             const outcome = await backupAndRemove(root, runtime, entry.name, linkPath);
@@ -265,6 +391,16 @@ export async function syncSkillLinks(repoRoot: string, state: ConsoleStateLike):
               report.normalized.push(entry.name);
               report.removed.push(entry.name);
             }
+          }
+          continue;
+        }
+        if (entry.isDirectory() && strategyFor(runtime) === "mirror" && (await readMirrorMarker(linkPath))) {
+          // зеркало навыка, исчезнувшего из канонического хранилища
+          const outcome = await backupAndRemove(root, runtime, entry.name, linkPath);
+          report.errors.push(...outcome.errors);
+          if (outcome.moved) {
+            report.normalized.push(entry.name);
+            report.removed.push(entry.name);
           }
           continue;
         }
@@ -301,8 +437,8 @@ async function backupAndRemove(
 /** Запись статуса одного навыка в каталоге рантайма. */
 export interface SkillLinkEntry {
   name: string;
-  kind: "link" | "real" | "broken" | "other";
-  /** Куда указывает симлинк (относительный путь) или признак чужой записи. */
+  kind: "link" | "mirror" | "real" | "broken" | "other";
+  /** Куда указывает симлинк или зеркало (относительный путь) или признак чужой записи. */
   points?: string;
 }
 
@@ -339,6 +475,18 @@ export async function skillLinksStatus(repoRoot: string, state: ConsoleStateLike
           points: insideCanonicalStorage(root, points) ? path.relative(path.join(root, ".agents", "skills"), points) : "вне .agents/skills",
         });
         continue;
+      }
+      if (entry.isDirectory() && strategyFor(runtime) === "mirror") {
+        const marker = await readMirrorMarker(linkPath);
+        if (marker) {
+          const points = await realpath(marker.target).catch(() => "");
+          status.entries.push({
+            name: entry.name,
+            kind: "mirror",
+            points: insideCanonicalStorage(root, points) ? path.relative(path.join(root, ".agents", "skills"), points) : "вне .agents/skills",
+          });
+          continue;
+        }
       }
       status.entries.push({ name: entry.name, kind: entry.isDirectory() ? "real" : "other" });
     }

@@ -147,6 +147,7 @@ export async function probeRuntimes(options: ProbeOptions): Promise<RuntimeSnaps
           displayName: adapter?.displayName ?? id,
           adapterKind: adapter?.probeSignals ? "signals" : "generic",
           status: "disabled",
+          country: adapter?.country ?? "world",
           vendor: toVendorCard(vendor),
           signals: [],
           processes: [],
@@ -202,6 +203,7 @@ export async function probeRuntimes(options: ProbeOptions): Promise<RuntimeSnaps
         displayName: adapter?.displayName ?? id,
         adapterKind: adapter?.probeSignals ? "signals" : "generic",
         status,
+        country: adapter?.country ?? "world",
         vendor: toVendorCard(vendor),
         signals: signals
           .slice()

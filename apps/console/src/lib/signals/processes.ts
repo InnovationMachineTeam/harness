@@ -79,7 +79,17 @@ export function listProcesses(pattern: RegExp): PsInfoFull[] {
     .slice(0, 40);
 }
 
+/** Полный снимок без фильтра и лимита - инвентаризация процессов консоли. */
+export function listAllProcesses(): PsInfoFull[] {
+  return fromSnapshot(false);
+}
+
 /** Свежая (без кеша) проверка, что PID существует и матчит паттерн. */
 export function verifyPidFresh(pid: number, pattern: RegExp): PsInfoFull | null {
-  return fromSnapshot(true).find((p) => p.pid === pid && pattern.test(p.command)) ?? null;
+  return verifyPidWhere(pid, (p) => pattern.test(p.command));
+}
+
+/** Свежая проверка PID по произвольному предикату (переиспользованный PID отсекается). */
+export function verifyPidWhere(pid: number, matches: (p: PsInfoFull) => boolean): PsInfoFull | null {
+  return fromSnapshot(true).find((p) => p.pid === pid && matches(p)) ?? null;
 }

@@ -1,8 +1,801 @@
 {
-  "byId": {},
-  "byPath": {},
+  "byId": {
+    "202610040200-H4RN": {
+      "mtimeMs": 1791068929118.5098,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610040200-H4RN/README.md",
+      "size": 4228,
+      "task": {
+        "breaking": false,
+        "comments": [
+          {
+            "author": "HARNESS",
+            "body": "Verified: no implementation changes were required; closure is recorded as no-op bookkeeping."
+          }
+        ],
+        "commit": null,
+        "depends_on": [],
+        "description": "Тестовая задача Harness",
+        "doc_updated_at": "2026-10-03T23:08:49.064Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610040200-H4RN",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "result_summary": "No-op closure recorded.",
+        "revision": 2,
+        "risk_level": "low",
+        "status": "DONE",
+        "tags": [
+          "harness"
+        ],
+        "title": "Проверка интеграции",
+        "token_usage": {
+          "agent_runs": 0,
+          "input_tokens": null,
+          "journal_digest": null,
+          "observed_agent_runs": 0,
+          "observed_by": "agentplane",
+          "output_tokens": null,
+          "reasoning_tokens": null,
+          "schema_version": 1,
+          "source": "unavailable",
+          "state": "unavailable",
+          "total_tokens": null,
+          "unavailable_reason": "supervisor_journal_missing",
+          "updated_at": "2026-10-03T23:08:49.064Z"
+        },
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-06F5": {
+      "mtimeMs": 1791575217216.4006,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-06F5/README.md",
+      "size": 9375,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Вычисление нормализованной сигнатуры задачи (заголовок + параметры) и сверка с активной очередью до отправки; порог совпадения исключает блокировку похожих, но различных формулировок — смоук-дубли вида «Ответь ровно одним словом: работает» различимы от системных задач. Трассировка: Ф4→N4←T3 (S2, S3 — двойное покрытие; базовый фон: тройной запуск дорогой сборки и failed-дубли). Проверка (DoD): идентичные формулировки дают совпадение сигнатур; тест-набор похожих-но-различных задач не даёт ложных блокировок (AC Ф4 1, 4). Зависимости: нет; разблокирует диалог подтверждения и интерлок ретрая; при дескопе Ф4 переатрибутируется как обслуживающая задача Ф2 (Q15).",
+        "doc_updated_at": "2026-10-09T19:46:57.214Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-06F5",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Нормализованные сигнатуры задач без ложных срабатываний",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-17CE": {
+      "mtimeMs": 1791575213543.6921,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-17CE/README.md",
+      "size": 9068,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Бейдж runtime + модель в каждом ходе чата и на карточке задачи без действия пользователя; клик раскрывает runtime, модель, sessionId; недоступные метаданные — явное состояние unknown; смена исполнителя внутри диалога помечена в следующем ходе; доступность: aria-метки, клавиатурная навигация, контраст. Трассировка: Ф1→N1←T1 (S3 — основной, 25 model-вопросов из 304 промпт-задач выборки; S1 — проверка идентичности без расхода хода). Проверка (DoD): AC Ф1 1–5 проходят на смоук-диалоге; сценарий S1 «какая у тебя модель» закрывается UI без промпта; метрика AC6 (доля model-вопросов ниже базовой 25/304) замеряется после пересчёта baseline. Зависимости: общий слой метаданных.",
+        "doc_updated_at": "2026-10-09T19:46:53.541Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-17CE",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Бейдж исполнителя хода в чате и на карточке задачи",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-2DBC": {
+      "mtimeMs": 1791575218695.5566,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-2DBC/README.md",
+      "size": 8838,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Быстрые проверки гипотез до реализации: H1 — нужно ли показывать стоимость и токены на ход (Ф5); H2 — снижает ли объяснение блокировки повторные попытки обхода (Ф6); H3 — нужна ли карточка назначения и границ домена чата (Ф8). Результат — решение Q10 по каждой гипотезе: в scope или отложить. Трассировка: обслуживающая задача для Ф5/Ф6/Ф8→H1/H2/H3; закрывает риски R3/R7. Проверка (DoD): по каждой гипотезе зафиксировано решение с evidence (наблюдение или мини-интервью, желательно более одного респондента — связка с Q6); до решения задачи счётчика, агрегата стоимости, объяснения guardrail и карточки домена заблокированы (гейт). Зависимости: нет.",
+        "doc_updated_at": "2026-10-09T19:46:58.693Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-2DBC",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Валидация гипотез H1–H3 — гейт задач Ф5/Ф6/Ф8",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-3661": {
+      "mtimeMs": 1791575212812.9302,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-3661/README.md",
+      "size": 9078,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Единый источник метаданных исполнителя для каждого хода чата и каждой задачи: извлечение runtime, модели и sessionId из tasks/*.json и chat.json, нормализация, привязка к ходу, явное состояние unknown при недоступности (не скрытие), фиксация факта смены исполнителя как события для истории. Трассировка: Ф1→N1←T1; слой обслуживает также Ф3→N2 и Ф5→H1; при дескопе Ф1 переатрибутируется первому оставшемуся потребителю. Проверка (DoD): контракт «ход → runtime, модель, sessionId или unknown» доступен UI-слою; на выборке ходов метаданные присутствуют или явно unknown — скрытых пустых состояний нет; смена исполнителя фиксируется. Зависимости: нет; разблокирует бейдж, панель истории и счётчик.",
+        "doc_updated_at": "2026-10-09T19:46:52.811Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-3661",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Общий слой метаданных исполнителя хода",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-4C0D": {
+      "mtimeMs": 1791575220181.1929,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-4C0D/README.md",
+      "size": 7492,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Отображение расхода токенов на каждый ход из provider-usage: вход, выход и cache раздельно; cache-токены учтены отдельно от totalTokens (данные лежат в details); привязка к ходу через общий слой метаданных. Трассировка: Ф5→H1←T7 (S3, гипотеза — старт после гейта валидации; косвенный фон: 2000 usage-записей, cacheRead до 238 902 в записи). Проверка (DoD): на тест-ходе числа сходятся с usage-записями; cache показан отдельно от totalTokens (AC Ф5 1, 3). Зависимости: валидация гипотез; общий слой метаданных (мягкая — привязка к ходу).",
+        "doc_updated_at": "2026-10-09T19:47:00.179Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-4C0D",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Счётчик токенов на ход (вход / выход / cache)",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-5B02": {
+      "mtimeMs": 1791575219434.9692,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-5B02/README.md",
+      "size": 9319,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Пересчёт скриптами по снапшоту логов (315 задач, 67 guardrail-решений, 2000 usage-записей, 23 смоук-промпта) двумя независимыми способами: доля model-вопросов (базовая 25 из 304 промпт-задач), failed 63/315, history-запросы (10), дубли дорогих запусков (3), guardrail-решения 36 block / 24 allow / 7 warn, потребление opus-5-5 (10 925 вызовов, 9,34 млн токенов); публикация верифицированных baseline для метрик приёмки. Трассировка: обслуживающая задача для проверяемости AC Ф1/Ф2/Ф5/Ф6; закрывает Q8/R5 — до закрытия частоты не используются как доказательство за пределами выборки. Проверка (DoD): два метода сходятся (расхождение менее 5% или объяснено); baseline зафиксированы и ссылаются из AC-метрик. Зависимости: нет.",
+        "doc_updated_at": "2026-10-09T19:46:59.432Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-5B02",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Независимый пересчёт baseline-метрик снапшота логов (долг V3/Q8)",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-6645": {
+      "mtimeMs": 1791575215030.1106,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-6645/README.md",
+      "size": 9796,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Кнопка «Повторить» на карточке failed-задачи: возобновление с исходными параметрами без повторного ввода; идемпотентность — повторное нажатие не создаёт дублирующих артефактов и сайд-эффектов; интерлок — при активной идентичной сборке ретрай не запускается, показывается «уже выполняется». Трассировка: Ф2→N3 (частично N4)←T2 (S2; в базовой выборке ретрай-берсты: 4 graphify-промпта за 1,5 мин, 13 повторов входного контроля). Проверка (DoD): двойное нажатие даёт один результат; активная идентичная задача блокирует ретрай; параметры не вводятся повторно (AC Ф2 2, 3, 5); ретрай-берсты (3 и более за 5 мин) исчезают из логов (AC7, замер после baseline). Зависимости: карточка failed-задачи; нормализованные сигнатуры (интерлок).",
+        "doc_updated_at": "2026-10-09T19:46:55.028Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-6645",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Идемпотентный ретрай failed-задачи с исходными параметрами",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-8717": {
+      "mtimeMs": 1791575217953.0127,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-8717/README.md",
+      "size": 7574,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "При совпадении сигнатуры с активной задачей — до создания новой задачи явный выбор: ждать / отправить всё равно / отменить; «отмена» не создаёт задачу; «отправить всё равно» помечает дубль маркером «осознанный» в логе. Трассировка: Ф4→N4 (S2, S3). Проверка (DoD): все три ветки воспроизводимы; осознанный дубль виден в логе по маркеру; непомеченные дубли дорогих запусков отсутствуют в новых логах (AC Ф4 2, 3, 5). Зависимости: нормализованные сигнатуры.",
+        "doc_updated_at": "2026-10-09T19:46:57.951Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-8717",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Диалог «уже выполняется»: ждать / отправить всё равно / отменить",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-B416": {
+      "mtimeMs": 1791575215761.0295,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-B416/README.md",
+      "size": 8647,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Панель в диалоге: каждый ход аннотирован исполнителем (runtime, модель), точки смены исполнителя визуально отмечены, клик раскрывает детали хода; отсутствующие записи — плейсхолдер «нет данных», не пустота; длинные диалоги сворачиваются. Трассировка: Ф3→N2←T1 (S3; 10 history-запросов в базовой выборке). Проверка (DoD): на диалоге с двумя и более сменами ответ на «кто отвечал ранее» получается без дополнительного промпта (AC Ф3 1–4); history-запросы не появляются как промпты в новых логах (AC5, замер после baseline). Зависимости: общий слой метаданных; за счёт переиспользования слоя effort 1 вместо 2 у фичи.",
+        "doc_updated_at": "2026-10-09T19:46:55.758Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-B416",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Панель истории переключений исполнителя в диалоге",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-D494": {
+      "mtimeMs": 1791575216491.136,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-D494/README.md",
+      "size": 6564,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Распознавание состояния interrupted у прерванных сборок знаний и предложение resume в UI; поведение возобновления задокументировано в docs/operations.md. Трассировка: Ф2→N3←T2 (S2). Проверка (DoD): воспроизводимый сценарий прерывания сборки распознаётся как interrupted и предлагает resume (AC Ф2 4); документация соответствует фактическому поведению. Зависимости: карточка состояния failed-задачи (общая поверхность состояний).",
+        "doc_updated_at": "2026-10-09T19:46:56.489Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-D494",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Resume для interrupted-сборок знаний",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091946-EFBC": {
+      "mtimeMs": 1791575214262.8228,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-EFBC/README.md",
+      "size": 8318,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Классификация root-cause для failed-задач (первичный набор классов, расширяемый после закрытия Q3) и отображение на карточке: класс ошибки + краткая человекочитаемая причина из хвоста лога; неклассифицируемая ошибка — сырой хвост лога с пометкой «класс не определён». Трассировка: Ф2→N3←T2 (S2; 63 failed из 315 задач = 20% — крупнейший класс отказов выборки). Проверка (DoD): на тест-выборке failed-задач карточка показывает класс и причину; для неклассифицируемой — хвост лога + пометка (AC Ф2 1, 6). Зависимости: нет; оценка effort провизионна до закрытия Q3.",
+        "doc_updated_at": "2026-10-09T19:46:54.260Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091946-EFBC",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Карточка failed-задачи: класс ошибки и человекочитаемая причина",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091947-039C": {
+      "mtimeMs": 1791575222497.403,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-039C/README.md",
+      "size": 8170,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Карточка назначения и границ домена прямого чата при первом открытии (скрываемая, повторно открываемая); индикатор redaction объясняет факт редактирования PII без раскрытия содержимого; сама карточка не содержит PII (privacy-инвариант). Трассировка: Ф8→H3←T4 (S1, S3, гипотеза — старт после гейта; базовый фон: 2 вопроса за пределами домена с отредактированными персональными данными). Проверка (DoD): карточка открывается, скрывается и переоткрывается; индикатор не раскрывает PII; статический контент проверен на отсутствие PII (AC Ф8 1–3). Зависимости: валидация гипотез.",
+        "doc_updated_at": "2026-10-09T19:47:02.495Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091947-039C",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Карточка домена чата и индикатор redaction",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091947-3C1D": {
+      "mtimeMs": 1791575220919.786,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-3C1D/README.md",
+      "size": 7323,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Агрегат токенов по диалогу и оценка стоимости по docs/pricing.md; метод согласован с docs/stats.md (двойной учёт: зафиксированная стоимость + оценка); при расхождении схем агрегации (totals против records) основа расчёта явно указана в UI. Трассировка: Ф5→H1 (S3, гипотеза — старт после гейта). Проверка (DoD): агрегат сходится с ручным подсчётом на тест-диалоге; основа расчёта видна в UI (AC Ф5 2, 4, 5). Зависимости: счётчик токенов на ход; пересчёт baseline (схемы агрегации).",
+        "doc_updated_at": "2026-10-09T19:47:00.918Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091947-3C1D",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Агрегат стоимости диалога с явной основой расчёта",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091947-90F9": {
+      "mtimeMs": 1791575223232.8108,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-90F9/README.md",
+      "size": 8604,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Действие из UI консоли «Сделай коммиты всех изменений»: сводка diff, включая untracked-файлы, явное подтверждение; отмена оставляет репозиторий без изменений; действие проходит те же guardrails, что и обычный run-command (security-инвариант, обход политики исключён); хэш коммита отражается в карточке задачи. Трассировка: Ф7→N5←T5 (S3; базовый фон: 2 задачи вида «сделай коммиты»; низкая частота и простой обход через терминал — value 2). Проверка (DoD): сценарий коммита воспроизводим end-to-end; guardrail-проход через run-command подтверждён; отмена — репозиторий без изменений; хэш в карточке задачи (AC Ф7 1–4). Зависимости: нет.",
+        "doc_updated_at": "2026-10-09T19:47:03.230Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091947-90F9",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Git-действие «закоммитить изменения» из консоли",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    },
+    "202610091947-C1A4": {
+      "mtimeMs": 1791575221662.6467,
+      "readmePath": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-C1A4/README.md",
+      "size": 10002,
+      "task": {
+        "comments": [],
+        "commit": null,
+        "depends_on": [],
+        "description": "Сообщение при block/warn вместо молчаливого отказа: сработавший ruleId, человекочитаемая причина, ссылка на описание правила или политики; block, warn и manual различимы иконкой и текстом, не только цветом; manual-решения помечены. Трассировка: Ф6→H2←T6 (S3, гипотеза — старт после гейта; базовый фон: 67 решений аудита — 36 block / 24 allow / 7 warn, 12 живых решений run-command, shell.rm-rf-root 12 раз). Проверка (DoD): на выборке events.jsonl каждое блокирующее сообщение содержит ruleId и причину; различимость состояний без опоры на цвет подтверждена (AC Ф6 1–3); метрика снижения повторных попыток той же команды — после релиза при верифицированном baseline (AC4). Зависимости: валидация гипотез; данные уже в events.jsonl — презентационный слой.",
+        "doc_updated_at": "2026-10-09T19:47:01.660Z",
+        "doc_updated_by": "HARNESS",
+        "doc_version": 3,
+        "id": "202610091947-C1A4",
+        "id_source": "explicit",
+        "origin": {
+          "system": "manual"
+        },
+        "owner": "HARNESS",
+        "plan_approval": {
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "priority": "normal",
+        "revision": 1,
+        "status": "TODO",
+        "tags": [
+          "harness",
+          "backlog"
+        ],
+        "title": "Объяснение блокировки guardrail: причина, ссылка на политику, различимость состояний",
+        "verification": {
+          "attempts": 0,
+          "note": null,
+          "state": "pending",
+          "updated_at": null,
+          "updated_by": null
+        },
+        "verify": []
+      }
+    }
+  },
+  "byPath": {
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610040200-H4RN/README.md": "202610040200-H4RN",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-06F5/README.md": "202610091946-06F5",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-17CE/README.md": "202610091946-17CE",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-2DBC/README.md": "202610091946-2DBC",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-3661/README.md": "202610091946-3661",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-4C0D/README.md": "202610091946-4C0D",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-5B02/README.md": "202610091946-5B02",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-6645/README.md": "202610091946-6645",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-8717/README.md": "202610091946-8717",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-B416/README.md": "202610091946-B416",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-D494/README.md": "202610091946-D494",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-EFBC/README.md": "202610091946-EFBC",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-039C/README.md": "202610091947-039C",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-3C1D/README.md": "202610091947-3C1D",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-90F9/README.md": "202610091947-90F9",
+    "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-C1A4/README.md": "202610091947-C1A4"
+  },
   "readmes": {
-    "entries": []
+    "entries": [
+      {
+        "mtimeMs": 1791068929118.5098,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610040200-H4RN/README.md",
+        "size": 4228
+      },
+      {
+        "mtimeMs": 1791575217216.4006,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-06F5/README.md",
+        "size": 9375
+      },
+      {
+        "mtimeMs": 1791575213543.6921,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-17CE/README.md",
+        "size": 9068
+      },
+      {
+        "mtimeMs": 1791575218695.5566,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-2DBC/README.md",
+        "size": 8838
+      },
+      {
+        "mtimeMs": 1791575212812.9302,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-3661/README.md",
+        "size": 9078
+      },
+      {
+        "mtimeMs": 1791575220181.1929,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-4C0D/README.md",
+        "size": 7492
+      },
+      {
+        "mtimeMs": 1791575219434.9692,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-5B02/README.md",
+        "size": 9319
+      },
+      {
+        "mtimeMs": 1791575215030.1106,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-6645/README.md",
+        "size": 9796
+      },
+      {
+        "mtimeMs": 1791575217953.0127,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-8717/README.md",
+        "size": 7574
+      },
+      {
+        "mtimeMs": 1791575215761.0295,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-B416/README.md",
+        "size": 8647
+      },
+      {
+        "mtimeMs": 1791575216491.136,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-D494/README.md",
+        "size": 6564
+      },
+      {
+        "mtimeMs": 1791575214262.8228,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091946-EFBC/README.md",
+        "size": 8318
+      },
+      {
+        "mtimeMs": 1791575222497.403,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-039C/README.md",
+        "size": 8170
+      },
+      {
+        "mtimeMs": 1791575220919.786,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-3C1D/README.md",
+        "size": 7323
+      },
+      {
+        "mtimeMs": 1791575223232.8108,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-90F9/README.md",
+        "size": 8604
+      },
+      {
+        "mtimeMs": 1791575221662.6467,
+        "path": "/Users/stanislavus/Developer/harness/.agentplane/tasks/202610091947-C1A4/README.md",
+        "size": 10002
+      }
+    ]
   },
   "schema_version": 2
 }

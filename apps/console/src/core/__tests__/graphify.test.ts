@@ -5,6 +5,7 @@ import { join } from "node:path";
 import {
   GRAPHIFY_OUT,
   GRAPHIFY_STORE,
+  graphifyAllInOneDir,
   graphifyCliInstalled,
   graphifyOutDir,
   graphifySlug,
@@ -16,6 +17,7 @@ import {
   graphifyWikiTree,
   pruneGraphifyPublic,
   startGraphifyBuild,
+  startGraphifyMergeBuild,
   startGraphifyWikiBuild,
   syncGraphifyPublic,
 } from "@/core/graphify";
@@ -130,6 +132,88 @@ describe("публикация графа", () => {
   });
 });
 
+describe("all-in-one (объединённый граф папок)", () => {
+  test("каталог All-in-One - <repoRoot>/graphify-out/all-in-one; без сборки статус пустой", async () => {
+    const repo = await mkdtemp(join(tmpdir(), "graphify-aio-"));
+    try {
+      const dir = graphifyAllInOneDir(repo);
+      expect(dir).toBe(join(repo, "graphify-out", "all-in-one"));
+      expect(graphifyOutDir(dir)).toBe(join(repo, "graphify-out", "all-in-one", "graphify-out"));
+      const status = await graphifyStatus(fsSignals, dir);
+      expect(status.exists).toBe(false);
+      expect(status.build.running).toBe(false);
+      const wiki = await graphifyWikiStatus(fsSignals, dir);
+      expect(wiki.exists).toBe(false);
+    } finally {
+      await rm(repo, { recursive: true, force: true });
+    }
+  });
+
+  test("мета merge-сборки читается graphifyStatus: mode, счётчики, running по pid", async () => {
+    const repo = await mkdtemp(join(tmpdir(), "graphify-aio-meta-"));
+    try {
+      const dir = graphifyAllInOneDir(repo);
+      await mkdir(graphifyOutDir(dir), { recursive: true });
+      await writeFile(
+        join(graphifyOutDir(dir), "graph.json"),
+        JSON.stringify({
+          directed: false,
+          nodes: [{ id: "a" }, { id: "b" }, { id: "c" }],
+          links: [{ source: "a", target: "b" }],
+        }),
+        "utf8",
+      );
+      await writeFile(
+        join(graphifyOutDir(dir), ".console-build.json"),
+        JSON.stringify({ pid: process.pid, startedAt: new Date().toISOString(), mode: "update" }),
+        "utf8",
+      );
+      const status = await graphifyStatus(fsSignals, dir);
+      expect(status.exists).toBe(true);
+      expect(status.nodes).toBe(3);
+      expect(status.edges).toBe(1);
+      expect(status.build.mode).toBe("update");
+      // живой pid текущего процесса - сборка числится идущей
+      expect(status.build.running).toBe(true);
+    } finally {
+      await rm(repo, { recursive: true, force: true });
+    }
+  });
+
+  test("startGraphifyMergeBuild пишет мету и лог; публикация - syncGraphifyPublic от каталога all-in-one", async () => {
+    const repo = await mkdtemp(join(tmpdir(), "graphify-aio-build-"));
+    const publicRoot = join(repo, "public");
+    try {
+      const started = await startGraphifyMergeBuild({ sources: ["graphify/a/graphify-out/graph.json"], repoRoot: repo });
+      expect(started.ok).toBe(true);
+      expect(started.mode).toBe("init");
+      const meta = JSON.parse(
+        await readFile(join(graphifyOutDir(graphifyAllInOneDir(repo)), ".console-build.json"), "utf8"),
+      ) as { pid: number; mode: string };
+      expect(meta.mode).toBe("init");
+      expect(meta.pid).toBeGreaterThan(0);
+      // объединённый graph.json появился - повторный запуск в режиме update
+      await writeFile(
+        join(graphifyOutDir(graphifyAllInOneDir(repo)), "graph.json"),
+        JSON.stringify({ directed: false, nodes: [], links: [] }),
+        "utf8",
+      );
+      const again = await startGraphifyMergeBuild({ sources: ["graphify/a/graphify-out/graph.json"], repoRoot: repo });
+      expect(again.mode).toBe("update");
+
+      await writeFile(join(graphifyOutDir(graphifyAllInOneDir(repo)), "graph.html"), "<html>merged</html>", "utf8");
+      const published = await syncGraphifyPublic(graphifyAllInOneDir(repo), publicRoot);
+      expect(published?.slug).toBe(graphifySlug(graphifyAllInOneDir(repo)));
+      expect(published?.slug).toMatch(/^[0-9a-f]{12}$/);
+      await pruneGraphifyPublic(publicRoot, [published!.slug]);
+      const html = await readFile(join(publicRoot, published!.slug, "index.html"), "utf8");
+      expect(html).toContain("merged");
+    } finally {
+      await rm(repo, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("сборка воркспейса (интеграционный, требует graphify CLI)", () => {
   let sourceDir = "";
   let wsDir = "";
@@ -187,5 +271,38 @@ describe("сборка воркспейса (интеграционный, тр�
     const wikiStatus = await graphifyWikiStatus(fsSignals, wsDir);
     expect(wikiStatus.exists).toBe(true);
     expect((wikiStatus.articles ?? 0) >= 1).toBe(true);
+  }, 100_000);
+
+  test("merge-graphs + cluster-only собирают All-in-One из графа воркспейса", async () => {
+    if (!graphifyCliInstalled()) {
+      console.log("graphify CLI не установлен - тест пропущен");
+      return;
+    }
+    const source = join(graphifyOutDir(wsDir), "graph.json");
+    try {
+      await stat(source);
+    } catch {
+      console.log("граф воркспейса не собран - тест пропущен");
+      return;
+    }
+    const mergeRoot = await mkdtemp(join(tmpdir(), "graphify-merge-"));
+    try {
+      const started = await startGraphifyMergeBuild({ sources: [source], repoRoot: mergeRoot });
+      expect(started.ok).toBe(true);
+      const aioOut = graphifyOutDir(graphifyAllInOneDir(mergeRoot));
+      const mergedReady = await until(async () => {
+        try {
+          return (await stat(join(aioOut, "graph.html"))).isFile();
+        } catch {
+          return false;
+        }
+      }, 60_000);
+      expect(mergedReady).toBe(true);
+      const status = await graphifyStatus(fsSignals, graphifyAllInOneDir(mergeRoot));
+      expect(status.exists).toBe(true);
+      expect((status.nodes ?? 0) >= 2).toBe(true);
+    } finally {
+      await rm(mergeRoot, { recursive: true, force: true });
+    }
   }, 100_000);
 });

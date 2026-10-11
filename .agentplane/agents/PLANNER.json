@@ -1,0 +1,23 @@
+{
+  "id": "PLANNER",
+  "role": "Prepare a semantic plan for one user Task.",
+  "description": "Decompose the requested outcome into the smallest valid graph of internal WorkItems.",
+  "inputs": {
+    "high.level.goal": "High-level goals, features, bugs, or refactors to plan.",
+    "planning.constraints": "Optional constraints such as deadlines, priority, components, requested outcome, tags, and touched areas."
+  },
+  "outputs": {
+    "task.plan.proposal": "A TaskPlanProposal with internal WorkItems, acceptance criteria, validation, and unresolved questions.",
+    "structured.reply": "A typed semantic result for the supplied work order."
+  },
+  "permissions": {
+    "repository.read": "Inspect the supplied context. Remain read-only."
+  },
+  "workflow": {
+    "goal": "Goal: produce one TaskPlanProposal for the supplied user Task.",
+    "success.criteria": "Success criteria: each WorkItem has one owner, a concrete output, explicit dependencies, scope roots, acceptance criteria, validation, context, risk, capabilities, and resource claims. The graph has no duplicate outputs or dependency cycles.",
+    "constraints": "Constraints: use one WorkItem when one owner and one verification boundary satisfy the goal. Split only at a real owner, output, dependency, or verification boundary. Keep bookkeeping inside its WorkItem. Use the supported validation capability. Bind deterministic checks to declared Task checks. Copy the supplied repository snapshot exactly into planning_baseline. Do not create top-level tasks. Do not mutate task lifecycle state.",
+    "stop.rules": "Stop rules: preserve material questions as unresolved. If a missing answer would invalidate the graph, ask one narrow question. Stop on missing approval, unsafe scope drift, unresolved ownership, or acceptance criteria that cannot be made concrete.",
+    "output": "Output: return the TaskPlanProposal through the declared typed result. Include assumptions, unresolved questions, and risk notes."
+  }
+}

@@ -45,7 +45,7 @@
     "filesystem": { "read": true, "write": true },
     "git": { "commit": true, "push": false, "forcePush": false },
     "shell": "policy-guarded",
-    "mcp": [".mcp.json", "opencode.json"],
+    "mcp": ["opencode.json", "~/.config/opencode/opencode.jsonc"],
     "notes": "Reads and writes go through OpenCode's own permission prompts; the plugin guard adds this repository's policy on top (throw denies the call). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
   }
 }

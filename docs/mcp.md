@@ -8,7 +8,7 @@
 final(runtimes R, сервер S) = S.runtimeOverrides[R] ?? S.enabled
 ```
 
-- `S.enabled` - глобальный toggle (начальная настройка); управляет проектным `.mcp.json` и всеми пользовательскими конфигами по умолчанию.
+- `S.enabled` - глобальный toggle (начальная настройка); управляет проектными файлами (`.mcp.json`, `.agents/mcp.json`) и всеми пользовательскими конфигами по умолчанию.
 - `runtimeOverrides[R]` - override уровня рантайма (действует только на его пользовательский конфиг; выставляется в пространстве рантайма, вкладка MCP).
 - Отключение (toggle) удаляет сервер из файлов, но сохраняет запись в реестре - вернуть можно одним кликом.
 
@@ -33,12 +33,15 @@ final(runtimes R, сервер S) = S.runtimeOverrides[R] ?? S.enabled
 
 | Таргет | Файл / способ | Формат |
 |---|---|---|
-| `project` | `<repo>/.mcp.json` | `{"mcpServers": {name: {type:"stdio"\|"http", command, args, env \| url}}}` |
+| `project` (claude, kimi) | `<repo>/.mcp.json` | `{"mcpServers": {name: {type:"stdio"\|"http", command, args, env \| url}}}` |
 | `claude-user` | CLI `claude mcp add-json/remove -s user` (фолбэк - мерж `~/.claude.json`) | как project |
 | `codex-global` | `~/.codex/config.toml` (посекочный редактор `lib/toml.ts`) | `[mcp_servers.<name>]` + `[.env]`; http → `url = "…"` |
 | `cursor-global` | `~/.cursor/mcp.json` | как project |
 | `opencode-global` | `~/.config/opencode/opencode.jsonc` | ключ `"mcp"`, `type:"local"\|"remote"` |
-| zcode / kimi | глобального MCP-ключа нет | только проектный `.mcp.json` |
+| `zcode-project` | `<repo>/.agents/mcp.json` | как project; действует, только если в `.zcode/config.json` нет секции `mcp.servers` |
+| `kimi-global` | `~/.kimi-code/mcp.json` (или `$KIMI_CODE_HOME`) | `{"mcpServers": {name: {command, args, env \| url, headers}}}` - без `type`, транспорт выводится из command/url |
+
+Рантайм → таргеты: claude - project + claude-user; codex - codex-global; cursor - cursor-global; kimi - project + kimi-global; zcode - zcode-project; opencode - opencode-global. Корневой `.mcp.json` читают только Claude Code и Kimi Code.
 
 Примеры записей одного сервера `serena` (stdio):
 

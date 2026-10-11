@@ -9,6 +9,7 @@ import type { BillingDeposit, BillingSelection } from "@/core/state";
 import { relativeTime, formatTokens } from "@/lib/format";
 import { useConsoleStore } from "@/store/console";
 import { Button, Chip, confirmDialog, Footnote, FieldLabel, IconButton, Input, SectionLabel, Select } from "@/uikit";
+import { countryLabel } from "@/uikit/components/countries";
 import { ProviderBillingModal } from "@/uikit/components/pricing/ProviderBillingModal";
 
 const STATUS_BADGE: Record<
@@ -302,6 +303,7 @@ export function ProviderCard({
               {status.label}
             </Chip>
             <Chip tone={provider.kind === "local" ? "neutral" : "sky"}>{provider.kind === "local" ? "локально" : "онлайн"}</Chip>
+            <Chip tone="dim" title="страна юрисдикции провайдера">{countryLabel(provider.country)}</Chip>
           </div>
         </div>
       </header>

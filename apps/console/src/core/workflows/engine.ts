@@ -15,7 +15,7 @@ import { loadInternalSkills, loadRoles } from "./catalog";
 import { syncTaskToAgentPlane } from "./agentplane";
 import { renderSkillBlock, renderSkillsSection, untrustedNotice } from "./skills";
 import { listRoadmapItems, saveRoadmapItem, findingFingerprint } from "./roadmap";
-import { parseTaskList, runSprintNode } from "./sprint";
+import { parseTaskList, runSprintNode, sprintRunFailure } from "./sprint";
 import type { WorkflowStep } from "./schema";
 import { WorkflowStore, type WorkflowDb, type WorkflowRunRecord } from "./storage";
 
@@ -86,17 +86,57 @@ async function withWorkspaceLock<T>(workspaceDir: string, mode: WorkflowStep["re
   }
 }
 
-async function waitForProcess(pid: number | null, timeoutMs: number): Promise<void> {
-  if (pid === null) return;
+/** Льготное окно между SIGTERM и SIGKILL при остановке процесса шага. */
+const KILL_GRACE_MS = 5000;
+
+/** Интервал heartbeat ожидания headless-процесса: источник события step.progress для CLI-рантаймов. */
+const WAIT_HEARTBEAT_MS = 30_000;
+
+/** SIGTERM с эскалацией до SIGKILL через льготное окно; завершившийся процесс - не ошибка. */
+function terminateProcess(pid: number): void {
+  try {
+    process.kill(pid, "SIGTERM");
+  } catch {
+    return; // Процесс уже завершился.
+  }
+  const timer = setTimeout(() => {
+    try {
+      process.kill(pid, "SIGKILL");
+    } catch {
+      // Процесс уже завершился.
+    }
+  }, KILL_GRACE_MS);
+  timer.unref?.();
+}
+
+/** Опции ожидания headless-процесса. */
+interface WaitForProcessOptions {
+  timeoutMs: number;
+  isCancelled?: () => boolean;
+  /** Heartbeat ожидания: вызывается раз в heartbeatMs с временем ожидания. */
+  onWait?: (elapsedMs: number) => void;
+  heartbeatMs?: number;
+}
+
+/** Ожидание headless-процесса с потолком времени, проверкой отмены и heartbeat; экспорт для тестов. */
+export async function waitForProcess(pid: number | null, opts: WaitForProcessOptions): Promise<void> {
+  // Без pid ожидание невозможно: процесс мог не стартовать, результат недостоверен - попытка считается неудачной (failover).
+  if (pid === null) throw new Error("процесс запущен без идентификатора (pid) - ожидание результата невозможно");
+  const heartbeatMs = opts.heartbeatMs ?? WAIT_HEARTBEAT_MS;
   const started = Date.now();
+  let nextBeat = started + heartbeatMs;
   while (processAlive(pid)) {
-    if (Date.now() - started > timeoutMs) {
-      try {
-        process.kill(pid, "SIGTERM");
-      } catch {
-        // Процесс уже завершился.
-      }
-      throw new Error("timeout шага: " + timeoutMs + " ms");
+    if (opts.isCancelled?.()) {
+      terminateProcess(pid);
+      throw new Error("run отменён оператором");
+    }
+    if (Date.now() - started > opts.timeoutMs) {
+      terminateProcess(pid);
+      throw new Error("timeout шага: " + opts.timeoutMs + " ms");
+    }
+    if (opts.onWait && Date.now() >= nextBeat) {
+      opts.onWait(Date.now() - started);
+      nextBeat = Date.now() + heartbeatMs;
     }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
@@ -221,6 +261,15 @@ export function parseInputConfirmation(output: string): { variants: Array<{ labe
     } catch { /* не варианты */ }
   }
   return { variants: [], questions: [] };
+}
+
+/** Ответы оператора из payload резюма: пары вопрос-ответ без пустых полей. */
+export function parseOperatorQuestions(value: unknown): Array<{ question: string; answer: string }> {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is Record<string, unknown> => Boolean(item && typeof item === "object"))
+    .map((item) => ({ question: String(item.question ?? "").trim(), answer: String(item.answer ?? "").trim() }))
+    .filter((item) => item.question && item.answer);
 }
 
 /**
@@ -356,6 +405,10 @@ function sectionPrompt(opts: {
     opts.assignment ? "## Задание секции\n" + opts.assignment : "",
     opts.skills.length ? "## Master skills\n" + opts.skills.join("\n\n") : "",
     context ? "## Доступные артефакты\n" + context : "",
+    // Секция без права записи не должна оставлять файлы в рабочей папке: артефакт - текст ответа.
+    opts.node.resources.workspace !== "write"
+      ? "Рабочая папка подключена в режиме только чтение: не создавай, не изменяй и не удаляй файлы; весь артефакт секции верни текстом ответа."
+      : "",
     "## Вход пользователя",
     JSON.stringify(opts.run.input, null, 2),
     "",
@@ -454,6 +507,8 @@ export async function runAgentCall(opts: {
   if (!candidates.length) {
     return { output: "# " + opts.node.title + "\n\nСекция " + opts.section + ": список runtime пуст, вызов пропущен.\n", usage: null, runtime: "none" };
   }
+  // Отмена прогона: статус читается при каждом опросе процесса и в начале каждого раунда цикла провайдера.
+  const isCancelled = (): boolean => opts.store.getRun(opts.run.id)?.status === "cancelled";
   const tier = opts.node.runtime.tier ?? opts.roles.find((role) => role.defaultTier)?.defaultTier ?? "standard";
   const skills = await collectSkills(opts.repoRoot, opts.run, opts.roles);
   const unavailableMcp = new Set(opts.roles.flatMap((role) => role.unavailable).filter((item) => item.kind === "mcp").map((item) => item.id));
@@ -502,7 +557,14 @@ export async function runAgentCall(opts: {
       correlation: { workflowRunId: opts.run.id, workflowStepId: opts.node.id, agentId },
     });
     if (!launched.ok) throw new Error(launched.detail);
-    await waitForProcess(launched.pid, opts.node.timeoutMs);
+    await waitForProcess(launched.pid, {
+      timeoutMs: opts.node.timeoutMs,
+      isCancelled,
+      onWait: (elapsedMs) => {
+        // Heartbeat долгого вызова CLI-рантайма: прогон в UI не выглядит замершим.
+        opts.store.appendEvent(opts.run.id, "step.progress", { section: opts.section, runtime: runtimeId, model: model?.model ?? null, elapsedMs }, { stepId: opts.node.id, attemptId, agentId });
+      },
+    });
     const output = await readFile(launched.logFile, "utf8").catch(() => "");
     // Рантаймы с машинным выводом обязаны вернуть конверт: plain-text ответ -
     // ошибка исполнения (например, "Failed to authenticate"), а не ответ агента;
@@ -624,10 +686,17 @@ export async function runAgentCall(opts: {
       prompt,
       toolCwd: cwd,
       timeoutMs: opts.node.timeoutMs,
+      shouldAbort: isCancelled,
       // Секции workflow объёмнее direct-чата: reasoning-моделям нужно больше раундов до финального ответа.
       maxRounds: 24,
       mcpTools,
       callMcp: mcpServers.length ? (qualifiedName, args) => callMcpTool({ cwd, servers: mcpServers, qualifiedName, args }) : undefined,
+      onProgress: (progress) => {
+        // Раунд агентного цикла: живой статус секции в ledger (UI читает по SSE).
+        opts.store.appendEvent(opts.run.id, "step.progress", {
+          section: opts.section, runtime: runtimeId, model, round: progress.round, maxRounds: progress.maxRounds, toolCalls: progress.toolCalls, elapsedMs: progress.elapsedMs,
+        }, { stepId: opts.node.id, attemptId, agentId });
+      },
       onToolCall: (event) => {
         const payload: Record<string, unknown> = {
           tool: event.tool, args: event.args, status: event.ok ? "ok" : event.blocked ? "blocked" : "error",
@@ -720,6 +789,47 @@ async function generateInputConfirmation(
       verdictRequired: false, lockWorkspace: false,
     }).then((result) => result.output));
   return parseInputConfirmation(output);
+}
+
+/**
+ * Уточняющие вопросы оператору для окна доработки (ручная приёмка, подтверждение
+ * плана): готовит агент ролей контроля по заданию на доработку; вызов идёт через
+ * runAgentCall - и CLI-рантаймы, и провайдеры. Кеш - артефакт с переданным
+ * ключом; сбой генерации не блокирует окно доработки.
+ */
+async function generateReworkQuestions(
+  repoRoot: string,
+  store: WorkflowStore,
+  run: WorkflowRunRecord,
+  node: WorkflowStep,
+  state: GraphStateValue,
+  roles: ResolvedRole[],
+  cacheKey: string,
+  rework: string,
+): Promise<string[]> {
+  try {
+    const output = await cachedCall(store, run, node, cacheKey, () =>
+      runAgentCall({
+        repoRoot, store, run, node, state, section: "вопросы к оператору", roles,
+        assignment: [
+          "Работа шага возвращается оператору на доработку. Подготовь оператору уточняющие вопросы, ответы на которые устранят причину возврата.",
+          "questions: 2-4 конкретных вопроса, каждый - одно предложение; ответ оператора войдёт в задание на доработку.",
+          'Формат ответа: последний блок ```json {"questions":["вопрос 1","вопрос 2"]}.',
+          "",
+          rework,
+        ].filter(Boolean).join("\n\n"),
+        verdictRequired: false, lockWorkspace: false,
+      }).then((result) => result.output));
+    return parseInputConfirmation(output).questions;
+  } catch {
+    return [];
+  }
+}
+
+/** Блок ответов оператора для задания на доработку: каждая пара вопрос → ответ. */
+function operatorAnswersSection(questions: Array<{ question: string; answer: string }>): string {
+  if (!questions.length) return "";
+  return "\n\n## Ответы оператора на уточняющие вопросы\n" + questions.map((item) => "- " + item.question + " → " + item.answer).join("\n");
 }
 
 /**
@@ -875,10 +985,17 @@ async function runStepPipeline(
       outputControl?.dod.length ? "DoD:\n" + outputControl.dod.map((item) => "- " + item).join("\n") : "",
       acList.length ? "AC:\n" + acList.map((item) => "- " + item).join("\n") : "",
     ].filter(Boolean).join("\n\n");
+    // Замечания оператора к предыдущему плану (комментарий и ответы на вопросы) входят в задание нового плана.
+    const planFeedback = store.latestArtifact(run.id, node.id, "__rejplan-")?.content;
     plan = await cachedCall(store, run, node, "__plan-" + cycle, () =>
       runAgentCall({
         repoRoot, store, run, node, state, section: "план", roles,
-        assignment: ["Составь исполнимый план работы шага согласно критериям приёмки.", criteria, node.execution.prompt].filter(Boolean).join("\n\n"),
+        assignment: [
+          "Составь исполнимый план работы шага согласно критериям приёмки.",
+          criteria,
+          node.execution.prompt,
+          planFeedback ? "## Замечания оператора к предыдущему плану\n" + planFeedback : "",
+        ].filter(Boolean).join("\n\n"),
         verdictRequired: false, lockWorkspace: false,
       }).then((result) => {
         store.appendEvent(run.id, "plan.created", { cycle: cycle + 1 }, { stepId: node.id });
@@ -886,19 +1003,21 @@ async function runStepPipeline(
       }));
     if (!node.execution.confirmPlan) break;
     const rejected = store.countArtifacts(run.id, node.id, "__rejplan-");
+    const questions = await generateReworkQuestions(repoRoot, store, run, node, state, roles, "__q-plan-" + (rejected + 1), ["План шага показан оператору на подтверждение. Подготовь вопросы, ответы на которые позволят уточнить или улучшить план.", plan.slice(-4000)].join("\n\n"));
     const decision = interrupt({
-      kind: "plan-confirm", stepId: node.id, title: node.title, plan,
+      kind: "plan-confirm", stepId: node.id, title: node.title, plan, questions,
       attempts: { used: rejected, maxAttempts: planLimit },
-    }) as { action?: string; comment?: string } | null;
+    }) as { action?: string; comment?: string; questions?: unknown } | null;
     if (decision?.action === "approve") {
       store.appendEvent(run.id, "plan.confirmed", {}, { stepId: node.id });
       break;
     }
     if (rejected >= planLimit) throw new Error("подтверждение плана исчерпало попытки: " + rejected + " из " + planLimit);
-    const comment = String(decision?.comment ?? "план отклонён без пояснения");
+    const qa = parseOperatorQuestions(decision?.questions);
+    const comment = String(decision?.comment ?? (qa.length ? "план отклонён с ответами на вопросы" : "план отклонён без пояснения"));
     await cachedCall(store, run, node, "__rejplan-" + (rejected + 1), async () => {
-      store.appendEvent(run.id, "plan.rejected", { comment, attempt: rejected + 1 }, { stepId: node.id });
-      return comment;
+      store.appendEvent(run.id, "plan.rejected", { comment, questions: qa.length, attempt: rejected + 1 }, { stepId: node.id });
+      return comment + operatorAnswersSection(qa);
     });
   }
 
@@ -999,7 +1118,7 @@ async function runStepPipeline(
 
     if (verdict.verdict === "pass") {
       if (!outputControl.manualReview) break;
-      const manual = await manualAcceptance(repoRoot, store, run, node, review, verdict.findings, outputControl.maxAttempts, verdict.criteria);
+      const manual = await manualAcceptance(repoRoot, store, run, node, state, reviewRoles, review, verdict.findings, outputControl.maxAttempts, verdict.criteria);
       if (manual === "approved") break;
       continue;
     }
@@ -1011,7 +1130,7 @@ async function runStepPipeline(
         continue;
       }
       // Защитный потолок авто-циклов без расхода попыток: переход к ручному окну.
-      const manual = await manualAcceptance(repoRoot, store, run, node, review + "\n\nАвтоматические циклы доработки исчерпаны (" + cycles + ").", verdict.findings, outputControl.maxAttempts, verdict.criteria);
+      const manual = await manualAcceptance(repoRoot, store, run, node, state, reviewRoles, review + "\n\nАвтоматические циклы доработки исчерпаны (" + cycles + ").", verdict.findings, outputControl.maxAttempts, verdict.criteria);
       if (manual === "approved") break;
       continue;
     }
@@ -1027,35 +1146,40 @@ async function runStepPipeline(
   return { artifacts, completed: [node.id] };
 }
 
-/** Ручное окно приёмки: approve / reject с комментарием / defer (пауза без расхода попыток). */
+/** Ручное окно приёмки: approve / reject с комментарием и ответами на вопросы / defer (пауза без расхода попыток). */
 async function manualAcceptance(
   repoRoot: string,
   store: WorkflowStore,
   run: WorkflowRunRecord,
   node: WorkflowStep,
+  state: GraphStateValue,
+  roles: ResolvedRole[],
   summary: string,
   findings: string[],
   maxAttempts: number,
   criteria: CriterionResult[] = [],
 ): Promise<"approved" | "rejected"> {
   const rejections = store.countArtifacts(run.id, node.id, "__rej-");
+  const rework = reworkAssignment("ручная приёмка", findings, summary.slice(-1500), criteria);
+  const questions = await generateReworkQuestions(repoRoot, store, run, node, state, roles, "__q-accept-" + (store.countArtifacts(run.id, node.id, "__ret-accept-") + 1), rework);
   let decision = interrupt({
     kind: "acceptance", stepId: node.id, title: node.title,
-    summary: summary.slice(-4000), criteria, attempts: { used: rejections, maxAttempts },
-  }) as { action?: string; comment?: string } | null;
+    summary: summary.slice(-4000), criteria, questions, attempts: { used: rejections, maxAttempts },
+  }) as { action?: string; comment?: string; questions?: unknown } | null;
   while (decision?.action === "defer") {
     store.appendEvent(run.id, "acceptance.deferred", {}, { stepId: node.id });
     decision = interrupt({
       kind: "acceptance", stepId: node.id, title: node.title,
-      summary: summary.slice(-4000), criteria, attempts: { used: rejections, maxAttempts },
-    }) as { action?: string; comment?: string } | null;
+      summary: summary.slice(-4000), criteria, questions, attempts: { used: rejections, maxAttempts },
+    }) as { action?: string; comment?: string; questions?: unknown } | null;
   }
   if (decision?.action === "approve") {
     store.appendEvent(run.id, "acceptance.approved", { manual: true }, { stepId: node.id });
     return "approved";
   }
   if (rejections >= maxAttempts) throw new Error("выходной контроль исчерпал попытки приёмки: " + rejections + " из " + maxAttempts);
-  await writeAcceptanceReturn(repoRoot, store, run, node, "manual", findings, String(decision?.comment ?? "ревью отклонено вручную без пояснения"), criteria);
+  const qa = parseOperatorQuestions(decision?.questions);
+  await writeAcceptanceReturn(repoRoot, store, run, node, "manual", findings, String(decision?.comment ?? (qa.length ? "ревью отклонено вручную с ответами на вопросы" : "ревью отклонено вручную без пояснения")) + operatorAnswersSection(qa), criteria);
   return "rejected";
 }
 
@@ -1088,10 +1212,13 @@ function stepRunner(repoRoot: string, store: WorkflowStore, run: WorkflowRunReco
   return async (state: GraphStateValue): Promise<Partial<GraphStateValue>> => {
     try {
       if (node.kind?.startsWith("sprint-")) {
-        return await runSprintNode(node, {
+        const result = await runSprintNode(node, {
           repoRoot, workspaceDir: run.workspaceDir, store, run, state,
           executeWorkflowCommand,
         });
+        // Служебный шаг спринта без конечного события выглядел бы проваленным после повтора: фиксируем завершение.
+        store.appendEvent(run.id, "step.completed", { outputs: result.artifacts }, { stepId: node.id });
+        return result;
       }
       return await runStepPipeline(repoRoot, store, run, node, supplier, state);
     } catch (error) {
@@ -1296,6 +1423,11 @@ function buildGraph(repoRoot: string, store: WorkflowStore, run: WorkflowRunReco
   return graph.compile({ checkpointer: new SqliteSaver(checkpointConnection(store.db) as ConstructorParameters<typeof SqliteSaver>[0]) });
 }
 
+/** Отменённый прогон - терминальный статус: финальные записи invoke и отложенные команды его не перезаписывают и не возобновляют. */
+function cancelledSince(store: WorkflowStore, runId: string): boolean {
+  return store.getRun(runId)?.status === "cancelled";
+}
+
 export async function executeWorkflowCommand(
   repoRoot: string,
   store: WorkflowStore,
@@ -1309,11 +1441,17 @@ export async function executeWorkflowCommand(
     store.appendEvent(run.id, "run.cancelled", { reason: command.payload.reason ?? null });
     return;
   }
+  // Отменённый прогон - терминальный статус: отложенные команды (retry, skip, replace, restart, apply-lessons) его не возобновляют и не изменяют.
+  if (cancelledSince(store, run.id)) {
+    store.appendEvent(run.id, "run.cancelled", { suppressed: command.type });
+    return;
+  }
   if (command.type === "apply-lessons") {
     store.updateRun(run.id, "running", { error: null });
     try {
       await applyLessons(repoRoot, store, run, command.payload);
     } catch (error) {
+      if (cancelledSince(store, run.id)) return;
       const message = error instanceof Error ? error.message : String(error);
       store.updateRun(run.id, "interrupted", { error: message });
       store.appendEvent(run.id, "run.interrupted", { error: message, actions: ["retry", "abort"] });
@@ -1366,6 +1504,10 @@ export async function executeWorkflowCommand(
       input = tuple ? null : { runId: run.id, input: run.input, artifacts: {}, completed: [] };
     }
     const result = await graph.invoke(input as any, config);
+    if (cancelledSince(store, run.id)) {
+      store.appendEvent(run.id, "run.cancelled", { stage: "invoke" });
+      return;
+    }
     if ((result as Record<string, unknown>).__interrupt__) {
       store.updateRun(run.id, "waiting");
       store.appendEvent(run.id, "run.waiting", { interrupts: (result as Record<string, unknown>).__interrupt__ });
@@ -1374,10 +1516,30 @@ export async function executeWorkflowCommand(
     await runLessonsStep(repoRoot, store, run).catch((error) => {
       store.appendEvent(run.id, "lessons.failed", { error: error instanceof Error ? error.message : String(error) }, { stepId: "lessons" });
     });
+    if (cancelledSince(store, run.id)) {
+      store.appendEvent(run.id, "run.cancelled", { stage: "lessons" });
+      return;
+    }
+    // Прогон спринта не завершается как успешный при невыполненных задачах:
+    // терминальный статус failed с числом невыполненных задач из события close.
+    if (run.workflowId.startsWith("sprint:")) {
+      const close = store.listEvents(run.id, 0, 10_000).find((event) => event.type === "sprint.completed")?.payload ?? null;
+      const sprintFailure = sprintRunFailure(close as { total?: unknown; failed?: unknown } | null);
+      if (sprintFailure) {
+        store.updateRun(run.id, "failed", { finishedAt: new Date().toISOString(), error: sprintFailure });
+        store.appendEvent(run.id, "run.failed", { error: sprintFailure, reason: "sprint-tasks-incomplete" });
+        return;
+      }
+    }
     store.updateRun(run.id, "completed", { finishedAt: new Date().toISOString(), error: null });
     store.appendEvent(run.id, "run.completed", { completed: result.completed ?? [] });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
+    if (cancelledSince(store, run.id)) {
+      // Отмена во время секции: статус уже терминальный, прерывание invoke - не ошибка прогона.
+      store.appendEvent(run.id, "run.cancelled", { stage: "invoke", error: message });
+      return;
+    }
     store.updateRun(run.id, "interrupted", { error: message });
     store.appendEvent(run.id, "run.interrupted", { error: message, actions: ["retry", "skip", "replace", "abort"] });
   }

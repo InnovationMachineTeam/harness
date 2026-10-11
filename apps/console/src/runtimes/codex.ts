@@ -12,6 +12,7 @@ const CWD_PEEK_LIMIT = 40;
 export const codexAdapter: RuntimeAdapter = {
   id: "codex",
   displayName: "Codex CLI",
+  country: "us",
   processPattern: /codex/i,
   isInstalled: (ctx) => anyExists([join(ctx.home, ".codex")]),
 

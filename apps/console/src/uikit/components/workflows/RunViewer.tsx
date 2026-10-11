@@ -3,12 +3,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Chip, Footnote, Input, Modal, Notice, Segmented, Select, Textarea } from "@/uikit";
 import { VirtualList } from "@/uikit/components/VirtualList";
-import { Checklist, RunStepSection, StepProgressChips } from "@/uikit/components/workflows/RunSections";
+import { Checklist, RunStepSection, StepProgressChips, runActivity, type RunActivity } from "@/uikit/components/workflows/RunSections";
+import { SprintView, type SprintData } from "@/uikit/components/workflows/SprintView";
 
 type Event = { id: number; at: string; type: string; stepId: string | null; agentId: string | null; parentAgentId: string | null; payload: Record<string, unknown> };
 type InterruptInfo = { kind?: string; stepId?: string; title?: string; plan?: string; summary?: string; assignment?: string; variants?: Array<{ label: string; text: string }>; questions?: string[]; criteria?: Array<{ criterion: string; status: "pass" | "fail"; note?: string }>; attempts?: { used?: number; maxAttempts?: number } };
 type StepSnapshot = { id: string; title: string; phase: string; description?: string; roles: string[]; hidden?: boolean; runtime: { candidates: string[]; tier?: string; effort?: string }; inputControl?: { prompt?: string; dor?: string[] } | null; execution?: { prompt?: string; confirmPlan?: boolean } | null; outputControl?: { tests?: string[]; dod?: string[]; ac?: string[]; manualReview?: boolean } | null };
-type Run = { id: string; title: string; status: string; privacy: string; input: Record<string, unknown>; snapshot: { nodes: Array<StepSnapshot & { role?: unknown }> }; error: string | null };
+type Run = { id: string; workflowId: string; title: string; status: string; privacy: string; input: Record<string, unknown>; snapshot: { nodes: Array<StepSnapshot & { role?: unknown }> }; error: string | null };
+/** Спринт, к которому относится прогон задачи (sprintRef из GET прогона). */
+type SprintRefData = { id: string; title: string; runId: string; status: string };
 type StepAttempt = { id: string; step_id: string; status: string; runtime: string | null; model: string | null; section: string | null; started_at: string | null; finished_at: string | null; error: string | null; input_tokens: number; output_tokens: number; cache_tokens: number; cost_value: number | null; cost_currency: string | null };
 type StepArtifact = { id: string; name: string; path: string | null; checksum: string; createdAt: string; size: number; content: string | null };
 type StepDetail = { run: { id: string; status: string; privacy: string; error: string | null }; step: (StepSnapshot & { role?: unknown }) | null; endState: string | null; events: Event[]; attempts: StepAttempt[]; artifacts: StepArtifact[] };
@@ -52,18 +55,26 @@ const MARKER_LABELS: Record<string, string> = {
   "__ret-tests": "Возвраты по тестам",
   "__ret-input": "Возвраты входа",
   "__rej": "Отклонения ревью",
+  "__q-accept": "Вопросы окна приёмки",
+  "__q-plan": "Вопросы окна плана",
 };
 
 function markerPrefix(name: string): string {
   return name.replace(/-\d+$/, "");
 }
 
+/** Секунды между меткой ISO и моментом now. */
+function secondsSince(iso: string, now: number): number {
+  return Math.max(0, Math.round((now - Date.parse(iso)) / 1000));
+}
+
 export function RunViewer({ id }: { id: string }) {
   const [run, setRun] = useState<Run | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
+  const [sprint, setSprint] = useState<SprintData | null>(null);
+  const [sprintRef, setSprintRef] = useState<SprintRefData | null>(null);
   const [lessons, setLessons] = useState<LessonsProposal[] | null>(null);
   const [reason, setReason] = useState("Действие оператора в Console");
-  const [comment, setComment] = useState("");
   const [answer, setAnswer] = useState("");
   const [stepId, setStepId] = useState("");
   const [runtime, setRuntime] = useState("");
@@ -74,9 +85,11 @@ export function RunViewer({ id }: { id: string }) {
   const [actionMessage, setActionMessage] = useState("");
   const [activeStep, setActiveStep] = useState<string | null>(null);
   const [attempts, setAttempts] = useState<StepAttempt[]>([]);
+  // Тикер живого статуса: пока прогон исполняется, возраст активности обновляется раз в секунду.
+  const [nowMs, setNowMs] = useState(() => Date.now());
 
   const load = () => fetch(`/api/workflow-runs/${id}`, { cache: "no-store" }).then((r) => r.json()).then((j) => {
-    setRun(j.run); setEvents(j.events ?? []); setLessons(j.lessons ?? null); setAttempts(j.attempts ?? []);
+    setRun(j.run); setEvents(j.events ?? []); setSprint(j.sprint ?? null); setSprintRef(j.sprintRef ?? null); setLessons(j.lessons ?? null); setAttempts(j.attempts ?? []);
   });
   useEffect(() => {
     void load();
@@ -84,8 +97,8 @@ export function RunViewer({ id }: { id: string }) {
     const receive = (event: MessageEvent) => {
       const value = JSON.parse(event.data) as Event;
       setEvents((old) => old.some((item) => item.id === value.id) ? old : [...old, value]);
-      // Попытки и вердикты контролей обновляют статистику секций: перезагружаем данные прогона.
-      if (value.type.startsWith("run.") || value.type.startsWith("lessons.") || value.type.startsWith("input.") || value.type.startsWith("acceptance.") || value.type.startsWith("plan.")) void load();
+      // Попытки, вердикты контролей и события спринта обновляют статистику: перезагружаем данные прогона.
+      if (value.type.startsWith("run.") || value.type.startsWith("lessons.") || value.type.startsWith("input.") || value.type.startsWith("acceptance.") || value.type.startsWith("plan.") || value.type.startsWith("sprint.")) void load();
     };
     source.addEventListener("workflow", receive as EventListener);
     source.addEventListener("done", () => { void load(); source.close(); });
@@ -96,8 +109,16 @@ export function RunViewer({ id }: { id: string }) {
     const response = await fetch(`/api/workflow-runs/${id}/actions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: name, payload: { reason, ...payload } }) });
     const result = await response.json().catch(() => ({}));
     setActionMessage(response.ok ? "Действие отправлено" : result.error ?? "Ошибка действия");
-    setComment("");
     void load();
+  };
+  const relaunchCurrent = async () => {
+    const response = await fetch(`/api/workflow-runs/${id}/actions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "relaunch-current", payload: { reason } }) });
+    const result = await response.json().catch(() => ({}));
+    if (response.ok && result.run?.id) {
+      window.location.href = `/workflows/runs/${result.run.id}`;
+      return;
+    }
+    setActionMessage(result.error ?? "Ошибка действия");
   };
   const fork = async () => {
     const response = await fetch("/api/workflow-runs", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ forkFromRunId: id }) });
@@ -132,6 +153,13 @@ export function RunViewer({ id }: { id: string }) {
   const canRetry = Boolean(run && RUN_STATUSES_FOR_RETRY.includes(run.status));
   const waitingFallback = run?.status === "waiting" && !waitingInterrupt;
   const capabilityWarnings = events.filter((event) => event.type === "run.preflight-warning");
+  const activity = useMemo(() => (run?.status === "running" ? runActivity(events) : null), [events, run?.status]);
+  const nodesById = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
+  useEffect(() => {
+    if (run?.status !== "running") return;
+    const timer = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [run?.status]);
 
   return <div className="space-y-4">
     <section className="space-y-2 rounded-xl border border-line bg-surface p-3">
@@ -140,6 +168,7 @@ export function RunViewer({ id }: { id: string }) {
         <span className="text-xs text-fg-muted">{run?.title}</span>
         {actionMessage ? <span className="text-xs text-fg-faint">{actionMessage}</span> : null}
         <span className="ml-auto flex flex-wrap gap-2">
+          {sprintRef?.runId ? <Button href={`/workflows/runs/${sprintRef.runId}`} title={"Спринт: " + sprintRef.title}>К спринту</Button> : null}
           <Button href="/agent?tab=tasks">К задачам</Button>
           <Button href="/agent?tab=workflow">К workflow</Button>
           {lessons && lessons.length ? <Button variant="accent" onClick={() => setLessonsOpen(true)}>Lessons learned ({lessons.length})</Button> : null}
@@ -147,7 +176,14 @@ export function RunViewer({ id }: { id: string }) {
           <Button variant="danger" onClick={() => action("abort")}>Abort</Button>
         </span>
       </div>
-      {waitingInterrupt ? <InterruptPanel info={waitingInterrupt} comment={comment} setComment={setComment} answer={answer} setAnswer={setAnswer} action={action} /> : canRetry ? (
+      {activity ? <div className="flex flex-wrap items-center gap-2 rounded border border-info/30 bg-page/60 px-2 py-1 text-xs">
+        <Chip tone="sky">выполняется</Chip>
+        <span className="font-semibold">{nodesById.get(activity.stepId)?.title ?? activity.stepId}</span>
+        {activity.section ? <span className="text-fg-muted">· {activity.section}</span> : null}
+        <span className="font-mono text-fg-muted">{activity.runtime}{activity.model ? " · " + activity.model : ""}</span>
+        <span className="ml-auto font-mono text-fg-faint">секция {secondsSince(activity.startedAt, nowMs)} с · активность {secondsSince(activity.lastAt, nowMs)} с назад</span>
+      </div> : null}
+      {waitingInterrupt ? <InterruptPanel info={waitingInterrupt} answer={answer} setAnswer={setAnswer} action={action} /> : canRetry ? (
         <div className="grid gap-2 md:grid-cols-3">
           <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Причина для повтора/skip/replace" />
           <Select value={stepId} onChange={setStepId} options={[{ value: "", label: "Выберите шаг" }, ...(run?.snapshot.nodes ?? []).map((node) => ({ value: node.id, label: node.title }))]} />
@@ -155,10 +191,11 @@ export function RunViewer({ id }: { id: string }) {
           <div className="flex flex-wrap gap-2 md:col-span-3">
             <Button onClick={() => action("restart")}>Повторить с начала</Button>
             <Button onClick={() => action("retry-from-success")} disabled={completedCount === 0}>Повторить с последнего удачного шага</Button>
+            {run && !run.workflowId.startsWith("sprint:") ? <Button onClick={relaunchCurrent}>Перезапустить актуальной версией workflow</Button> : null}
             <Button onClick={() => action("skip", { stepId })} disabled={!stepId}>Skip</Button>
             <Button onClick={() => action("replace", { stepId, runtime })} disabled={!stepId || !runtime}>Replace</Button>
           </div>
-          <Footnote className="md:col-span-3">Повтор с начала перезаписывает артефакты всех шагов; находки ошибок, возвраты и предложения lessons learned сохраняются. Повтор с последнего удачного шага перезаписывает только неуспешные шаги.</Footnote>
+          <Footnote className="md:col-span-3">Повтор с начала перезаписывает артефакты всех шагов; находки ошибок, возвраты и предложения lessons learned сохраняются. Повтор с последнего удачного шага перезаписывает только неуспешные шаги. Перезапуск актуальной версией создаёт новый прогон из текущей версии workflow с теми же входами - замороженный снапшот исходного прогона не применяется.</Footnote>
         </div>
       ) : waitingFallback ? (
         <div className="grid gap-2 md:grid-cols-3">
@@ -174,7 +211,11 @@ export function RunViewer({ id }: { id: string }) {
       ) : null}
     </section>
     {capabilityWarnings.length ? <Notice tone="info">Запуск продолжен без {capabilityWarnings.length} capabilities: {capabilityWarnings.map((event) => String(event.payload.capabilityKind ?? event.payload.code) + ":" + String(event.payload.capabilityId ?? "?")).join(", ")}. Агенты используют fallback и фиксируют ограничения в артефактах.</Notice> : null}
-    <div className="grid gap-3 lg:grid-cols-[1fr_2fr]">
+    {run?.workflowId.startsWith("sprint:") && sprint
+      ? <SprintView sprint={sprint} serviceSteps={run.snapshot.nodes.filter((node) => node.hidden).map((node) => ({ id: node.id, title: node.title, end: endStates.get(node.id) ?? null }))} nowMs={nowMs} />
+      : run?.workflowId.startsWith("sprint:")
+        ? <section className="rounded-xl border border-line bg-page p-3"><Notice>Данные спринта загружаются.</Notice></section>
+        : <div className="grid gap-3 lg:grid-cols-[1fr_2fr]">
       <section className="space-y-2">{nodes.map((n) => {
         const end = endStates.get(n.id);
         const selected = n.id === selectedStep;
@@ -184,13 +225,14 @@ export function RunViewer({ id }: { id: string }) {
           <div className="flex justify-between text-xs"><span>{n.title}</span><StepStateTone end={end} fallback={latest.get(n.id)} /></div>
           <div className="mt-1 flex flex-wrap gap-1">{stepRoles(n).map((role) => <Chip key={role} tone="dim" mono>{role}</Chip>)}</div>
           <StepProgressChips node={n} events={events} />
+          {activity?.stepId === n.id ? <div className="mt-1 font-mono text-[10px] text-info">{activity.section} · {secondsSince(activity.startedAt, nowMs)} с · активность {secondsSince(activity.lastAt, nowMs)} с назад</div> : null}
           <div className="font-mono text-[10px] text-fg-faint">{n.phase} · {n.id}</div>
         </button>;
       })}</section>
       {selectedStep
-        ? <StepDetailPanel runId={id} stepId={selectedStep} refreshKey={events.length} pending={waitingInterrupt?.stepId === selectedStep ? waitingInterrupt : null} runInput={run?.input ?? {}} action={action} />
+        ? <StepDetailPanel runId={id} stepId={selectedStep} refreshKey={events.length} pending={waitingInterrupt?.stepId === selectedStep ? waitingInterrupt : null} live={activity?.stepId === selectedStep ? activity : null} nowMs={nowMs} runInput={run?.input ?? {}} action={action} />
         : <section className="rounded-xl border border-line bg-page p-3"><Notice>Шагов в прогоне нет.</Notice></section>}
-    </div>
+        </div>}
     <LessonsModal
       open={lessonsOpen}
       lessons={lessons ?? []}
@@ -304,42 +346,96 @@ function attemptsFootnote(pending: InterruptInfo) {
   return pending.attempts ? <Footnote>Попытки: {pending.attempts.used ?? 0} из {pending.attempts.maxAttempts ?? "?"}</Footnote> : null;
 }
 
-/** Ручная приёмка: критерии ревью, артефакт шага и решение оператора. */
+/** Блок вопросов к оператору: список с полями ответов; ответы входят в задание на доработку. */
+function OperatorQuestions({ questions, answers, setAnswers, empty }: {
+  questions: string[];
+  answers: Record<number, string>;
+  setAnswers: (next: Record<number, string>) => void;
+  empty: string;
+}) {
+  if (!questions.length) return <Notice>{empty}</Notice>;
+  return <>
+    {questions.map((question, index) => <div key={index} className="rounded-lg border border-line bg-surface p-2">
+      <div className="text-xs font-semibold">{index + 1}. {question}</div>
+      <Textarea value={answers[index] ?? ""} onChange={(e) => setAnswers({ ...answers, [index]: e.target.value })} rows={2} placeholder="Ваш ответ" className="mt-1 w-full" />
+    </div>)}
+    <Footnote>Ответы войдут в задание на доработку вместе с комментарием.</Footnote>
+  </>;
+}
+
+/** Ручная приёмка: критерии ревью, артефакт шага и решение оператора с вкладкой вопросов контроля. */
 function AcceptanceDecision({ pending, artifacts, privacyFull, action }: { pending: InterruptInfo; artifacts: StepArtifact[]; privacyFull: boolean; action: (name: string, payload?: Record<string, unknown>) => Promise<void> }) {
+  const [tab, setTab] = useState<"decision" | "questions">("decision");
   const [comment, setComment] = useState("");
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const questions = pending.questions ?? [];
+  const answered = questions.filter((question, index) => (answers[index] ?? "").trim()).length;
+  const qa = questions.map((question, index) => ({ question, answer: (answers[index] ?? "").trim() })).filter((item) => item.answer);
+  const canReject = Boolean(comment.trim()) || answered > 0;
   const outputs = artifacts.filter((artifact) => !artifact.name.startsWith("__"));
   return <div className="space-y-2">
     <Notice tone="info">Ручная приёмка шага {pending.stepId}: {pending.title ?? ""}. Авто-проверки пройдены; решение за оператором. Отложить - пауза без расхода попыток.</Notice>
     <pre className="max-h-48 overflow-y-auto whitespace-pre-wrap rounded border border-line bg-page p-2 text-[11px]">{pending.summary ?? ""}</pre>
+    {pending.criteria?.length ? <Checklist title="Критерии приёмки" items={pending.criteria.map((item) => ({ criterion: item.criterion, status: item.status, note: item.note }))} /> : null}
     {outputs.length ? <div className="text-xs"><span className="font-semibold">Артефакт шага: </span>{privacyFull
       ? <details><summary className="cursor-pointer text-fg-muted">{outputs[0].name}</summary><pre className="mt-1 max-h-48 overflow-y-auto whitespace-pre-wrap rounded border border-line bg-page p-2 text-[10px] text-fg-faint">{outputs[0].content}</pre></details>
       : <span className="text-fg-muted">{outputs[0].name} - содержимое скрыто режимом приватности</span>}</div> : null}
     {attemptsFootnote(pending)}
-    <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} placeholder="Комментарий для отклонения или отложения (обязателен)" className="w-full" />
+    <Segmented
+      className="w-fit"
+      ariaLabel="Способ отклонения приёмки"
+      value={tab}
+      onChange={setTab}
+      options={[
+        { key: "decision", label: "Комментарий" },
+        { key: "questions", label: `Вопросы контроля${questions.length ? ` (${answered}/${questions.length})` : ""}` },
+      ]}
+    />
+    {tab === "questions"
+      ? <OperatorQuestions questions={questions} answers={answers} setAnswers={setAnswers} empty="Вопросов контроля нет - используйте вкладку «Комментарий»." />
+      : <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} placeholder="Комментарий для отклонения или отложения" className="w-full" />}
     <div className="flex flex-wrap gap-2">
       <Button variant="primary" onClick={() => action("accept", { decision: "approve" })}>Принять</Button>
       <Button disabled={!comment.trim()} onClick={() => action("accept", { decision: "defer", comment })}>Отложить</Button>
-      <Button variant="danger" disabled={!comment.trim()} onClick={() => action("accept", { decision: "reject", comment })}>Отклонить с комментарием</Button>
+      <Button variant="danger" disabled={!canReject} onClick={() => action("accept", { decision: "reject", comment, questions: qa })}>Отклонить</Button>
     </div>
   </div>;
 }
 
-/** Подтверждение плана шага. */
+/** Подтверждение плана шага с вкладкой вопросов по плану. */
 function PlanConfirmDecision({ pending, action }: { pending: InterruptInfo; action: (name: string, payload?: Record<string, unknown>) => Promise<void> }) {
+  const [tab, setTab] = useState<"decision" | "questions">("decision");
   const [comment, setComment] = useState("");
+  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const questions = pending.questions ?? [];
+  const answered = questions.filter((question, index) => (answers[index] ?? "").trim()).length;
+  const qa = questions.map((question, index) => ({ question, answer: (answers[index] ?? "").trim() })).filter((item) => item.answer);
+  const canReject = Boolean(comment.trim()) || answered > 0;
   return <div className="space-y-2">
     <Notice tone="info">Требуется подтверждение плана шага {pending.stepId}: {pending.title ?? ""}.</Notice>
     <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-line bg-page p-2 text-[11px]">{pending.plan ?? ""}</pre>
     {attemptsFootnote(pending)}
-    <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} placeholder="Комментарий для отклонения (обязателен)" className="w-full" />
+    <Segmented
+      className="w-fit"
+      ariaLabel="Способ отклонения плана"
+      value={tab}
+      onChange={setTab}
+      options={[
+        { key: "decision", label: "Комментарий" },
+        { key: "questions", label: `Вопросы по плану${questions.length ? ` (${answered}/${questions.length})` : ""}` },
+      ]}
+    />
+    {tab === "questions"
+      ? <OperatorQuestions questions={questions} answers={answers} setAnswers={setAnswers} empty="Вопросов по плану нет - используйте вкладку «Комментарий»." />
+      : <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} placeholder="Комментарий для отклонения" className="w-full" />}
     <div className="flex flex-wrap gap-2">
       <Button variant="primary" onClick={() => action("confirm-plan", { decision: "approve" })}>Подтвердить план</Button>
-      <Button variant="danger" disabled={!comment.trim()} onClick={() => action("confirm-plan", { decision: "reject", comment })}>Отклонить с комментарием</Button>
+      <Button variant="danger" disabled={!canReject} onClick={() => action("confirm-plan", { decision: "reject", comment, questions: qa })}>Отклонить</Button>
     </div>
   </div>;
 }
 
-function StepDetailPanel({ runId, stepId, refreshKey, pending, runInput, action }: { runId: string; stepId: string; refreshKey: number; pending: InterruptInfo | null; runInput: Record<string, unknown>; action: (name: string, payload?: Record<string, unknown>) => Promise<void> }) {
+function StepDetailPanel({ runId, stepId, refreshKey, pending, live, nowMs, runInput, action }: { runId: string; stepId: string; refreshKey: number; pending: InterruptInfo | null; live: RunActivity | null; nowMs: number; runInput: Record<string, unknown>; action: (name: string, payload?: Record<string, unknown>) => Promise<void> }) {
   const [detail, setDetail] = useState<StepDetail | null>(null);
   const [section, setSection] = useState<StepSection>("data");
   const [dataTab, setDataTab] = useState<DataTab | null>(null);
@@ -428,6 +524,7 @@ function StepDetailPanel({ runId, stepId, refreshKey, pending, runInput, action 
         <span className="ml-auto text-xs text-fg-muted">{detail ? `Событий: ${detail.events.length}, попыток: ${detail.attempts.length}, артефактов: ${detail.artifacts.length}` : "загрузка…"}</span>
       </div>
       <div className="font-mono text-[10px] text-fg-faint">{step ? [step.phase, step.id, stepRoles(step).join(", ")].filter(Boolean).join(" · ") : stepId}</div>
+      {live ? <div className="font-mono text-[10px] text-info">{live.section}{live.runtime ? " · " + live.runtime : ""}{live.model ? " · " + live.model : ""} · {secondsSince(live.startedAt, nowMs)} с · активность {secondsSince(live.lastAt, nowMs)} с назад</div> : null}
       {step?.description ? <div className="text-[11px] text-fg-muted">{step.description}</div> : null}
       <Segmented
         className="w-fit max-w-full flex-wrap"
@@ -593,41 +690,14 @@ function ArtifactModal({ artifact, fullContent, onClose }: { artifact: StepArtif
   </Modal>;
 }
 
-function InterruptPanel({ info, comment, setComment, answer, setAnswer, action }: {
+function InterruptPanel({ info, answer, setAnswer, action }: {
   info: InterruptInfo;
-  comment: string;
-  setComment: (value: string) => void;
   answer: string;
   setAnswer: (value: string) => void;
   action: (name: string, payload?: Record<string, unknown>) => Promise<void>;
 }) {
-  const attempts = info.attempts ? <Footnote>Попытки: {info.attempts.used ?? 0} из {info.attempts.maxAttempts ?? "?"}</Footnote> : null;
-  if (info.kind === "plan-confirm") {
-    return <div className="space-y-2">
-      <Notice tone="info">Требуется подтверждение плана шага {info.stepId}: {info.title ?? ""}. Закрытие окна оставляет прогон на паузе; карточка подтверждения доступна на доске задач.</Notice>
-      <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-line bg-page p-2 text-[11px]">{info.plan ?? ""}</pre>
-      {attempts}
-      <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} placeholder="Комментарий для отклонения плана (обязателен)" className="w-full" />
-      <div className="flex gap-2">
-        <Button variant="primary" onClick={() => action("confirm-plan", { decision: "approve" })}>Подтвердить план</Button>
-        <Button variant="danger" disabled={!comment.trim()} onClick={() => action("confirm-plan", { decision: "reject", comment })}>Отклонить с комментарием</Button>
-      </div>
-    </div>;
-  }
-  if (info.kind === "acceptance") {
-    return <div className="space-y-2">
-      <Notice tone="info">Ручная приёмка шага {info.stepId}: {info.title ?? ""}. Отложить - пауза без расхода попыток.</Notice>
-      <pre className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-line bg-page p-2 text-[11px]">{info.summary ?? ""}</pre>
-      {info.criteria?.length ? <Checklist title="Критерии приёмки" items={info.criteria.map((item) => ({ criterion: item.criterion, status: item.status, note: item.note }))} /> : null}
-      {attempts}
-      <Textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={2} placeholder="Комментарий для отклонения (обязателен)" className="w-full" />
-      <div className="flex gap-2">
-        <Button variant="primary" onClick={() => action("accept", { decision: "approve" })}>Принять</Button>
-        <Button disabled={!comment.trim()} onClick={() => action("accept", { decision: "defer" })}>Отложить</Button>
-        <Button variant="danger" disabled={!comment.trim()} onClick={() => action("accept", { decision: "reject", comment })}>Отклонить с комментарием</Button>
-      </div>
-    </div>;
-  }
+  if (info.kind === "plan-confirm") return <PlanConfirmDecision pending={info} action={action} />;
+  if (info.kind === "acceptance") return <AcceptanceDecision pending={info} artifacts={[]} privacyFull={false} action={action} />;
   if (info.kind === "input-rework") {
     return <div className="space-y-2">
       <Notice tone="info">Входной контроль вернул вход шага {info.stepId}: {info.title ?? ""} на доработку. Выберите вариант формулировки или перепишите задание сами.</Notice>
@@ -639,7 +709,7 @@ function InterruptPanel({ info, comment, setComment, answer, setAnswer, action }
           <p className="mt-0.5 text-[11px] text-fg-muted">{variant.text}</p>
         </button>)}
       </div> : null}
-      {attempts}
+      {attemptsFootnote(info)}
       <Textarea value={answer} onChange={(e) => setAnswer(e.target.value)} rows={4} placeholder="Улучшенный вход (обязателен): клик по варианту подставит его текст; текст можно отредактировать или переписать задание полностью" className="w-full" />
       <Button variant="primary" disabled={!answer.trim()} onClick={() => action("rework-input", { answer })}>Отправить на повторную проверку</Button>
     </div>;

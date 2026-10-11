@@ -1,0 +1,26 @@
+apiVersion: harness/v1
+kind: RoadmapItem
+id: TASK-3C1DB5A915B9D940
+title: Агрегат стоимости диалога с явной основой расчёта
+description: "Агрегат токенов по диалогу и оценка стоимости по docs/pricing.md; метод согласован с docs/stats.md (двойной учёт: зафиксированная стоимость + оценка); при расхождении схем агрегации (totals против records) основа расчёта явно указана в UI. Трассировка: Ф5→H1 (S3, гипотеза — старт после гейта). Проверка (DoD): агрегат сходится с ручным подсчётом на тест-диалоге; основа расчёта видна в UI (AC Ф5 2, 4, 5). Зависимости: счётчик токенов на ход; пересчёт baseline (схемы агрегации)."
+type: task
+status: inbox
+priority: normal
+estimate:
+  value: 3
+  effort: 1
+labels:
+  - backlog
+  - feature-discovery
+dependencies: []
+acceptanceCriteria: []
+workflowId: feature-discovery
+runIds:
+  - run-1791492180504-9e4d95d5
+taskRefs: []
+provenance:
+  source: workflow-plan
+  runId: run-1791492180504-9e4d95d5
+  fingerprint: 3c1db5a915b9d940
+createdAt: 2026-10-09T19:47:00.202Z
+updatedAt: 2026-10-09T19:47:00.202Z

@@ -2,7 +2,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { DOC_MATCH, readAllowedFile, readPolicy } from "@/core/memory";
-import { graphifyOutDir, graphifyWorkspaceDir, graphifyWorkspaceNames } from "@/core/graphify";
+import { graphifyAllInOneDir, graphifyOutDir, graphifyWorkspaceDir, graphifyWorkspaceNames } from "@/core/graphify";
 import { workspaceDirs } from "@/core/state";
 import { serverContext } from "@/lib/server-context";
 
@@ -22,9 +22,13 @@ export async function GET(request: Request) {
   }
   const dirs = workspaceDirs(state);
   const names = graphifyWorkspaceNames(dirs);
-  const graphifyWikiRoots = dirs.map((dir) =>
-    path.join(graphifyOutDir(graphifyWorkspaceDir(repoRoot, names.get(dir) ?? path.basename(dir))), "wiki"),
-  );
+  const graphifyWikiRoots = [
+    ...dirs.map((dir) =>
+      path.join(graphifyOutDir(graphifyWorkspaceDir(repoRoot, names.get(dir) ?? path.basename(dir))), "wiki"),
+    ),
+    // единая wiki All-in-One (объединённый граф папок)
+    path.join(graphifyOutDir(graphifyAllInOneDir(repoRoot)), "wiki"),
+  ];
   const policy = readPolicy(homedir(), dirs, graphifyWikiRoots);
   const result = await readAllowedFile(filePath, policy);
   if (!result.ok) {

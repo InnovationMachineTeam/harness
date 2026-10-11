@@ -9,6 +9,7 @@ import { scanProcessesSync } from "@/lib/signals/processes";
 export const opencodeAdapter: RuntimeAdapter = {
   id: "opencode",
   displayName: "OpenCode",
+  country: "world",
   processPattern: /opencode/,
   isInstalled: (ctx) =>
     anyExists([join(ctx.home, ".config", "opencode"), join(ctx.home, ".local", "share", "opencode")]),

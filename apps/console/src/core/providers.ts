@@ -7,6 +7,8 @@
 
 /* --------------------------------- типы --------------------------------- */
 
+import type { VendorCountry } from "@/core/types";
+
 /** Modeltiers - те же роли, что в конфигах рантаймов (.agents/runtime). */
 export type ModelTier = "fast" | "standard" | "strong" | "subagents";
 
@@ -54,6 +56,8 @@ export interface ProviderPreset {
   label: string;
   /** Онлайн (внешний API) или локальный (на машине пользователя). */
   kind: "online" | "local";
+  /** Страна юрисдикции компании провайдера; локальные сервисы - "world". */
+  country: VendorCountry;
   /** Env-переменная для API-ключа; null - ключ не требуется. */
   apiKeyEnv: string | null;
   /** Базовый URL OpenAI-совместимого (или родного) API; редактируется. */
@@ -141,6 +145,8 @@ export interface ProviderDTO {
   id: string;
   label: string;
   kind: "online" | "local";
+  /** Страна юрисдикции провайдера (фильтр карточек). */
+  country: VendorCountry;
   apiKeyEnv: string | null;
   baseUrl: string;
   docsUrl?: string;
@@ -176,6 +182,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "openai",
     label: "OpenAI",
     kind: "online",
+    country: "us",
     apiKeyEnv: "OPENAI_API_KEY",
     baseUrl: "https://api.openai.com/v1",
     verify: { kind: "openai" },
@@ -187,6 +194,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "anthropic",
     label: "Anthropic Claude",
     kind: "online",
+    country: "us",
     apiKeyEnv: "ANTHROPIC_API_KEY",
     baseUrl: "https://api.anthropic.com/v1",
     verify: { kind: "anthropic" },
@@ -203,6 +211,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "gemini",
     label: "Google Gemini",
     kind: "online",
+    country: "us",
     apiKeyEnv: "GEMINI_API_KEY",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta",
     verify: { kind: "gemini" },
@@ -214,6 +223,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "deepseek",
     label: "DeepSeek",
     kind: "online",
+    country: "cn",
     apiKeyEnv: "DEEPSEEK_API_KEY",
     baseUrl: "https://api.deepseek.com/v1",
     verify: { kind: "openai" },
@@ -230,6 +240,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "kimi",
     label: "Moonshot Kimi",
     kind: "online",
+    country: "cn",
     apiKeyEnv: "MOONSHOT_API_KEY",
     baseUrl: "https://api.moonshot.ai/v1",
     verify: { kind: "openai" },
@@ -241,6 +252,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "openrouter",
     label: "OpenRouter",
     kind: "online",
+    country: "us",
     apiKeyEnv: "OPENROUTER_API_KEY",
     baseUrl: "https://openrouter.ai/api/v1",
     verify: { kind: "openai" },
@@ -252,6 +264,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "groq",
     label: "Groq",
     kind: "online",
+    country: "us",
     apiKeyEnv: "GROQ_API_KEY",
     baseUrl: "https://api.groq.com/openai/v1",
     verify: { kind: "openai" },
@@ -268,6 +281,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "xai",
     label: "xAI Grok",
     kind: "online",
+    country: "us",
     apiKeyEnv: "XAI_API_KEY",
     baseUrl: "https://api.x.ai/v1",
     verify: { kind: "openai" },
@@ -279,6 +293,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "together",
     label: "Together AI",
     kind: "online",
+    country: "us",
     apiKeyEnv: "TOGETHER_API_KEY",
     baseUrl: "https://api.together.xyz/v1",
     verify: { kind: "openai" },
@@ -295,6 +310,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "mistral",
     label: "Mistral AI",
     kind: "online",
+    country: "eu",
     apiKeyEnv: "MISTRAL_API_KEY",
     baseUrl: "https://api.mistral.ai/v1",
     verify: { kind: "openai" },
@@ -311,6 +327,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "gigachat",
     label: "GigaChat (Сбер)",
     kind: "online",
+    country: "ru",
     apiKeyEnv: "GIGACHAT_AUTH_KEY",
     baseUrl: "https://api.giga.chat/v1",
     auth: {
@@ -338,6 +355,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "yandexgpt",
     label: "YandexGPT (Yandex Cloud)",
     kind: "online",
+    country: "ru",
     apiKeyEnv: "YANDEXGPT_API_KEY",
     baseUrl: "https://llm.api.cloud.yandex.net/v1",
     verify: { kind: "openai" },
@@ -358,6 +376,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "ollama",
     label: "Ollama (локально)",
     kind: "local",
+    country: "world",
     apiKeyEnv: null,
     baseUrl: "http://localhost:11434/v1",
     verify: { kind: "openai" },
@@ -370,6 +389,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "lmstudio",
     label: "LM Studio (локально)",
     kind: "local",
+    country: "world",
     apiKeyEnv: null,
     baseUrl: "http://localhost:1234/v1",
     verify: { kind: "openai" },
@@ -387,6 +407,7 @@ export const PROVIDER_PRESETS: readonly ProviderPreset[] = [
     id: "vllm",
     label: "vLLM (локально)",
     kind: "local",
+    country: "world",
     apiKeyEnv: null,
     baseUrl: "http://localhost:8000/v1",
     verify: { kind: "openai" },

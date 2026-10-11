@@ -53,7 +53,7 @@
     "filesystem": { "read": true, "write": true },
     "git": { "commit": true, "push": false, "forcePush": false },
     "shell": "policy-guarded",
-    "mcp": [".mcp.json", ".claude/settings.json"],
+    "mcp": [".mcp.json", "~/.claude.json"],
     "notes": "Tool safety is enforced by native PreToolUse hooks; read and write follow the host's own permission model (plan and accept modes). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
   }
 }

@@ -73,6 +73,7 @@ function dto(
     id: preset.id,
     label: preset.label,
     kind: preset.kind,
+    country: preset.country,
     apiKeyEnv: preset.apiKeyEnv,
     baseUrl: preset.baseUrl,
     docsUrl: preset.docsUrl,

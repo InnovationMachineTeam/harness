@@ -45,7 +45,7 @@
     "filesystem": { "read": true, "write": true },
     "git": { "commit": true, "push": false, "forcePush": false },
     "shell": "policy-guarded",
-    "mcp": [".mcp.json", ".cursor/mcp.json"],
+    "mcp": ["~/.cursor/mcp.json"],
     "notes": "Approve and deny live in the IDE's own agent settings; the guard policy is enforced through the preToolUse hook in .cursor/hooks.json (fail-closed on hook errors). Structural changes to roles, agents or skills always need explicit user approval, in every mode."
   }
 }
