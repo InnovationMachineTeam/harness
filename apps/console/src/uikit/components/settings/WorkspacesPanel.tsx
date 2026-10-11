@@ -22,7 +22,7 @@ interface CloneProject {
   path: string;
 }
 
-/** Вкладка "Рабочие папки" (Настройки): папки работы рантаймов и тогглы OpenWiki/Graphify/Docs. */
+/** Вкладка "Workspaces" (Настройки): папки работы рантаймов и тогглы OpenWiki/Graphify/Docs. */
 export function WorkspacesPanel() {
   const [data, setData] = useState<WorkspacesData | null>(null);
   const [newDir, setNewDir] = useState("");

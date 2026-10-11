@@ -22,7 +22,7 @@ export default function MemoryPage() {
   return (
     <Page
       title="Знание"
-      description="Документы рабочих папок, вики OpenWiki, графы знаний Graphify и вкладка Память - memory-файлы рантаймов; всё читается с диска. Включение папок в OpenWiki/Graphify/Docs - тогглами в &quot;Настройках → Рабочих папках&quot;."
+      description="Документы рабочих папок, вики OpenWiki, графы знаний Graphify и вкладка Память - memory-файлы рантаймов; всё читается с диска. Включение папок в OpenWiki/Graphify/Docs - тогглами в &quot;Настройках → Workspaces&quot;."
     >
       <Tabs
         tabs={TABS}

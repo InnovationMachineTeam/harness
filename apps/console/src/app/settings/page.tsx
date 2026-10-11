@@ -7,6 +7,7 @@ import { useActiveProviders } from "@/uikit/components/providers/useActiveProvid
 import { AiSdkPanel } from "@/uikit/components/settings/AiSdkPanel";
 import { GuardrailsPanel } from "@/uikit/components/settings/GuardrailsPanel";
 import { McpSettingsPanel } from "@/uikit/components/settings/McpSettingsPanel";
+import { ModsSettingsPanel } from "@/uikit/components/settings/ModsSettingsPanel";
 import { OptimizationPanel } from "@/uikit/components/settings/OptimizationPanel";
 import { PluginsPanel } from "@/uikit/components/settings/PluginsPanel";
 import { SkillsSettingsPanel } from "@/uikit/components/settings/SkillsSettingsPanel";
@@ -56,17 +57,18 @@ const TOOL_CASES: { id: "openwiki" | "graphify"; title: string; url: string; des
   },
 ];
 
-type Tab = "general" | "workflow" | "guardrails" | "design" | "workspaces" | "skills" | "mcp" | "plugins" | "tools" | "optimization" | "update";
+type Tab = "general" | "workflow" | "guardrails" | "design" | "workspaces" | "skills" | "mcp" | "plugins" | "mods" | "tools" | "optimization" | "update";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "general", label: "Основные" },
+  { key: "workspaces", label: "Workspaces" },
   { key: "workflow", label: "Workflow" },
   { key: "guardrails", label: "Guardrails" },
   { key: "design", label: "Внешний вид" },
-  { key: "workspaces", label: "Рабочие папки" },
   { key: "skills", label: "Навыки" },
   { key: "mcp", label: "MCP" },
   { key: "plugins", label: "Плагины" },
+  { key: "mods", label: "Моды" },
   { key: "tools", label: "Инструменты" },
   { key: "optimization", label: "Оптимизация" },
   { key: "update", label: "Обновить" },
@@ -81,7 +83,7 @@ interface ToolLlmState {
 
 const TAB_DESCRIPTION: Record<Tab, ReactNode> = {
   general: null, // описание рендерится с данными состояния (звезда рантайма)
-  workflow: <>Privacy analytics, порядок дизайн-провайдеров и фиксированная стоимость подписки для Статистики.</>,
+  workflow: <>Privacy analytics и недоступные capabilities workflow. Порядок дизайн-провайдеров настроен в пространстве рантайма, вкладка "Настройки".</>,
   guardrails: "Аудит исполняемой политики: правила, тестовые кейсы, runtime hooks, code-интеграции, Husky и CI.",
   design: (
     <>
@@ -95,6 +97,7 @@ const TAB_DESCRIPTION: Record<Tab, ReactNode> = {
   mcp: "Глобальный реестр MCP-серверов: изменения синкаются в локальные файлы всех рантаймов в их форматах.",
   plugins:
     "Плагин - бандл MCP-серверов (и заявленных навыков). Включённый плагин добавляет свои MCP в общий реестр и синк; выключенный - убирает.",
+  mods: "Моды - плагины Claude Code с hooks-модулями (собственный UI над промптом, перехват действий). Каталог модов устанавливается через официальный marketplace; команды выполняет CLI claude plugin.",
   tools: "Жизненный цикл инструментов экономии контекста и статистика их использования.",
   optimization:
     "Отчёты оптимизации: Claude Insights (срез Claude Code) и CodeBurn (расход токенов по всем рантаймам). Отчёт формирует провайдер; \"Оптимизировать\" запускает выбранные рекомендации у исполнителя из \"Основных\".",
@@ -192,7 +195,7 @@ export default function SettingsPage() {
 
   return (
     <Page title="Настройки" description={description}>
-      <Tabs tabs={TABS} active={tab} onChange={setTab} className="mb-6 border-b border-line/60 pb-2" />
+      <Tabs scroll tabs={TABS} active={tab} onChange={setTab} className="mb-6 border-b border-line/60 pb-2" />
 
       {tab === "general" ? (
         <>
@@ -289,6 +292,8 @@ export default function SettingsPage() {
         <McpSettingsPanel />
       ) : tab === "plugins" ? (
         <PluginsPanel />
+      ) : tab === "mods" ? (
+        <ModsSettingsPanel />
       ) : tab === "optimization" ? (
         <OptimizationPanel />
       ) : tab === "update" ? (

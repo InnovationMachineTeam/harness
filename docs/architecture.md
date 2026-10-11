@@ -77,6 +77,8 @@
 | `GET /api/plugins` | Установленные плагины + каталоги marketplace |
 | `POST/PATCH/DELETE /api/plugins` | Установить / вкл-выкл / удалить плагин (+синк); хуки плагина (install/enable/disable/remove) - `core/lifecycleHooks.ts`, cwd - обязательная рабочая папка, ошибки - `hookErrors` |
 | `POST/DELETE /api/plugins/marketplace` | Добавить/убрать marketplace |
+| `GET /api/mods` | Каталог модов Claude Code (`core/mods.ts`) + статусы зеркала `state.mods`; `?reconcile=1` сверяет статусы с CLI (`claude plugin list --json`, `claude plugin marketplace list --json`) |
+| `POST/PATCH/DELETE /api/mods` | Установить (`claude plugin marketplace add` + `claude plugin install --scope user -y`; clone-источники сначала shallow-clone в `.agents/.tmp/mods/`), вкл/выкл (`claude plugin enable/disable`), удалить (`claude plugin uninstall`); без CLI claude - ошибка |
 | `GET /api/processes?runtime=` | Процессы рантайма (uptime/cpu/mem/kind) |
 | `POST /api/processes/action` | stop (SIGTERM→SIGKILL) / restart (только .app) |
 | `GET /api/monitoring/processes` | Все процессы консоли (рантаймы/MCP/провайдеры/инструменты) с ресурсами и маркером "безопасно"; детали - [operations.md](operations.md) ("Мониторинг: процессы") |
@@ -167,6 +169,7 @@
     "langgraphExport": { "providerId", "at" }
   },
   "plugins": { "installed": {}, "marketplaces": [] },
+  "mods": { "installed": {}, "marketplaces": [] },
   "workspaces": { "mandatory": "<путь>", "additional": [], "openwiki": [], "graphify": [] },
   "tools": { "installed": { "<id>": { "runtimes", "params", "at", "enabled" } } },
   "openwikiLlm": { "preset", "apiKey", "baseUrl", "modelId", "providerId?" },

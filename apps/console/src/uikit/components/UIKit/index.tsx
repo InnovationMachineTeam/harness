@@ -564,15 +564,26 @@ export function Tabs<T extends string>({
   onChange,
   size = "md",
   className,
+  scroll = false,
 }: {
   tabs: readonly { key: T; label: string; badge?: number | string }[];
   active: T;
   onChange: (key: T) => void;
   size?: "sm" | "md";
   className?: string;
+  /** Одна строка с горизонтальной прокруткой (скроллбар скрыт) вместо переноса на вторую строку. */
+  scroll?: boolean;
 }) {
   return (
-    <div role="tablist" className={cx("flex flex-wrap items-center gap-1", className)}>
+    <div
+      role="tablist"
+      className={cx(
+        scroll
+          ? "flex flex-nowrap items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          : "flex flex-wrap items-center gap-1",
+        className,
+      )}
+    >
       {tabs.map((tab) => (
         <button
           key={tab.key}
@@ -582,6 +593,7 @@ export function Tabs<T extends string>({
           onClick={() => onChange(tab.key)}
           className={cx(
             "rounded-lg transition-colors",
+            scroll ? "shrink-0 whitespace-nowrap" : null,
             size === "md" ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs",
             tab.key === active ? "bg-raised text-fg" : "text-fg-muted hover:bg-surface hover:text-fg",
           )}

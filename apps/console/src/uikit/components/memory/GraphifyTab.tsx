@@ -289,7 +289,7 @@ export function GraphifyTab() {
         <EmptyState>
           Ни одна рабочая папка не включена в Graphify. Включите тоггл Graphify в разделе{" "}
           <Link href="/settings?tab=workspaces" className="text-info underline underline-offset-2">
-            Рабочие папки
+            Workspaces
           </Link>
           .
         </EmptyState>

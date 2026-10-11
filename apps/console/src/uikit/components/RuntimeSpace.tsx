@@ -9,6 +9,7 @@ import { effectiveTaskRuntimeSelector, useConsoleStore } from "@/store/console";
 import { Button, Chip, Notice, Panel, SectionLabel, Tabs } from "@/uikit";
 import { BillingPanel } from "./runtime/BillingPanel";
 import { CapabilityChips } from "./CapabilityChips";
+import { DesignProvidersPanel } from "./runtime/DesignProvidersPanel";
 import { ModelTable } from "./ModelTable";
 import { ProcessTable } from "./ProcessTable";
 import { RuntimeMemoryPanel } from "./memory/RuntimeMemoryPanel";
@@ -16,7 +17,7 @@ import { SessionPanel } from "./SessionPanel";
 import { SkillsPanel } from "./SkillsPanel";
 import { StatusBadge } from "./StatusBadge";
 
-type Tab = "overview" | "issues" | "skills" | "sessions" | "processes" | "subscriptions" | "memory";
+type Tab = "overview" | "issues" | "skills" | "sessions" | "processes" | "subscriptions" | "settings" | "memory";
 
 const TABS: { key: Tab; label: string }[] = [
   { key: "overview", label: "Обзор" },
@@ -25,6 +26,7 @@ const TABS: { key: Tab; label: string }[] = [
   { key: "sessions", label: "Сессии" },
   { key: "processes", label: "Процессы" },
   { key: "subscriptions", label: "Подписки" },
+  { key: "settings", label: "Настройки" },
   { key: "memory", label: "Память" },
 ];
 
@@ -50,7 +52,11 @@ export function RuntimeSpace({
   isDefault: boolean;
   guardActivity: { at: string; source: string } | null;
 }) {
-  const [tab, setTab] = useState<Tab>(initialTab);
+  // вкладка применяется после монтирования: чтение URL при SSR давало ошибку гидратации
+  const [tab, setTab] = useState<Tab>("overview");
+  useEffect(() => {
+    setTab(initialTab());
+  }, []);
   const [nowMs, setNowMs] = useState(() => Date.now());
   const starred = useConsoleStore((s) => s.defaultRuntime) === snapshot.id || isDefault;
   const setDefaultRuntime = useConsoleStore((s) => s.setDefaultRuntime);
@@ -117,6 +123,7 @@ export function RuntimeSpace({
       {tab === "subscriptions" ? (
         <BillingPanel runtime={snapshot.id} models={(snapshot.vendor?.models ?? []).map((m) => ({ tier: m.tier, model: m.model }))} />
       ) : null}
+      {tab === "settings" ? <DesignProvidersPanel runtime={snapshot.id} /> : null}
       {tab === "memory" ? <RuntimeMemoryPanel runtime={snapshot.id} /> : null}
     </main>
   );

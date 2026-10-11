@@ -298,3 +298,52 @@ function hasMcpPresetText(hasMcpPreset?: boolean): string {
     ? "MCP-пресет инструмента добавляется в общий реестр и синкается во все таргеты."
     : "MCP-пресета у инструмента нет - только системный пакет и интеграции.";
 }
+
+/* ------------------------------ моды (Claude Code) ------------------------------ */
+
+export function modLifecycleInfo(mod: {
+  displayName: string;
+  plugin: string;
+  marketplace: { kind: "github"; source: string; name: string } | { kind: "clone"; repo: string; subPath: string; name: string };
+  requires?: string;
+  prerequisite?: { label: string; command: string };
+  notes?: string;
+}): LifecycleInfo {
+  const cli = (args: string) => `$ claude ${args}`;
+  const source = mod.marketplace.kind === "github" ? mod.marketplace.source : `${mod.marketplace.repo} → ${mod.marketplace.subPath}`;
+  const diskState = ["~/.claude/plugins/ (marketplaces/, cache/)", "enabledPlugins в ~/.claude/settings.json", "state.mods.installed (.agents/console/state.json)"];
+  return {
+    domain: "Мод (Claude Code)",
+    name: mod.displayName,
+    install: {
+      steps: [
+        `marketplace добавляется, если его ещё нет: ${cli(`plugin marketplace add ${source}`)}; для источника-репозитория сначала выполняется shallow-clone в .agents/.tmp/mods/.`,
+        `Затем установка: ${cli(`plugin install ${mod.plugin} --scope user -y`)}.`,
+        ...(mod.prerequisite ? [`Предварительное требование (консоль его не выполняет): ${mod.prerequisite.label} - ${cli(mod.prerequisite.command)}.`] : []),
+        ...(mod.requires ? [`Требуется Claude Code ${mod.requires}.`] : []),
+        "Мод загружается в новых сессиях Claude Code; текущая сессия его не подхватывает.",
+      ],
+      affected: diskState,
+      hooks: [],
+    },
+    enable: {
+      steps: [`Выполняется ${cli(`plugin enable ${mod.plugin}`)}.`, "Мод снова загружается в новых сессиях."],
+      affected: ["enabledPlugins в ~/.claude/settings.json", "state.mods.installed"],
+      hooks: [],
+    },
+    disable: {
+      steps: [`Выполняется ${cli(`plugin disable ${mod.plugin}`)}.`, "Мод остаётся установленным, но не загружается в новых сессиях."],
+      affected: ["enabledPlugins в ~/.claude/settings.json", "state.mods.installed"],
+      hooks: [],
+    },
+    remove: {
+      steps: [
+        `Выполняется ${cli(`plugin uninstall ${mod.plugin}`)}.`,
+        "Marketplace остаётся добавленным; мод возвращается повторной установкой.",
+        ...(mod.notes ? [`Примечание: ${mod.notes}`] : []),
+      ],
+      affected: ["~/.claude/plugins/cache/", "state.mods.installed"],
+      hooks: [],
+    },
+  };
+}

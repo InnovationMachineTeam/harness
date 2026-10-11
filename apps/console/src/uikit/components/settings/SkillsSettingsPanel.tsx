@@ -181,7 +181,7 @@ function GlobalToggleSection() {
 
 interface SkillLinkEntry {
   name: string;
-  kind: "link" | "real" | "broken" | "other";
+  kind: "link" | "mirror" | "real" | "broken" | "other";
   points?: string;
 }
 

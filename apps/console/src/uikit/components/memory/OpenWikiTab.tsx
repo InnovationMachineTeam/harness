@@ -182,7 +182,7 @@ export function OpenWikiTab() {
         <EmptyState>
           Ни одна рабочая папка не включена в OpenWiki. Включите тоггл OpenWiki в разделе{" "}
           <Link href="/settings?tab=workspaces" className="text-info underline underline-offset-2">
-            Рабочие папки
+            Workspaces
           </Link>
           .
         </EmptyState>

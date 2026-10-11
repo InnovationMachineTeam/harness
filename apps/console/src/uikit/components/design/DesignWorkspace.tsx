@@ -273,7 +273,7 @@ export function DesignWorkspace({ mandatoryDir }: { mandatoryDir: string }) {
   };
 
   if (!mandatoryDir) {
-    return <EmptyState>Обязательная рабочая папка не настроена - задайте её в "Настройках → Рабочих папках".</EmptyState>;
+    return <EmptyState>Обязательная рабочая папка не настроена - задайте её в "Настройках → Workspaces".</EmptyState>;
   }
 
   const presetOptions: SelectOption[] = themeIndex.map((item) => ({
@@ -290,7 +290,7 @@ export function DesignWorkspace({ mandatoryDir }: { mandatoryDir: string }) {
     <div className="flex flex-col gap-4">
       <Footnote>
         Рабочая директория: <span className="font-mono text-fg-muted">{mandatoryDir}</span> (обязательная папка; меняется в
-        "Настройках → Рабочих папках"). Контекст синхронизируется в CLAUDE.md и AGENTS.md этой папки.
+        "Настройках → Workspaces"). Контекст синхронизируется в CLAUDE.md и AGENTS.md этой папки.
       </Footnote>
       {error ? <Notice tone="error">{error}</Notice> : null}
       {!status ? (

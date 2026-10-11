@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
@@ -251,6 +252,11 @@ export interface ConsoleState {
     installed: Record<string, import("./plugins").PluginDef & { enabled: boolean }>;
     marketplaces: { name: string; url: string }[];
   };
+  /** Моды Claude Code: зеркало статусов плагинов; источник истины - CLI claude plugin (core/mods.ts). */
+  mods: {
+    installed: Record<string, import("./mods").InstalledMod>;
+    marketplaces: string[];
+  };
   workspaces: {
     mandatory: string;
     additional: string[];
@@ -366,6 +372,7 @@ export function defaultState(repoRoot: string): ConsoleState {
       optimization: normalizeOptimization(null),
     },
     plugins: { installed: {}, marketplaces: [] },
+    mods: { installed: {}, marketplaces: [] },
     workspaces: {
       mandatory: repoRoot,
       // основные рабочие папки: доки репозитория и локальные проекты (sources)
@@ -441,6 +448,10 @@ export async function loadConsoleState(repoRoot: string): Promise<ConsoleState> 
         installed: raw.plugins?.installed ?? {},
         marketplaces: raw.plugins?.marketplaces ?? [],
       },
+      mods: {
+        installed: raw.mods?.installed ?? {},
+        marketplaces: raw.mods?.marketplaces ?? [],
+      },
       workspaces: {
         mandatory: raw.workspaces?.mandatory ? expandHome(raw.workspaces.mandatory) : fallback.workspaces.mandatory,
         additional: (raw.workspaces?.additional ?? fallback.workspaces.additional).map(expandHome),
@@ -479,11 +490,11 @@ export async function loadConsoleState(repoRoot: string): Promise<ConsoleState> 
   }
 }
 
-/** Атомарная запись: tmp-файл в том же каталоге + rename. */
+/** Атомарная запись: tmp-файл с уникальным суффиксом (параллельные сохранения в одну миллисекунду не совпадают именами) + rename. */
 export async function saveConsoleState(repoRoot: string, state: ConsoleState): Promise<void> {
   const file = stateFilePath(repoRoot);
   await mkdir(path.dirname(file), { recursive: true });
-  const tmp = `${file}.tmp`;
+  const tmp = `${file}.${process.pid}.${randomUUID()}.tmp`;
   await writeFile(tmp, `${JSON.stringify(state, null, 2)}\n`, "utf8");
   await rename(tmp, file);
 }
