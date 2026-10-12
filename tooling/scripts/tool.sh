@@ -32,6 +32,9 @@ TOOL_SPECS=(
   "open-design|od|дизайн-воркспейс с MCP - установи desktop-приложение (open-design.ai); which od может находить системный octal-dump"
   "agentplane|agentplane|task lifecycle и ACR - используй встроенный task adapter Harness"
   "codeburn|codeburn|анализ расхода AI-токенов - установи глобально (bun add -g codeburn / npm install -g codeburn)"
+  "neo4j|neo4j|графовая СУБД памяти - установи через консоль (Настройки → Инструменты) или brew install neo4j"
+  "lightrag|lightrag-server|графовый RAG - установи через консоль (Знание → Связки) или uv tool install 'lightrag-hku[api,offline-llm,offline-storage]'"
+  "qdrant|qdrant|векторная СУБД памяти - установи через консоль (Настройки → Инструменты) или релиз GitHub (docs/tools.md)"
 )
 
 usage() {
@@ -41,7 +44,7 @@ usage() {
   status        статус всех инструментов (on/off/missing)
   <id> <args…>  запустить инструмент; exit 3 = недоступен (обычный порядок работы)
 
-Инструменты: serena, qmd, codegraph, graphify, rtk, headroom, nx, open-design, agentplane, codeburn.
+Инструменты: serena, qmd, codegraph, graphify, rtk, headroom, nx, open-design, agentplane, codeburn, neo4j, lightrag, qdrant.
 Состояние - .agents/console/tools.env (консоль), fallback - наличие бина в PATH.
 EOF
 }
@@ -125,4 +128,7 @@ case "$id" in
   open-design) exec od "$@" ;;
   agentplane) exec agentplane "$@" ;;
   codeburn)  exec codeburn "$@" ;;
+  neo4j)     exec neo4j "$@" ;;
+  lightrag)  exec lightrag-server "$@" ;;
+  qdrant)    exec qdrant "$@" ;;
 esac

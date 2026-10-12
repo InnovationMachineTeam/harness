@@ -1,6 +1,6 @@
 # Инструменты экономии контекста
 
-Реестр внешних инструментов (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, OpenWiki, Open Design, AgentPlane). Канонические места:
+Реестр внешних инструментов (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, OpenWiki, Open Design, AgentPlane, CodeBurn и связки памяти: Neo4j, LightRAG, Qdrant). Канонические места:
 
 - плагины инструментов - `apps/console/src/core/tools/<id>.ts` (по модулю на инструмент; как написать новый - [tools-dev.md](tools-dev.md)); реестр-агрегатор - `core/tools.ts`;
 - диспетчер вызовов агентами - `tooling/scripts/tool.sh`;
@@ -22,8 +22,11 @@
 | [OpenWiki](https://github.com/langchain-ai/openwiki) | PM: `… openwiki` | нет | нет | раздел "Знание" |
 | [Nx](https://nx.dev) | PM: `bun add -g nx` / `npm i -g` | нет | нет | локальный кеш задач `.nx/` |
 | [Open Design](https://github.com/nexu-io/open-design) | desktop-приложение и CLI `od` | да (`od mcp --daemon-url http://127.0.0.1:7456`) | `od mcp install` только после capability check | - |
-| [AgentPlane](https://github.com/basilisk-labs/agentplane) | PM: `… agentplane` | нет | граф знания и lifecycle задач | дашборд `127.0.0.1:24287` (iframe); Stats: readiness и задачи по статусам |
+| [AgentPlane](https://github.com/basilisk-labs/agentplane) | PM: `… agentplane` | нет | граф знания и lifecycle задач | дашборд `127.0.0.1:24287` (iframe); Stats: readiness, задачи по статусам, активная работа (`task active`) |
 | [CodeBurn](https://github.com/getagentseal/codeburn) | PM: `bun add -g codeburn` / `npm i -g` | нет | нет | данные отчёта CodeBurn (вкладка "Оптимизация"; без инструмента - null-state) |
+| [Neo4j](https://neo4j.com/docs/) | `brew install neo4j` (macOS; linux - вручную) | да (`uvx mcp-neo4j-memory`; env `NEO4J_*`) | нет (MCP-реестр) | сервис `neo4j console` + Browser `127.0.0.1:7474`; Bolt `:7687` |
+| [LightRAG](https://github.com/HKUDS/LightRAG) | `uv tool install "lightrag-hku[api,offline-llm,offline-storage]"` | нет (OpenAI-совместимый API + WebUI) | нет | сервис `lightrag-server`, WebUI `127.0.0.1:9621`; граф - в Neo4j |
+| [Qdrant](https://qdrant.tech/documentation/) | релиз GitHub в `~/.local/opt/qdrant` + симлинк в `~/.local/bin` (macOS; brew-формулы нет) | да (`uvx mcp-server-qdrant`; env `QDRANT_URL`, `COLLECTION_NAME`) | нет (MCP-реестр) | сервис `qdrant`, WebUI `127.0.0.1:6333/dashboard`; gRPC `:6334` |
 
 Unsupported-матрица per-runtime (детали - `core/tools.ts`):
 
@@ -33,6 +36,24 @@ Unsupported-матрица per-runtime (детали - `core/tools.ts`):
 - **Graphify**: zcode - generic-платформа `agents` (skill в `~/.agents/skills`, при project-scope - `./.agents/skills/`);
 - **Nx**: per-runtime интеграций нет - чистый CLI для проектов с `nx.json`; в этом репозитории вызывается внутри `verify.ts` (кеш `.nx/`, `nx.json` + `project.json` проектов; AGENTS.md §7). Команду `nx configure-ai-agents` не запускать - конфигурация агентов ведётся в harness;
 - **Open Design**: Console проверяет `od mcp --help`. Актуальный контракт использует `--daemon-url`. Legacy `od mcp install <agent>` применяется только при наличии команды в help. Детект `which od` может найти системный octal-dump, поэтому проверка требует capability `--daemon-url`.
+
+## Связки памяти (Знание → Связки)
+
+Связки - группы инструментов памяти, ставимые одной задачей (`TOOL_COMBOS` в `core/tools.ts`; установка - `POST /api/tools/action {action:"install", comboId}`). Шаги - конкатенация install-цепочек членов (`buildComboInstallSteps` в `core/toolActions.ts`), установленные части пропускаются: общий Neo4j двух связок ставится один раз. Карточки связок - вкладка "Связки" раздела "Знание"; компоненты управляются по отдельности в "Настройках → Инструменты".
+
+| Связка | Компоненты | Назначение |
+|---|---|---|
+| `neo4j-lightrag` | Neo4j + LightRAG | графовая память: knowledge graph в Neo4j и графовый RAG (LightRAG хранит граф в Neo4j: `LIGHTRAG_GRAPH_STORAGE=Neo4JStorage`) |
+| `neo4j-qdrant` | Neo4j + Qdrant | гибридная память агентов: MCP `mcp-neo4j-memory` (сущности/отношения) + MCP `mcp-server-qdrant` (семантический поиск; эмбеддинги - локальный fastembed, ключ не нужен) |
+
+Сервисы ставятся нативно (Neo4j - brew на macOS, Qdrant - официальный бинарник из GitHub Releases в `~/.local/opt/qdrant`, LightRAG - uv) и запускаются консолью как автономные инстансы (запуск/остановка кнопкой во вкладке "Связки" или "Настройки → Инструменты"; PID - `dashboards.json`, данные - `.agents/console/services/<id>/`): `neo4j console` (Browser `:7474`, Bolt `:7687`), `qdrant` (REST/WebUI `:6333`, gRPC `:6334`, адрес `127.0.0.1`), `lightrag-server` (API/WebUI `:9621`, адрес `127.0.0.1`). Все порты - только localhost.
+
+Требования и нюансы:
+
+- **Neo4j**: установка выполняет `neo4j-admin dbms set-initial-password harness-memory` (локальный пароль; смена - той же командой). MCP-сервер `mcp-neo4j-memory` использует те же учётные данные (env `NEO4J_URI`/`NEO4J_USERNAME`/`NEO4J_PASSWORD` в пресете);
+- **LightRAG**: без настроенного LLM-биндинга сервер не стартует. Биндинг - шестерёнка в строке LightRAG (вкладка "Связки" или карточка инструмента): пресеты Ollama (локальный, по умолчанию), OpenAI, OpenAI-совместимый (`state.lightragLlm`; env `LLM_BINDING`, `LLM_BINDING_HOST`, `LLM_BINDING_API_KEY`, `EMBEDDING_*` - `core/lightragLlm.ts`). KV, векторы и статус документов - файлы рабочего каталога сервиса;
+- **Qdrant**: версия зафиксирована в плагине (`QDRANT_VERSION` - при новом релизе обновить); `~/.local/bin` должен быть в PATH (детекция `which qdrant`). MCP-пресет использует `QDRANT_URL=http://127.0.0.1:6333` и коллекцию `harness-memory` (создаётся при первой записи);
+- Linux: brew и релизы darwin недоступны - консоль вернёт ошибку с ручной командой (systemInstall возвращает null; Linux-сборки Qdrant - в релизах проекта).
 
 ## Пакетный менеджер npm-пакетов (Bun | NPM)
 
@@ -44,7 +65,9 @@ Unsupported-матрица per-runtime (детали - `core/tools.ts`):
 
 ## Жизненный цикл (Настройки → Инструменты)
 
-Состояния: `missing` → `on` → `off` (запись `state.tools.installed[id]`: `{runtimes, params, at, enabled}`; для MCP-инструментов отражается в реестре `state.mcp.servers`). Кнопки по состоянию: "Установить" / "Выключить" / "Включить" / "Переустановить" (uninstall+install с сохранёнными параметрами) / "Удалить" (интеграции + MCP-запись; системный пакет остаётся - команда ручной очистки в подтверждении). Установка - job с SSE-терминалом (`/api/tools/job`), интерактивные установщики получают stdin.
+Состояния: `missing` → `on` → `off` (запись `state.tools.installed[id]`: `{runtimes, params, at, enabled}`; для MCP-инструментов отражается в реестре `state.mcp.servers`). Кнопки по состоянию: "Установить" / "Выключить" / "Включить" / "Обновить" / "Переустановить" (uninstall+install с сохранёнными параметрами) / "Удалить" (интеграции + MCP-запись; системный пакет остаётся - команда ручной очистки в подтверждении). Установка - job с SSE-терминалом (`/api/tools/job`), интерактивные установщики получают stdin.
+
+Обновление системного пакета - кнопка "Обновить" (`POST /api/tools/action`, action `update`): один шаг `uv tool upgrade <pkg>` / `brew upgrade <formula>` / `<pm> add -g <pkg>@latest` из `ToolDef.systemUpdate`. Кнопка показывается только у инструментов с командой (qdrant и open-design обновляются вручную). Повторная установка и "Переустановить" версию не поднимают: у установленного пакета шаг "Системный пакет" пропускается, а `uv tool install` уже установленного - no-op. Массовая проверка свежих версий по всем зависимостям - вкладка "Настройки → Обновить" (`core/updates.ts`); новый инструмент регистрируется в обоих местах (docs/tools-dev.md).
 
 Нюансы uninstall/reinstall:
 
@@ -59,9 +82,9 @@ API:
 
 | Роут | Назначение |
 |---|---|
-| `GET /api/tools` | статусы (система/per-runtime/MCP/дашборды) + менеджер; обновляет `tools.env`, запускает autostart-сервисы |
+| `GET /api/tools` | статусы (система/per-runtime/MCP/дашборды), связки (`combos`) + менеджер; обновляет `tools.env`, запускает autostart-сервисы |
 | `PUT /api/tools {packageManager}` | выбор Bun/NPM |
-| `POST /api/tools/action` | `install` / `uninstall` / `reinstall` / `toggle` (+`dryRun` - превью команд) |
+| `POST /api/tools/action` | `install` / `uninstall` / `reinstall` / `toggle` / установка связки `{action:"install", comboId}` (+`dryRun` - превью команд) |
 | `POST /api/tools/diagnose` | проверки работоспособности + промпт исправления |
 | `POST /api/tools/dashboard` | `start` / `stop` автономного инстанса; `autostart {enabled}` |
 | `GET /api/tools/job?jobId=` | SSE-стрим job'а (файловый лог) |
@@ -120,17 +143,29 @@ bash tooling/scripts/tool.sh <id> <args…>  # запуск CLI-инструме
 
 Блок **"All-in-One"** вверху вкладки объединяет собранные графы папок в один: источники - `graphify/<имя>/graphify-out/graph.json` включённых папок (несобранные пропускаются), сборка - `graphify merge-graphs <источники> --out graphify-out/all-in-one/graphify-out/graph.json && graphify cluster-only graphify-out/all-in-one --no-label` (кнопкой блока; detached-процесс, лог и pid - `.console-build.log`/`.console-build.json` каталога all-in-one, задача "Сборка All-in-One" в Мониторинге). merge-graphs принимает два и более графа; один источник - копия его `graph.json`. merge-graphs помечает узлы атрибутом `repo` (тег источника); повторная сборка передаёт `--previous` - community id объединённого графа сохраняются между сборками. Каталог all-in-one - виртуальный воркспейс внутри корневого `graphify-out/`: интеграционный граф репозитория блок не затрагивает. Публикация и wiki - механика папок без изменений: graph.html - в `public/graphify/<slug12>/index.html` (GET-статус публикует автоматически), wiki (`graphify export wiki`, кнопка "Wiki") - в `graphify-out/all-in-one/graphify-out/wiki/` (корень добавлен в открытые корни `GET /api/memory/file`). Запуск - POST `/api/memory/graphify/merge` (`{wiki: true}` - сборка wiki). Запросы агентов к объединённому графу: `graphify query "<вопрос>" --graph graphify-out/all-in-one/graphify-out/graph.json`.
 
-## LLM-провайдеры сборок (OpenWiki, Graphify)
+## LLM-провайдеры сборок (OpenWiki, Graphify, LightRAG)
 
-OpenWiki и Graphify конфигурируются пресетами провайдеров - шестерёнка в карточке инструмента ("Настройки → Инструменты") или во вкладке OpenWiki. Пресеты: OpenAI-совместимый (Ollama/vLLM - с base URL), OpenAI, Gemini, Claude, Kimi, DeepSeek (списки - `core/llmPresets.ts`). Конфиг - `state.openwikiLlm` / `state.graphifyLlm` (ключ - локально, вне git; у Graphify ещё `modelId`); при сборке значения передаются CLI переменными окружения и флагами (OpenWiki: `OPENWIKI_PROVIDER`, `OPENAI_COMPATIBLE_*`, `OPENWIKI_MODEL_ID`; Graphify: env-ключ бэкенда, `--backend` и `--model` из пресета - авто-детект CLI не видит ключ Ollama, а без `--model` берётся дефолт CLI). OpenWiki полностью работает с локальной Ollama - runtime ★ для него не нужен. Модель должна существовать у провайдера (ретирнутые теги cloud-моделей отклоняются).
+OpenWiki, Graphify и LightRAG конфигурируются пресетами провайдеров - шестерёнка в карточке инструмента ("Настройки → Инструменты") или во вкладках OpenWiki/Связки. Пресеты: OpenAI-совместимый (Ollama/vLLM - с base URL), OpenAI, Gemini, Claude, Kimi, DeepSeek (списки - `core/llmPresets.ts`; LightRAG - `LIGHTRAG_PRESETS`). Конфиг - `state.openwikiLlm` / `state.graphifyLlm` / `state.lightragLlm` (ключ - локально, вне git; у Graphify и LightRAG ещё `modelId`); при сборке/старте значения передаются CLI переменными окружения и флагами (OpenWiki: `OPENWIKI_PROVIDER`, `OPENAI_COMPATIBLE_*`, `OPENWIKI_MODEL_ID`; Graphify: env-ключ бэкенда, `--backend` и `--model` из пресета - авто-детект CLI не видит ключ Ollama, а без `--model` берётся дефолт CLI; LightRAG: `LLM_BINDING`/`EMBEDDING_BINDING` и хост/ключ из пресета - `core/lightragLlm.ts`). OpenWiki и LightRAG полностью работают с локальной Ollama - runtime ★ для них не нужен. Модель должна существовать у провайдера (ретирнутые теги cloud-моделей отклоняются).
 
 Альтернатива провайдеру для OpenWiki - **агентская сборка** ("через агент ★" во вкладке OpenWiki): интеграция openwiki для рантайма (`openwiki integrations install <codex|claude|opencode|cursor> --project`) ставит скилл (`<repo>/.agents/skills/openwiki` для codex, `.claude/.opencode/.cursor/skills/openwiki` для остальных) и MCP-запись (`openwiki mcp --host <id>` в `.mcp.json` / `.codex/config.toml` / `opencode.jsonc` / `.cursor/mcp.json`); страницы пишет сам агент своей моделью, без LLM-ключей openwiki. Состояние интеграций - `openwiki integrations list --project`; MCP-синк консоли эти записи не трогает (правило managed-имён).
 
-## Дашборды (Serena :24282, Headroom :8787, AgentPlane :24287)
+## Дашборды (Serena :24282, Headroom :8787, AgentPlane :24287, Neo4j :7474, Qdrant :6333, LightRAG :9621)
 
-Дашборд работает, только пока запущен сам инструмент: Serena запускает его вместе с MCP-сервером (сессия агента), Headroom - вместе с прокси, AgentPlane - автономной командой. Кнопка "Дашборд" открывает модалку с проверкой доступности (TCP-проба порта с сервера - соединение без HTTP-запроса) и iframe'ом (страницу грузит браузер). Дашборд Headroom в iframe получает данные через `/headroom-api/*` (fetch-shim направляет root-relative запросы `/stats`, `/health`, ... на роут-прокси); если через прокси не прошёл ни один LLM-запрос, счётчики нулевые - модалка показывает команду запуска сессий через прокси (`headroom wrap <runtime>`). Если дашборд не запущен - кнопка "Запустить автономный инстанс": detached-процесс (`serena start-mcp-server --transport streamable-http --port 9121 --enable-web-dashboard true --open-web-dashboard false` / `headroom proxy --port 8787` / `agentplane context dashboard --host 127.0.0.1 --port 24287`), pid - в `.agents/console/dashboards.json`, лог - `.agents/console/logs/<id>-dashboard.log`, остановка - кнопкой в модалке. Флаг `--enable-web-dashboard` перекрывает конфиг пользователя (`web_dashboard: false` в `~/.serena/serena_config.yml` не мешает автономному инстансу; сам конфиг консоль не правит). Запущенные сессиями агентов дашборды тоже определяются пробой порта, но консоль их не останавливает.
+Дашборд работает, только пока запущен сам инструмент: Serena запускает его вместе с MCP-сервером (сессия агента), Headroom - вместе с прокси, AgentPlane - автономной командой, Neo4j/Qdrant/LightRAG - сервисы связок памяти (запуск кнопкой, данные - `.agents/console/services/<id>/`). Кнопка "Дашборд" открывает модалку с проверкой доступности (TCP-проба порта с сервера - соединение без HTTP-запроса) и iframe'ом (страницу грузит браузер). Дашборд Headroom в iframe получает данные через `/headroom-api/*` (fetch-shim направляет root-relative запросы `/stats`, `/health`, ... на роут-прокси); если через прокси не прошёл ни один LLM-запрос, счётчики нулевые - модалка показывает команду запуска сессий через прокси (`headroom wrap <runtime>`). Если дашборд не запущен - кнопка "Запустить автономный инстанс": detached-процесс (`serena start-mcp-server --transport streamable-http --port 9121 --enable-web-dashboard true --open-web-dashboard false` / `headroom proxy --port 8787` / `agentplane context dashboard --host 127.0.0.1 --port 24287` / `neo4j console` / `qdrant` / `lightrag-server`), pid - в `.agents/console/dashboards.json`, лог - `.agents/console/logs/<id>-dashboard.log`, остановка - кнопкой в модалке. Флаг `--enable-web-dashboard` перекрывает конфиг пользователя (`web_dashboard: false` в `~/.serena/serena_config.yml` не мешает автономному инстансу; сам конфиг консоль не правит). Запущенные сессиями агентов дашборды тоже определяются пробой порта, но консоль их не останавливает.
 
 Дашборд AgentPlane - read-only просмотр графа знания (`agentplane context dashboard`): вики-страницы, wikilinks, сущности, факты и evidence задач из `.agentplane` workspace корня репозитория (без `.agentplane` граф пустой - инициализация: `agentplane init --quick` в корне). Заголовков блокировки встраивания сервер не ставит - iframe прямой, embed-прокси не нужен.
+
+## AgentPlane в Harness
+
+Консоль использует AgentPlane (CLI `agentplane`) в трёх ролях:
+
+- **Мониторинг** (вкладка "Оптимизация", карточка AgentPlane; `core/tools/agentplane-status.ts`): `preflight --json --mode quick` (readiness), `task list` (счётчики по статусам) и `task active --json` (активная работа: следующий шаг супервизора, блокеры, ожидание ответа пользователя). Агенты вызывают CLI через `tool.sh agentplane <args>`.
+- **Синк roadmap** (`core/workflows/agentplane.ts`): задачи roadmap workflow создаются и обновляются в `.agentplane` workspace командами `task add` / `task update` (детерминированный id `YYYYMMDDHHMM-XXXX`, идемпотентно).
+- **Граф знания**: read-only дашборд (см. "Дашборды").
+
+Не используется консолью (доступно агентам напрямую через `tool.sh agentplane`): kernel-lifecycle задач (`task create` → `task advance`), `task brief` / `task run`, план-гейтинг (`task plan`), `task ask` / `task answer`, очередь интеграции веток (`integrate queue`, `pr`).
+
+Ограничение (AgentPlane 0.7.x): `task complete` требует записанного результата верификации (kernel-lifecycle), поэтому закрытие roadmap-задачи в AgentPlane при переводе её в done завершается ошибкой - detail содержит подсказку CLI ("Fix: agentplane task advance ..."). Синк best-effort: roadmap не ломается; остальное (создание, обновление, метаданные) работает.
 
 **Автозапуск** - Toggle в правом нижнем углу карточки Serena/Headroom (`state.tools.autostart`): включение немедленно запускает инстанс (если порт не отвечает), выключение - останавливает консольный; далее консоль поддерживает сервис запущенным при обращениях к `/api/tools` (ленивый запуск, повторные попытки не чаще раза в 30 с).
 
@@ -138,7 +173,7 @@ OpenWiki и Graphify конфигурируются пресетами пров�
 
 ## Обновление (Настройки → Обновить)
 
-Реестр зависимостей harness - `.agents/console/updates.json` (`core/updates.ts`): локальные npm-пакеты workspace (deps+devDeps корня и проектов из поля `workspaces`; протоколы `workspace:`/`link:`/`file:`/`catalog:` и внутренние `@harness/*` пропускаются) и глобальные инструменты (npm-глобальные по выбору Bun/NPM, uv-инструменты, bun, node, uv, rtk - только установленные). Открытие вкладки синхронизирует реестр без сети: появившийся инструмент добавляется, удалённый - удаляется, статусы запусков сохраняются. Кнопка "Проверить наличие обновлений" опрашивает реестры npm и PyPI, GitHub releases и `brew outdated` (перед ним `brew update`), записывает свежие версии и дату проверки; устаревшие записи подсвечиваются и открываются в модалке выбора. Запуск обновления выполняет команды выбранных записей одним job'ом (`core/toolJobs.ts`, шаги с `stepId`, все optional - неудача одной записи не останавливает остальные); по завершении в реестр пишутся статус (успех/ошибка) и время, строки подсвечиваются зелёным/красным. Команды обновления строит только сервер из реестра - клиент присылает идентификаторы записей. Инструменты, не управляемые brew, помечаются "обновление вручную" и без команды.
+Реестр зависимостей harness - `.agents/console/updates.json` (`core/updates.ts`): локальные npm-пакеты workspace (deps+devDeps корня и проектов из поля `workspaces`; протоколы `workspace:`/`link:`/`file:`/`catalog:` и внутренние `@harness/*` пропускаются) и глобальные инструменты (npm-глобальные openwiki, qmd, codegraph, nx, agentplane, codeburn - по выбору Bun/NPM; uv-инструменты serena-agent, graphifyy, headroom-ai, lightrag-hku; brew-формулы uv, node, rtk, neo4j; bun - только установленные). Открытие вкладки синхронизирует реестр без сети: появившийся инструмент добавляется, удалённый - удаляется, статусы запусков сохраняются. Кнопка "Проверить наличие обновлений" опрашивает реестры npm и PyPI, GitHub releases и `brew outdated` (перед ним `brew update`), записывает свежие версии и дату проверки; устаревшие записи подсвечиваются и открываются в модалке выбора. Запуск обновления выполняет команды выбранных записей одним job'ом (`core/toolJobs.ts`, шаги с `stepId`, все optional - неудача одной записи не останавливает остальные); по завершении в реестр пишутся статус (успех/ошибка) и время, строки подсвечиваются зелёным/красным. Команды обновления строит только сервер из реестра - клиент присылает идентификаторы записей. Инструменты, не управляемые brew, помечаются "обновление вручную" и без команды. Точечное обновление одного инструмента - кнопка "Обновить" в разделе "Инструменты" (см. выше).
 
 ## Статистика использования
 

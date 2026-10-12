@@ -78,9 +78,14 @@ export type DashboardStartResult =
 /**
  * Запустить автономный инстанс дашборда (detached, лог в
  * .agents/console/logs/<id>-dashboard.log). Команды - литеральные case по id;
- * порт - валидированное целое из URL реестра.
+ * порт - валидированное целое из URL реестра. extraEnv - дополнительные
+ * переменные окружения сервиса (lightrag: LLM-биндинг и хранилище из state).
  */
-export async function startDashboard(repoRoot: string, toolId: string): Promise<DashboardStartResult> {
+export async function startDashboard(
+  repoRoot: string,
+  toolId: string,
+  extraEnv?: Record<string, string>,
+): Promise<DashboardStartResult> {
   const def = TOOLS.find((t) => t.id === toolId);
   const url = def?.dashboard?.url;
   if (!def || !url) return { ok: false, error: `у инструмента нет дашборда: ${toolId}` };
@@ -94,12 +99,16 @@ export async function startDashboard(repoRoot: string, toolId: string): Promise<
   await mkdir(logDir, { recursive: true });
   const logFile = path.join(logDir, `${toolId}-dashboard.log`);
   const fh = await open(logFile, "a");
+  const env = extraEnv ? { ...process.env, ...extraEnv } : process.env;
   const spawnOptions = {
     cwd: repoRoot,
-    env: process.env,
+    env,
     detached: true,
     stdio: ["ignore", fh.fd, fh.fd] as ["ignore", number, number],
   };
+  // Рабочие каталоги сервисов с записью на диск (qdrant: ./storage;
+  // lightrag: WORKING_DIR ./rag_storage) - вне репозитория и git.
+  const serviceDir = (name: string): string => path.join(repoRoot, ".agents", "console", "services", name);
 
   // Литеральный allowlist команд (как спавн-allowlist core/prompts.ts).
   let child;
@@ -141,6 +150,38 @@ export async function startDashboard(repoRoot: string, toolId: string): Promise<
       child = spawn("agentplane", ["context", "dashboard", "--host", "127.0.0.1", "--port", String(port)], spawnOptions);
       shown = `agentplane context dashboard --host 127.0.0.1 --port ${port}`;
       break;
+    case "neo4j":
+      // `neo4j console` - передний план (Bolt :7687, Browser :7474); данные -
+      // в домашнем каталоге brew-формулы, cwd не используется
+      child = spawn("neo4j", ["console"], spawnOptions);
+      shown = "neo4j console";
+      break;
+    case "qdrant": {
+      // storage ./storage создаётся в cwd; слушающий адрес - 127.0.0.1
+      const cwd = serviceDir("qdrant");
+      await mkdir(cwd, { recursive: true });
+      child = spawn("qdrant", [], {
+        ...spawnOptions,
+        cwd,
+        env: { ...env, QDRANT__SERVICE__HOST: "127.0.0.1" },
+      });
+      shown = "qdrant (storage: .agents/console/services/qdrant)";
+      break;
+    }
+    case "lightrag": {
+      // WORKING_DIR ./rag_storage создаётся в cwd; HOST/PORT - явные значения
+      // (lightrag читает PORT из окружения и без переопределения берёт порт
+      // процесса консоли); LLM-биндинг и Neo4j-хранилище - из extraEnv
+      const cwd = serviceDir("lightrag");
+      await mkdir(cwd, { recursive: true });
+      child = spawn("lightrag-server", [], {
+        ...spawnOptions,
+        cwd,
+        env: { ...env, HOST: "127.0.0.1", PORT: String(port) },
+      });
+      shown = `lightrag-server --host 127.0.0.1 --port ${port} (данные: .agents/console/services/lightrag)`;
+      break;
+    }
     default:
       await fh.close();
       return { ok: false, error: `нет команды запуска дашборда для ${toolId}` };

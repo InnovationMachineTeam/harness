@@ -88,7 +88,13 @@ export async function syncTaskToAgentPlane(item: RoadmapItem, cwd: string): Prom
   return created.ok ? { id, action: "created" } : { id, action: "error", detail: (created.stderr || created.stdout).slice(-300) };
 }
 
-/** Закрытие задачи AgentPlane при переводе roadmap-задачи в done или archived. */
+/**
+ * Закрытие задачи AgentPlane при переводе roadmap-задачи в done или archived.
+ * AgentPlane 0.7.x требует для `task complete` записанного результата
+ * верификации (kernel-lifecycle: verify -> complete), поэтому задачи без
+ * верификации закрываются ошибкой; detail содержит подсказку AgentPlane
+ * ("Fix: agentplane task advance ..."). Вызов best-effort: roadmap не ломается.
+ */
 export async function closeAgentPlaneTask(item: RoadmapItem, cwd: string): Promise<AgentPlaneSync> {
   const id = agentPlaneTaskId(item);
   if (!id) return { id: null, action: "skipped", detail: "нет fingerprint или createdAt - id не собрать" };

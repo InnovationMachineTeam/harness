@@ -5,6 +5,8 @@ import { join } from "node:path";
 import { defaultState } from "@/core/state";
 import {
   TOOLS,
+  TOOL_COMBOS,
+  comboById,
   effectiveToolState,
   globalInstallCommand,
   readPackageManagerPref,
@@ -13,6 +15,8 @@ import {
   writePackageManagerPref,
   writeToolsEnv,
 } from "@/core/tools";
+import { buildComboInstallSteps, buildUpdateSteps } from "@/core/toolActions";
+import { lightragLlmConfig, lightragLlmEnv, lightragServiceEnv } from "@/core/lightragLlm";
 import { mcpPresetsForPm } from "@/core/plugins";
 import { sanitizeToolParams } from "@/core/toolActions";
 import type { ToolInstallParams } from "@/core/state";
@@ -24,9 +28,24 @@ const params = (p: Partial<ToolInstallParams> = {}): ToolInstallParams => ({
 });
 
 describe("реестр инструментов", () => {
-  test("11 инструментов с уникальными id и бинарями", () => {
+  test("14 инструментов с уникальными id и бинарями", () => {
     expect(TOOLS.map((t) => t.id).sort()).toEqual(
-      ["agentplane", "codeburn", "codegraph", "graphify", "headroom", "nx", "open-design", "openwiki", "qmd", "rtk", "serena"].sort(),
+      [
+        "agentplane",
+        "codeburn",
+        "codegraph",
+        "graphify",
+        "headroom",
+        "lightrag",
+        "neo4j",
+        "nx",
+        "open-design",
+        "openwiki",
+        "qdrant",
+        "qmd",
+        "rtk",
+        "serena",
+      ].sort(),
     );
     expect(new Set(TOOLS.map((t) => t.bin)).size).toBe(TOOLS.length);
   });
@@ -192,6 +211,98 @@ describe("реестр инструментов", () => {
     expect(globalInstallCommand("npm", "x")).toEqual(["npm", "install", "-g", "x"]);
   });
 
+  test("связки памяти: id, члены существуют, описание заполнено", () => {
+    expect(TOOL_COMBOS.map((c) => c.id)).toEqual(["neo4j-lightrag", "neo4j-qdrant"]);
+    for (const combo of TOOL_COMBOS) {
+      expect(combo.description.length).toBeGreaterThan(0);
+      for (const toolId of combo.toolIds) {
+        expect(toolById(toolId)).toBeDefined();
+      }
+    }
+    expect(comboById("neo4j-lightrag")?.toolIds).toEqual(["neo4j", "lightrag"]);
+    expect(comboById("нет-такой")).toBeUndefined();
+  });
+
+  test("neo4j: brew на darwin, MCP mcp-neo4j-memory c env, пароль задаётся после установки", () => {
+    const def = toolById("neo4j")!;
+    expect(def.category).toBe("memory");
+    expect(def.systemInstall("bun", "darwin")).toEqual(["brew", "install", "neo4j"]);
+    expect(def.systemInstall("bun", "linux")).toBeNull();
+    expect(def.uninstallStopsDashboard).toBe(true);
+    expect(def.mcpPreset?.(params())).toEqual({
+      type: "stdio",
+      command: "uvx",
+      args: ["mcp-neo4j-memory", "--transport", "stdio"],
+      env: { NEO4J_URI: "bolt://localhost:7687", NEO4J_USERNAME: "neo4j", NEO4J_PASSWORD: "harness-memory" },
+    });
+    const post = def.postInstallCommands!(defaultState("/repo"), params());
+    for (const command of post) {
+      expect(command[0]).toBe("neo4j-admin");
+    }
+  });
+
+  test("lightrag: uv-пакет lightrag-hku[api,offline-llm,offline-storage], CLI lightrag-server, без MCP", () => {
+    const def = toolById("lightrag")!;
+    expect(def.bin).toBe("lightrag-server");
+    expect(def.systemInstall("bun", "darwin")).toEqual(["uv", "tool", "install", "lightrag-hku[api,offline-llm,offline-storage]"]);
+    expect(def.mcpPreset).toBeUndefined();
+    expect(def.uninstallStopsDashboard).toBe(true);
+    expect(def.requires?.bin).toBe("uv");
+  });
+
+  test("qdrant: релиз GitHub на darwin (mkdir), MCP mcp-server-qdrant с QDRANT_URL и коллекцией", () => {
+    const def = toolById("qdrant")!;
+    expect(def.category).toBe("memory");
+    expect(def.systemInstall("bun", "darwin")?.[0]).toBe("mkdir");
+    expect(def.systemInstall("bun", "linux")).toBeNull();
+    // postInstall: до установки - скачивание релиза; после - пусто
+    const post = def.postInstallCommands!(defaultState("/repo"), params());
+    for (const command of post) {
+      expect(["curl", "tar", "ln"]).toContain(command[0]);
+    }
+    expect(def.mcpPreset?.(params())).toEqual({
+      type: "stdio",
+      command: "uvx",
+      args: ["mcp-server-qdrant"],
+      env: { QDRANT_URL: "http://127.0.0.1:6333", COLLECTION_NAME: "harness-memory" },
+    });
+  });
+
+  test("lightragLlm: env биндинга по пресетам, сервисный env содержит Neo4j-хранилище", () => {
+    const state = defaultState("/repo");
+    // по умолчанию - локальный Ollama
+    expect(lightragLlmConfig(state).preset).toBe("ollama");
+    expect(lightragLlmEnv(lightragLlmConfig(state))).toEqual({
+      LLM_BINDING: "ollama",
+      EMBEDDING_BINDING: "ollama",
+      LLM_BINDING_HOST: "http://localhost:11434",
+      EMBEDDING_BINDING_HOST: "http://localhost:11434",
+    });
+    state.lightragLlm = { preset: "openai", apiKey: "sk-test", baseUrl: "", modelId: "gpt-4o-mini" };
+    const openai = lightragLlmEnv(lightragLlmConfig(state));
+    expect(openai.LLM_BINDING).toBe("openai");
+    expect(openai.LLM_BINDING_API_KEY).toBe("sk-test");
+    expect(openai.LLM_MODEL).toBe("gpt-4o-mini");
+    expect(openai.LLM_BINDING_HOST).toBeUndefined();
+    const service = lightragServiceEnv(state);
+    expect(service.LIGHTRAG_GRAPH_STORAGE).toBe("Neo4JStorage");
+    expect(service.NEO4J_URI).toBe("bolt://localhost:7687");
+    expect(service.NEO4J_PASSWORD).toBe("harness-memory");
+  });
+
+  test("buildComboInstallSteps: неизвестный член - ошибка; шаги получают префикс инструмента", () => {
+    const bad = buildComboInstallSteps({
+      combo: { id: "x", title: "X", description: "", toolIds: ["neo4j", "нет-такого"] },
+      params: params(),
+      platform: "darwin",
+      packageManager: "bun",
+      state: defaultState("/repo"),
+      repoRoot: "/repo",
+    });
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.error).toContain("нет-такого");
+  });
+
   test("cleanupAfterUninstall (rtk project): маркерные блоки и файлы зачищаются", async () => {
     const { mkdtemp, readFile, writeFile, mkdir } = await import("node:fs/promises");
     const tmp = await mkdtemp(join(tmpdir(), "rtk-cleanup-"));
@@ -212,6 +323,44 @@ describe("реестр инструментов", () => {
       await expect(readFile(join(tmp, ".rtk", "filters.toml"), "utf8")).rejects.toThrow();
     } finally {
       await rm(tmp, { recursive: true, force: true });
+    }
+  });
+});
+
+describe("обновление системного пакета", () => {
+  test("uv-инструменты обновляются через uv tool upgrade по имени пакета", () => {
+    expect(toolById("serena")?.systemUpdate?.("bun", "darwin")).toEqual(["uv", "tool", "upgrade", "serena-agent"]);
+    expect(toolById("headroom")?.systemUpdate?.("bun", "darwin")).toEqual(["uv", "tool", "upgrade", "headroom-ai"]);
+    expect(toolById("lightrag")?.systemUpdate?.("bun", "darwin")).toEqual(["uv", "tool", "upgrade", "lightrag-hku"]);
+  });
+
+  test("npm-инструменты: спек @latest выбранным менеджером", () => {
+    expect(toolById("agentplane")?.systemUpdate?.("bun", "darwin")).toEqual(["bun", "add", "-g", "agentplane@latest"]);
+    expect(toolById("agentplane")?.systemUpdate?.("npm", "linux")).toEqual(["npm", "install", "-g", "agentplane@latest"]);
+  });
+
+  test("brew-инструменты: brew upgrade на darwin и отсутствие команды на других ОС", () => {
+    expect(toolById("rtk")?.systemUpdate?.("bun", "darwin")).toEqual(["brew", "upgrade", "rtk"]);
+    expect(toolById("neo4j")?.systemUpdate?.("bun", "linux")).toBeNull();
+  });
+
+  test("инструменты с ручным обновлением без systemUpdate", () => {
+    expect(toolById("qdrant")?.systemUpdate).toBeUndefined();
+    expect(toolById("open-design")?.systemUpdate).toBeUndefined();
+  });
+
+  test("buildUpdateSteps: шаг с командой, у ручных инструментов - пусто", () => {
+    const serena = toolById("serena")!;
+    expect(buildUpdateSteps(serena, "darwin", "bun")).toEqual([
+      { label: "Обновление: Serena", command: ["uv", "tool", "upgrade", "serena-agent"] },
+    ]);
+    const qdrant = toolById("qdrant")!;
+    expect(buildUpdateSteps(qdrant, "darwin", "bun")).toEqual([]);
+  });
+
+  test("все uv- и brew-инструменты имеют systemUpdate (синхронно с core/updates.ts)", () => {
+    for (const id of ["serena", "headroom", "graphify", "lightrag"]) {
+      expect(toolById(id)?.systemUpdate, id).toBeDefined();
     }
   });
 });

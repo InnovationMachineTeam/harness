@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { startDashboard } from "@/core/dashboards";
-import { readPackageManagerPref, toolsStatus, TOOL_RUNTIMES, writePackageManagerPref, writeToolsEnv } from "@/core/tools";
+import { serviceExtraEnv } from "@/core/lightragLlm";
+import { readPackageManagerPref, TOOL_COMBOS, toolsStatus, TOOL_RUNTIMES, writePackageManagerPref, writeToolsEnv } from "@/core/tools";
 import { appendUsageEvent } from "@/core/toolsUsage";
 import { serverContext } from "@/lib/server-context";
 
@@ -30,13 +31,31 @@ export async function GET() {
     const last = lastAutostartAttempt.get(tool.id) ?? 0;
     if (now - last < AUTOSTART_RETRY_MS) continue;
     lastAutostartAttempt.set(tool.id, now);
-    await startDashboard(ctx.repoRoot, tool.id).catch(() => {
+    await startDashboard(ctx.repoRoot, tool.id, serviceExtraEnv(tool.id, ctx.state)).catch(() => {
       /* доступность покажет следующий прогон probes */
     });
   }
 
+  // Связки памяти (Знание → Связки): члены со статусом из toolsStatus
+  const combos = TOOL_COMBOS.map((combo) => ({
+    ...combo,
+    tools: combo.toolIds
+      .map((id) => status.find((tool) => tool.id === id))
+      .filter((tool) => tool !== undefined)
+      .map((tool) => ({
+        id: tool.id,
+        title: tool.title,
+        state: tool.state,
+        mcp: tool.mcp,
+        dashboard: tool.dashboard
+          ? { url: tool.dashboard.url, label: tool.dashboard.label, live: tool.dashboard.live, managedPid: tool.dashboard.managedPid, autostart: tool.dashboard.autostart }
+          : null,
+      })),
+  }));
+
   return NextResponse.json({
     tools: status,
+    combos,
     packageManager: pm,
     runtimes: TOOL_RUNTIMES,
   });

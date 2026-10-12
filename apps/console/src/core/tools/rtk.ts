@@ -11,6 +11,7 @@ export const rtkTool: ToolDef = {
   category: "context",
   bin: "rtk",
   systemInstall: (_pm, platform) => (platform === "darwin" ? ["brew", "install", "rtk"] : null),
+  systemUpdate: (_pm, platform) => (platform === "darwin" ? ["brew", "upgrade", "rtk"] : null),
   perRuntime: {
     // Матрица по `rtk init --help` (0.39.x): в --agent нет codex (и zcode);
     // opencode - отдельный флаг --opencode (плагин в дополнение к Claude);

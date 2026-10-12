@@ -263,7 +263,7 @@ fi
 
 printf '\nОПЦИОНАЛЬНЫЕ ИНСТРУМЕНТЫ КОНСОЛИ (экономия токенов; per-runtime настройка - в консоли)\n\n'
 
-OPT_ACTIONS=()      # serena | qmd | codegraph | graphify | rtk | headroom | nx | open-design | agentplane | codeburn | uv
+OPT_ACTIONS=()      # serena | qmd | codegraph | graphify | rtk | headroom | nx | open-design | agentplane | codeburn | neo4j | lightrag | qdrant | uv
 OPT_DESC=()
 
 opt_status() { # $1 - bin, $2 - подпись, $3 - действие, $4 - описание шага
@@ -299,6 +299,16 @@ opt_status "agentplane" "agentplane ${C_DIM}- lifecycle задач, verification
   "agentplane" "agentplane - $(npm_global) agentplane"
 opt_status "codeburn" "codeburn ${C_DIM}- анализ расхода AI-токенов (отчёт CodeBurn)${C_R}" \
   "codeburn" "codeburn - $(npm_global) codeburn"
+# Связки памяти (Знание → Связки): neo4j и qdrant ставятся brew (macOS);
+# lightrag - uv (кроссплатформенно). Сервисы держит консоль.
+if [ "$OS" = "Darwin" ]; then
+  opt_status "neo4j" "neo4j ${C_DIM}- графовая СУБД памяти (связки neo4j + LightRAG / neo4j + Qdrant)${C_R}" \
+    "neo4j" "neo4j - brew install neo4j"
+  opt_status "qdrant" "qdrant ${C_DIM}- векторная СУБД памяти (связка neo4j + Qdrant)${C_R}" \
+    "qdrant" "qdrant - релиз GitHub v1.19.2 в ~/.local/opt/qdrant (см. docs/tools.md)"
+fi
+opt_status "lightrag" "lightrag ${C_DIM}- графовый RAG (связка neo4j + LightRAG; LLM-биндинг - в консоли)${C_R}" \
+  "lightrag" "lightrag - uv tool install 'lightrag-hku[api,offline-llm,offline-storage]'"
 # od из Open Design проверяется отдельно: `which od` находит системный
 # octal-dump (/usr/bin/od) - установленность определяем по выводу od --help
 # или по наличию desktop-приложения.
@@ -316,7 +326,7 @@ fi
 # uv нужен python-инструментам; rtk не зависит от uv
 NEEDS_UV=0
 for a in ${OPT_ACTIONS[@]+"${OPT_ACTIONS[@]}"}; do
-  case "$a" in serena|graphify|headroom) NEEDS_UV=1 ;; esac
+  case "$a" in serena|graphify|headroom|lightrag) NEEDS_UV=1 ;; esac
 done
 UV_DESC=""
 if [ "$NEEDS_UV" = 1 ] && ! has uv; then
@@ -646,6 +656,46 @@ if [ "${#OPT_ACTIONS[@]}" -gt 0 ]; then
           else
             warn "codeburn не установлен; отчёт CodeBurn (вкладка Оптимизация) недоступен."
             MANUAL+=("codeburn: $(npm_global) codeburn")
+          fi
+          ;;
+        neo4j)
+          if run_step "Установка neo4j…" brew install neo4j; then
+            INSTALLED+=("neo4j")
+            AUTH_FILE="$(brew --prefix)/var/neo4j/data/dbms/auth.ini"
+            if [ ! -f "$AUTH_FILE" ]; then
+              if run_step "Первоначальный пароль neo4j…" "$(brew --prefix)/bin/neo4j-admin" dbms set-initial-password harness-memory; then
+                INSTALLED+=("neo4j: первичный пароль harness-memory (localhost; смена - neo4j-admin dbms set-initial-password)")
+              else
+                warn "первичный пароль neo4j не задан (не блокирует; задайте вручную)."
+              fi
+            fi
+          else
+            warn "neo4j не установлен."
+            MANUAL+=("neo4j: brew install neo4j")
+          fi
+          ;;
+        lightrag)
+          if run_step "Установка lightrag…" uv tool install "lightrag-hku[api,offline-llm,offline-storage]"; then
+            INSTALLED+=("lightrag")
+            INSTALLED+=("lightrag: LLM-биндинг настраивается в консоли (Знание → Связки)")
+          else
+            warn "lightrag не установлен."
+            MANUAL+=("lightrag: uv tool install 'lightrag-hku[api,offline-llm,offline-storage]'")
+          fi
+          ;;
+        qdrant)
+          # brew-формулы qdrant нет - официальная сборка из GitHub Releases
+          QDRANT_VERSION="1.19.2"
+          case "$(uname -m)" in arm64) QDRANT_ASSET="qdrant-aarch64-apple-darwin.tar.gz" ;; *) QDRANT_ASSET="qdrant-x86_64-apple-darwin.tar.gz" ;; esac
+          mkdir -p "$HOME/.local/opt/qdrant" "$HOME/.local/bin"
+          QDRANT_URL="https://github.com/qdrant/qdrant/releases/download/v${QDRANT_VERSION}/${QDRANT_ASSET}"
+          if run_step "Установка qdrant ${QDRANT_VERSION}…" curl -fL -o "$HOME/.local/opt/qdrant/qdrant-${QDRANT_VERSION}.tar.gz" "$QDRANT_URL" \
+             && run_step "Распаковка qdrant…" tar -xzf "$HOME/.local/opt/qdrant/qdrant-${QDRANT_VERSION}.tar.gz" -C "$HOME/.local/opt/qdrant" \
+             && run_step "Симлинк qdrant…" ln -sf "$HOME/.local/opt/qdrant/qdrant" "$HOME/.local/bin/qdrant"; then
+            INSTALLED+=("qdrant")
+          else
+            warn "qdrant не установлен."
+            MANUAL+=("qdrant: релиз GitHub v${QDRANT_VERSION} - ${QDRANT_URL}")
           fi
           ;;
         open-design)

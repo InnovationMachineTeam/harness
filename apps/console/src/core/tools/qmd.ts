@@ -14,6 +14,7 @@ export const qmdTool: ToolDef = {
   category: "search",
   bin: "qmd",
   systemInstall: (pm) => globalInstallCommand(pm, "@tobilu/qmd"),
+  systemUpdate: (pm) => globalInstallCommand(pm, "@tobilu/qmd@latest"),
   mcpPreset: () => ({ type: "stdio", command: "qmd", args: ["mcp"] }),
   perRuntime: {
     supported: [],

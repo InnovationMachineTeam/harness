@@ -16,6 +16,7 @@ export const <id>Tool: ToolDef = {
   category: "code" | "graph" | "search" | "context",
   bin: "<cli>",                  // детект через which
   systemInstall: (pm, platform) => ["…"],  // bun add -g / npm i -g / uv / brew
+  systemUpdate: (pm, platform) => ["…"],   // опц.: uv tool upgrade / brew upgrade / pkg@latest
   requires: { bin: "uv", installCommand: (platform) => [...] },  // опц.
   mcpPreset: (params) => transport | null,   // опц.: MCP-транспорт
   perRuntime: {                  // опц.: интеграция в рантаймы
@@ -45,9 +46,16 @@ export const <id>Tool: ToolDef = {
 
 `projectInit.update` выполняется на **каждый коммит** (husky) - команды должны быть быстрыми и молча пропускаться, если инициализации не было (скрипт проверяет `initMarker`-артефакт). Медленная инициализация - только в `init`.
 
+Шаги `postInstallCommands` выполняются с флагом `optional` - провал (например, повторный `neo4j-admin dbms set-initial-password`) не останавливает установку.
+
+### Связки (TOOL_COMBOS)
+
+Связка - группа инструментов, ставимая одной задачей. Определение - `TOOL_COMBOS` в `core/tools.ts` (`{id, title, description, toolIds}`); шаги собирает `buildComboInstallSteps` (`core/toolActions.ts`) - конкатенация `buildInstallSteps` членов в порядке `toolIds`, метки получают префикс инструмента. Установка - `POST /api/tools/action {action:"install", comboId}`; финализация выполняется по каждому члену (записи installed, MCP-пресеты, sync). Общий компонент двух связок (neo4j) ставится один раз - сборка пропускает установленные части. Карточки связок - вкладка "Связки" раздела "Знание" (`CombosTab`); данные - поле `combos` в `GET /api/tools`.
+
 ### Ключевые поля
 
 - **`systemInstall`** - глобальная установка пакета. npm-пакеты обязаны учитывать менеджер (`globalInstallCommand(pm, pkg)` из `../tools` - выбор Bun/NPM из setup.sh). Верните `null`, если на платформе ставится вручную.
+- **`systemUpdate`** - обновление системного пакета до последней версии (кнопка "Обновить", действие `update`). Укажите всегда, когда CLI умеет сам: `uv tool upgrade <pypi-pkg>` (имя пакета, не бинарника - serena-agent, graphifyy), `brew upgrade <formula>`, `globalInstallCommand(pm, "<pkg>@latest")`. Без поля кнопка не показывается - обновление вручную. Повторный `systemInstall` версию не поднимает (`uv tool install` установленного - no-op, шаг пропускается для установленного CLI). Массовая проверка свежих версий - вкладка "Обновить" (`core/updates.ts`: списки `NPM_GLOBAL_PACKAGES`, `UV_TOOLS`, brew-блоки) - новый инструмент добавляется и туда.
 - **`perRuntime`** - интеграция в рантаймы. `installCommand`/`uninstallCommand` возвращают **литеральные массивы аргументов** (spawn без оболочки - guard и Mimosa следят). Неподдерживаемые рантаймы не попадают в `supported`, а объясняются в `notes`. `markerFile` - детект внешних установок; для project/global-вариантов возвращайте массив путей.
 - **`detachedInstall` + `dashboardCommand`** - для сервисов: шаг выполняется detached и не ждёт завершения (headroom proxy). Uninstall такого инструмента обязан ставить `uninstallStopsDashboard: true` - консоль остановит сервис и сбросит autostart.
 - **Сложная зачистка** (CLI не умеет uninstall - как RTK project): реализуйте программную очистку в `cleanupAfterUninstall` (`core/toolActions.ts`) - только с boundary-проверкой `path.resolve(root, rel)`.
@@ -58,11 +66,12 @@ export const <id>Tool: ToolDef = {
 2. Регистрация в `TOOLS` (`core/tools.ts`) - одна строка.
 3. `tooling/scripts/tool.sh` - строка в `TOOL_SPECS` + case в exec-свитче.
 4. `tooling/scripts/setup.sh` - opt_status + case установки.
-5. `docs/tools.md` - строка карты интеграций и unsupported-матрицы.
-6. `AGENTS.md` §10 - строки таблиц (инструменты скрипта + экономия контекста).
-7. Тест `core/__tests__/tools.test.ts`: install/uninstall-команды, матрица.
-8. Если инструмент с MCP - пресет в `core/plugins.ts` (MCP_PRESETS).
-9. Если у CLI нет стабильного `--version` - НЕ добавляйте его в `toolVersion` (spawn-allowlist), детекция останется по `which`.
+5. `core/updates.ts` - запись в списке обновлений (`NPM_GLOBAL_PACKAGES` / `UV_TOOLS` / brew-блок), если системный пакет обновляется CLI-командой.
+6. `docs/tools.md` - строка карты интеграций и unsupported-матрицы.
+7. `AGENTS.md` §10 - строки таблиц (инструменты скрипта + экономия контекста).
+8. Тест `core/__tests__/tools.test.ts`: install/uninstall-команды, матрица.
+9. Если инструмент с MCP - пресет в `core/plugins.ts` (MCP_PRESETS).
+10. Если у CLI нет стабильного `--version` - НЕ добавляйте его в `toolVersion` (spawn-allowlist), детекция останется по `which`.
 
 ## Диагностика (автоматическая)
 

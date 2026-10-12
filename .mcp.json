@@ -80,7 +80,7 @@
     },
     "deepwiki": {
       "type": "http",
-      "url": "https://mcp.deepwiki.com/mcp"
+      "url": "https://mcp.deepwiki.com/"
     },
     "excalidraw": {
       "type": "http",
@@ -97,6 +97,31 @@
         "mcp",
         "start"
       ]
+    },
+    "neo4j": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-neo4j-memory",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "NEO4J_URI": "bolt://localhost:7687",
+        "NEO4J_USERNAME": "neo4j",
+        "NEO4J_PASSWORD": "harness-memory"
+      }
+    },
+    "qdrant": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-server-qdrant"
+      ],
+      "env": {
+        "QDRANT_URL": "http://127.0.0.1:6333",
+        "COLLECTION_NAME": "harness-memory"
+      }
     }
   }
 }

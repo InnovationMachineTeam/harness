@@ -15,6 +15,7 @@ export const codeburnTool: ToolDef = {
   category: "context",
   bin: "codeburn",
   systemInstall: (pm) => globalInstallCommand(pm, "codeburn"),
+  systemUpdate: (pm) => globalInstallCommand(pm, "codeburn@latest"),
   perRuntime: {
     supported: [],
     installCommand: () => [],

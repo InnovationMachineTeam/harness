@@ -293,6 +293,18 @@ export interface ConsoleState {
     modelId?: string;
   };
   /**
+   * LLM-биндинг LightRAG (env-переменные старта lightrag-server; по умолчанию -
+   * локальный Ollama). providerId - провайдер из реестра консоли, если настройки
+   * выбраны из его карточки.
+   */
+  lightragLlm?: {
+    preset?: string;
+    apiKey?: string;
+    baseUrl?: string;
+    modelId?: string;
+    providerId?: string;
+  };
+  /**
    * Реестр LLM-провайдеров консоли: результат проверки по id пресета
    * (пресеты - core/providers.ts; настройки - .agents/providers/<id>/) и экспорт для LangGraph.
    */
@@ -475,6 +487,13 @@ export async function loadConsoleState(repoRoot: string): Promise<ConsoleState> 
         apiKey: raw.graphifyLlm?.apiKey ?? "",
         providerId: raw.graphifyLlm?.providerId,
         modelId: raw.graphifyLlm?.modelId,
+      },
+      lightragLlm: {
+        preset: raw.lightragLlm?.preset ?? "ollama",
+        apiKey: raw.lightragLlm?.apiKey ?? "ollama",
+        baseUrl: raw.lightragLlm?.baseUrl ?? "http://localhost:11434",
+        modelId: raw.lightragLlm?.modelId ?? "",
+        providerId: raw.lightragLlm?.providerId,
       },
       providers: {
         // записи старого формата (с полями настроек) остаются как есть до

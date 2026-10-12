@@ -12,6 +12,7 @@ export const graphifyTool: ToolDef = {
   category: "graph",
   bin: "graphify",
   systemInstall: () => ["uv", "tool", "install", "graphifyy"],
+  systemUpdate: () => ["uv", "tool", "upgrade", "graphifyy"],
   requires: {
     bin: "uv",
     installCommand: (platform) => (platform === "darwin" ? ["brew", "install", "uv"] : null),

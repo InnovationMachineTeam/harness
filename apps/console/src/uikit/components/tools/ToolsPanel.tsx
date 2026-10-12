@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ExternalLink, Info, Maximize2, Minimize2, Settings2, Stethoscope } from "lucide-react";
 import type { ToolStatusDTO } from "@/core/tools";
-import { GRAPHIFY_PRESETS, OPENWIKI_PRESETS, type LlmPreset } from "@/core/llmPresets";
+import { GRAPHIFY_PRESETS, LIGHTRAG_PRESETS, OPENWIKI_PRESETS, type LlmPreset } from "@/core/llmPresets";
 import { InstallTerminal } from "@/uikit/components/skillsSh/InstallTerminal";
 import { ToolInstallModal } from "@/uikit/components/tools/ToolInstallModal";
 import { LlmSettingsModal, type LlmSettingsValue } from "@/uikit/components/tools/LlmSettingsModal";
@@ -57,6 +57,13 @@ const STATE_CHIP: Record<ToolStatusDTO["state"], { tone: "emerald" | "amber" | "
   missing: { tone: "dashed", label: "не установлен" },
 };
 
+/** Инструменты с LLM-настройками (иконка в карточке; ключ хранится в state.json). */
+const LLM_TOOLS: Record<string, { url: string; presets: LlmPreset[]; toolKey?: "openwiki" | "graphify" }> = {
+  openwiki: { url: "/api/memory/openwiki/llm", presets: OPENWIKI_PRESETS, toolKey: "openwiki" },
+  graphify: { url: "/api/memory/graphify/llm", presets: GRAPHIFY_PRESETS, toolKey: "graphify" },
+  lightrag: { url: "/api/memory/lightrag/llm", presets: LIGHTRAG_PRESETS },
+};
+
 /**
  * Раздел "Инструменты" (Настройки): жизненный цикл инструментов экономии
  * контекста - установка/вкл-выкл/переустановка/удаление, выбор менеджера
@@ -84,6 +91,7 @@ export function ToolsPanel() {
     presets: LlmPreset[];
     initial: LlmSettingsValue;
     getUrl: string;
+    toolKey?: "openwiki" | "graphify";
   } | null>(null);
 
   /** Промпт headless-исправления провалившегося job'а (init/clone/install). */
@@ -265,7 +273,7 @@ export function ToolsPanel() {
 
   const runAction = async (
     tool: ToolStatusDTO,
-    action: "uninstall" | "reinstall" | "toggle",
+    action: "uninstall" | "reinstall" | "update" | "toggle",
     opts: { enabled?: boolean; confirm?: { title: string; body: string } } = {},
   ) => {
     if (opts.confirm && !(await confirmDialog(opts.confirm))) return;
@@ -322,7 +330,8 @@ export function ToolsPanel() {
       >
         <p className="text-[11px] leading-relaxed text-fg-faint">
           Установка по умолчанию охватывает все поддерживаемые рантаймы. Выключение снимает интеграцию, оставляя
-          системный пакет; удаление убирает интеграцию и MCP-запись (пакет удаляйте вручную). Агенты вызывают
+          системный пакет; удаление убирает интеграцию и MCP-запись (пакет удаляйте вручную). Обновление поднимает
+          системный пакет до последней версии; для инструментов без кнопки - вручную. Агенты вызывают
           инструменты через{" "}
           <span className="font-mono">tooling/scripts/tool.sh</span> - состояние читается из{" "}
           <span className="font-mono">.agents/console/tools.env</span>.
@@ -390,6 +399,24 @@ export function ToolsPanel() {
                     >
                       {tool.state === "on" ? "Выключить" : "Включить"}
                     </Button>
+                    {tool.system.updateCommand ? (
+                      <Button
+                        size="xs"
+                        variant="neutral"
+                        disabled={busy !== null || !tool.system.installed}
+                        title={tool.system.installed ? tool.system.updateCommand.join(" ") : "CLI не установлен"}
+                        onClick={() =>
+                          void runAction(tool, "update", {
+                            confirm: {
+                              title: `Обновить ${tool.title}?`,
+                              body: `Системный пакет будет поднят до последней версии: ${tool.system.updateCommand!.join(" ")}.`,
+                            },
+                          })
+                        }
+                      >
+                        Обновить
+                      </Button>
+                    ) : null}
                     <Button
                       size="xs"
                       variant="neutral"
@@ -450,29 +477,28 @@ export function ToolsPanel() {
                   <Stethoscope size={12} />
                   Диагностика
                 </Button>
-                {tool.id === "openwiki" || tool.id === "graphify" ? (
+                {LLM_TOOLS[tool.id] ? (
                   <IconButton
                     icon={Settings2}
                     label="Настроить LLM-провайдера"
                     variant="ghostDim"
                     onClick={() => {
-                      const url =
-                        tool.id === "openwiki" ? "/api/memory/openwiki/llm" : "/api/memory/graphify/llm";
-                      const presets = tool.id === "openwiki" ? OPENWIKI_PRESETS : GRAPHIFY_PRESETS;
+                      const cfg = LLM_TOOLS[tool.id];
                       void (async () => {
                         try {
-                          const res = await fetch(url, { cache: "no-store" });
+                          const res = await fetch(cfg.url, { cache: "no-store" });
                           const json = (await res.json()) as { llm?: LlmSettingsValue };
                           setLlmModal({
                             tool,
-                            presets,
+                            presets: cfg.presets,
                             initial: json.llm ?? {
-                              preset: presets[0].id,
+                              preset: cfg.presets[0].id,
                               apiKey: "",
                               baseUrl: "",
                               modelId: "",
                             },
-                            getUrl: url,
+                            getUrl: cfg.url,
+                            toolKey: cfg.toolKey,
                           });
                         } catch {
                           setError("не удалось загрузить LLM-настройки");
@@ -722,7 +748,7 @@ export function ToolsPanel() {
           title={`LLM-провайдер · ${llmModal.tool.title}`}
           description="Провайдер передаётся инструменту переменными окружения при сборке; ключ хранится локально в state.json (вне git). Можно выбрать проверенного провайдера из реестра или заполнить поля вручную."
           presets={llmModal.presets}
-          toolKey={llmModal.tool.id === "openwiki" ? "openwiki" : "graphify"}
+          toolKey={llmModal.toolKey}
           initial={llmModal.initial}
           onSave={async (value) => {
             const body: Record<string, string> = { preset: value.preset, apiKey: value.apiKey };

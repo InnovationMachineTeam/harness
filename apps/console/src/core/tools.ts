@@ -18,6 +18,9 @@ import { nxTool } from "./tools/nx";
 import { openDesignTool } from "./tools/open-design";
 import { agentplaneTool } from "./tools/agentplane";
 import { codeburnTool } from "./tools/codeburn";
+import { neo4jTool } from "./tools/neo4j";
+import { lightragTool } from "./tools/lightrag";
+import { qdrantTool } from "./tools/qdrant";
 
 /**
  * Реестр инструментов экономии контекста (Serena, qmd, CodeGraph, Graphify,
@@ -96,13 +99,23 @@ export interface ToolDef {
   /** 1-2 строки для карточки настроек. */
   description: string;
   docsUrl?: string;
-  category: "code" | "graph" | "search" | "context" | "design";
+  category: "code" | "graph" | "search" | "context" | "design" | "memory";
   /** CLI-бинарник для детекта (`which`). */
   bin: string;
   /** Хуки жизненного цикла (install/remove/enable/disable); cwd - обязательная рабочая папка. */
   hooks?: import("./lifecycleHooks").LifecycleHooks;
   /** Системный пакет; PM-зависимые учитывают packageManager. null - только вручную. */
   systemInstall(pm: PackageManager, platform: NodeJS.Platform): string[] | null;
+  /**
+   * Обновление системного пакета до последней версии (действие "update",
+   * кнопка в карточке инструмента). Отдельно от systemInstall: повторный
+   * install уже установленного пакета - no-op (uv) или шаг пропускается
+   * (buildInstallSteps), версию он не поднимает. null/undefined - обновление
+   * только вручную (кнопки нет). Массовая проверка свежих версий - вкладка
+   * "Настройки → Обновить" (core/updates.ts): новый инструмент добавляется
+   * в оба места (см. docs/tools-dev.md).
+   */
+  systemUpdate?(pm: PackageManager, platform: NodeJS.Platform): string[] | null;
   /** Системная зависимость (ставится перед основным пакетом, если нет). */
   requires?: { bin: string; installCommand(platform: NodeJS.Platform): string[] | null };
   /** MCP-пресет (может зависеть от параметров - headroom: режим mcp). */
@@ -185,10 +198,48 @@ export const TOOLS: ToolDef[] = [
   openDesignTool,
   agentplaneTool,
   codeburnTool,
+  neo4jTool,
+  lightragTool,
+  qdrantTool,
 ];
 
 export function toolById(id: string): ToolDef | undefined {
   return TOOLS.find((tool) => tool.id === id);
+}
+
+/**
+ * Связки памяти (раздел "Знание → Связки"): группа инструментов, ставимая
+ * одной задачей (POST /api/tools/action, comboId; шаги - core/toolActions.ts
+ * buildComboInstallSteps). Общие компоненты (neo4j) ставятся один раз:
+ * buildInstallSteps пропускает установленные части.
+ */
+export interface ToolComboDef {
+  id: string;
+  title: string;
+  /** 1-2 строки для карточки связки. */
+  description: string;
+  toolIds: string[];
+}
+
+export const TOOL_COMBOS: ToolComboDef[] = [
+  {
+    id: "neo4j-lightrag",
+    title: "neo4j + LightRAG",
+    description:
+      "Графовая память: Neo4j (knowledge graph, Browser :7474) и LightRAG (графовый RAG: REST API и WebUI :9621, граф хранится в Neo4j; LLM-биндинг - после установки).",
+    toolIds: ["neo4j", "lightrag"],
+  },
+  {
+    id: "neo4j-qdrant",
+    title: "neo4j + Qdrant",
+    description:
+      "Гибридная память агентов: knowledge graph в Neo4j (MCP mcp-neo4j-memory) и векторный поиск в Qdrant (MCP mcp-server-qdrant, WebUI :6333); оба MCP-сервера попадают в рантаймы при установке.",
+    toolIds: ["neo4j", "qdrant"],
+  },
+];
+
+export function comboById(id: string): ToolComboDef | undefined {
+  return TOOL_COMBOS.find((combo) => combo.id === id);
 }
 
 /** Имя воркспейса рабочей папки (graphify: basename, при коллизии - суффикс). */
@@ -243,6 +294,11 @@ function toolVersion(bin: string): string | null {
         return spawnSync("agentplane", ["--version"], { encoding: "utf8", timeout: 3000 });
       case "codeburn":
         return spawnSync("codeburn", ["--version"], { encoding: "utf8", timeout: 3000 });
+      case "neo4j":
+        return spawnSync("neo4j", ["--version"], { encoding: "utf8", timeout: 3000 });
+      case "qdrant":
+        return spawnSync("qdrant", ["--version"], { encoding: "utf8", timeout: 3000 });
+      // lightrag-server: стабильного --version нет - детекция по which
       default:
         return null; // openwiki: --version нет, версия читается из package.json ниже
     }
@@ -359,7 +415,7 @@ export interface ToolStatusDTO {
   description: string;
   docsUrl?: string;
   category: ToolDef["category"];
-  system: { installed: boolean; version: string | null; installCommand: string[] | null };
+  system: { installed: boolean; version: string | null; installCommand: string[] | null; updateCommand: string[] | null };
   state: ToolState;
   perRuntime?: {
     supported: { id: ToolRuntimeId; installed: boolean; note?: string }[];
@@ -436,7 +492,12 @@ export async function toolsStatus(
       description: def.description,
       docsUrl: def.docsUrl,
       category: def.category,
-      system: { installed: cli.installed, version: cli.version, installCommand: def.systemInstall(pm, platform) },
+      system: {
+        installed: cli.installed,
+        version: cli.version,
+        installCommand: def.systemInstall(pm, platform),
+        updateCommand: def.systemUpdate?.(pm, platform) ?? null,
+      },
       state: effectiveToolState(def, state, home, repoRoot),
       perRuntime: def.perRuntime
         ? {

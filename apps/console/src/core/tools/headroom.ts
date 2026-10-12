@@ -16,6 +16,7 @@ export const headroomTool: ToolDef = {
   category: "context",
   bin: "headroom",
   systemInstall: () => ["uv", "tool", "install", "--python", "3.13", "headroom-ai[all]"],
+  systemUpdate: () => ["uv", "tool", "upgrade", "headroom-ai"],
   requires: {
     bin: "uv",
     installCommand: (platform) => (platform === "darwin" ? ["brew", "install", "uv"] : null),

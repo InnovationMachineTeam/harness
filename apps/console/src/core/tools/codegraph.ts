@@ -31,6 +31,7 @@ export const codegraphTool: ToolDef = {
   category: "code",
   bin: "codegraph",
   systemInstall: (pm) => globalInstallCommand(pm, "@colbymchenry/codegraph"),
+  systemUpdate: (pm) => globalInstallCommand(pm, "@colbymchenry/codegraph@latest"),
   mcpPreset: () => ({ type: "stdio", command: "codegraph", args: ["serve", "--mcp"] }),
   projectInit: {
     // init строит начальный индекс; index - полная пересборка; sync -q -

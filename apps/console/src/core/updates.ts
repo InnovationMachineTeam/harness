@@ -7,6 +7,9 @@ import { globalInstallCommand, globalPackageVersion, readPackageManagerPref } fr
 
 /**
  * Реестр зависимостей и проверка обновлений (вкладка "Настройки → Обновить").
+ * Точечное обновление одного инструмента - действие "update" из реестра
+ * инструментов (ToolDef.systemUpdate, core/tools.ts); новый внешний инструмент
+ * регистрируется в обоих местах - см. docs/tools-dev.md.
  *
  * Реестр - .agents/console/updates.json: все зависимости harness (локальные
  * npm-пакеты workspace и глобальные инструменты) с текущими версиями, свежими
@@ -57,13 +60,14 @@ export interface UpdateRegistryDTO {
 /* ------------------------------- константы --------------------------------- */
 
 /** npm-глобальные пакеты harness (setup.sh: $(npm_global) <pkg>). */
-const NPM_GLOBAL_PACKAGES = ["openwiki", "@tobilu/qmd", "@colbymchenry/codegraph", "nx"] as const;
+const NPM_GLOBAL_PACKAGES = ["openwiki", "@tobilu/qmd", "@colbymchenry/codegraph", "nx", "agentplane", "codeburn"] as const;
 
 /** uv-инструменты harness: бинарник → пакет PyPI (спек обновления сохраняет extras). */
 const UV_TOOLS = [
   { bin: "serena", pypi: "serena-agent", upgrade: "serena-agent" },
   { bin: "graphify", pypi: "graphifyy", upgrade: "graphifyy" },
   { bin: "headroom", pypi: "headroom-ai", upgrade: "headroom-ai[all]" },
+  { bin: "lightrag-server", pypi: "lightrag-hku", upgrade: "lightrag-hku[api,offline-llm,offline-storage]" },
 ] as const;
 
 /** Диапазоны версий, которые не обновляются по отдельности. */
@@ -317,6 +321,33 @@ function collectGlobalToolTargets(pm: PackageManager): UpdateTarget[] {
     }
   }
 
+  // neo4j: macOS под brew; иначе - обновление вручную
+  const neo4jVersionValue = cliVersion("neo4j");
+  if (neo4jVersionValue) {
+    if (process.platform === "darwin" && brewOwnedFormula("neo4j")) {
+      targets.push({
+        id: "global:brew:neo4j",
+        group: "global",
+        kind: "brew",
+        name: "neo4j",
+        currentVersion: neo4jVersionValue,
+        command: ["brew", "upgrade", "neo4j"],
+        cwd: null,
+      });
+    } else {
+      targets.push({
+        id: "global:system:neo4j",
+        group: "global",
+        kind: "system",
+        name: "neo4j",
+        currentVersion: neo4jVersionValue,
+        command: null,
+        cwd: null,
+        note: "обновление вручную (см. docs/tools.md)",
+      });
+    }
+  }
+
   return targets;
 }
 
@@ -552,7 +583,7 @@ export function updateRegistryDTO(registry: UpdateRegistry): UpdateRegistryDTO {
  * Версию node этот helper не даёт: литеральный spawnSync("node", …) Turbopack
  * трактует как запуск модуля (резолвит "--version") - см. nodeVersion().
  */
-function cliVersion(bin: "bun" | "uv" | "rtk"): string | null {
+function cliVersion(bin: "bun" | "uv" | "rtk" | "neo4j"): string | null {
   const res = (() => {
     switch (bin) {
       case "bun":
@@ -561,6 +592,8 @@ function cliVersion(bin: "bun" | "uv" | "rtk"): string | null {
         return spawnSync("uv", ["--version"], { encoding: "utf8", timeout: 5000 });
       case "rtk":
         return spawnSync("rtk", ["--version"], { encoding: "utf8", timeout: 5000 });
+      case "neo4j":
+        return spawnSync("neo4j", ["--version"], { encoding: "utf8", timeout: 5000 });
     }
   })();
   if (res.status !== 0 || !res.stdout.trim()) return null;
@@ -592,7 +625,7 @@ function brewOutdatedJson(): string {
  * Формула установлена через brew (непустой вывод `brew list --versions`).
  * Аргумент ограничен формулами harness - фиксированный набор выше.
  */
-function brewOwnedFormula(formula: "uv" | "node" | "rtk"): boolean {
+function brewOwnedFormula(formula: "uv" | "node" | "rtk" | "neo4j"): boolean {
   const res = spawnSync("brew", ["list", "--versions", formula], { encoding: "utf8", timeout: 15_000 });
   return res.status === 0 && res.stdout.trim().length > 0;
 }

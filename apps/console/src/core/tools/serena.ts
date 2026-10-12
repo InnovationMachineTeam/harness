@@ -13,6 +13,7 @@ export const serenaTool: ToolDef = {
   category: "code",
   bin: "serena",
   systemInstall: () => ["uv", "tool", "install", "-p", "3.13", "serena-agent"],
+  systemUpdate: () => ["uv", "tool", "upgrade", "serena-agent"],
   requires: {
     bin: "uv",
     installCommand: (platform) => (platform === "darwin" ? ["brew", "install", "uv"] : null),

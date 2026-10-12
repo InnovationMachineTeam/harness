@@ -43,6 +43,18 @@ export const GRAPHIFY_PRESETS: LlmPreset[] = [
   { id: "kimi", label: "Moonshot Kimi", provider: "kimi", apiKeyEnv: "MOONSHOT_API_KEY", needsBaseUrl: false },
 ];
 
+/**
+ * Пресеты LLM-биндинга LightRAG (по исходникам lightrag-hku 1.5.7:
+ * LLM_BINDING/EMBEDDING_BINDING - ollama | openai; host - LLM_BINDING_HOST).
+ * Ключ и host передаются env-переменными при старте lightrag-server
+ * (core/lightragLlm.ts); значения apiKeyEnv - справочные.
+ */
+export const LIGHTRAG_PRESETS: LlmPreset[] = [
+  { id: "ollama", label: "Ollama (локальный)", provider: "ollama", apiKeyEnv: null, needsBaseUrl: true },
+  { id: "openai", label: "OpenAI", provider: "openai", apiKeyEnv: "OPENAI_API_KEY", needsBaseUrl: false },
+  { id: "openai-compatible", label: "OpenAI-совместимый (vLLM, …)", provider: "openai", apiKeyEnv: "OPENAI_COMPATIBLE_API_KEY", needsBaseUrl: true },
+];
+
 export function presetById(list: LlmPreset[], id: string): LlmPreset | undefined {
   return list.find((p) => p.id === id);
 }

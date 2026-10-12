@@ -20,6 +20,15 @@ interface AgentPlaneStatus {
     taskCounts?: Record<string, number>;
     totalTasks?: number;
     activeTasks?: string[];
+    active?: {
+      id: string;
+      title: string;
+      status: string;
+      nextAction: string | null;
+      requiresApproval: boolean;
+      blockers: string[];
+      waitingOnUser: boolean;
+    }[];
     error?: string | null;
   } | null;
 }
@@ -395,6 +404,18 @@ export function StatsPanel() {
                   {!projection?.error && !projection ? (
                     <span className="text-[11px] text-fg-faint">задачи AgentPlane не инициализированы в workspace</span>
                   ) : null}
+                </div>
+              ) : null}
+              {ap?.installed && projection?.active?.length ? (
+                <div className="mt-2 space-y-1">
+                  {projection.active.slice(0, 3).map((task) => (
+                    <div key={task.id} className="text-[11px] text-fg-muted">
+                      <span className="font-mono">{task.id}</span> {task.title}
+                      {task.nextAction ? <span className="text-fg-faint"> · следующий шаг: {task.nextAction}</span> : null}
+                      {task.blockers.length ? <span className="text-warning"> · блокеры: {task.blockers.length}</span> : null}
+                      {task.waitingOnUser ? <span className="text-warning"> · ждёт ответа пользователя</span> : null}
+                    </div>
+                  ))}
                 </div>
               ) : null}
             </div>

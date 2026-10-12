@@ -1,4 +1,4 @@
-import { detectToolCli, type ToolDef, type ToolRuntimeId } from "./tools";
+import { detectToolCli, toolById, type ToolComboDef, type ToolDef, type ToolRuntimeId } from "./tools";
 import type { ConsoleState, PackageManager, ToolInstallParams } from "./state";
 import { workspaceDirs } from "./state";
 import { graphifyWorkspaceNames } from "./graphify";
@@ -91,8 +91,10 @@ export function buildInstallSteps(opts: {
     steps.push({ label: `Сервис: ${def.title}`, command: def.dashboardCommand, detached: true });
   }
 
+  // шаги "после установки" не блокируют установку: типовой пример -
+  // neo4j-admin set-initial-password падает на повторной настройке
   for (const command of def.postInstallCommands?.(state, params) ?? []) {
-    steps.push({ label: "После установки", command });
+    steps.push({ label: "После установки", command, optional: true });
   }
 
   // инициализация проекта (индексы/граф) - по всем рабочим папкам,
@@ -109,6 +111,21 @@ export function buildInstallSteps(opts: {
   }
 
   return { ok: true, steps };
+}
+
+/**
+ * Шаг обновления системного пакета (действие "update"): uv tool upgrade /
+ * brew upgrade / <pm> add -g <pkg>@latest. У инструмента без systemUpdate
+ * шагов нет - обновление только вручную (кнопка в UI не показывается).
+ */
+export function buildUpdateSteps(
+  def: ToolDef,
+  platform: NodeJS.Platform,
+  packageManager: PackageManager,
+): ToolJobStep[] {
+  const command = def.systemUpdate?.(packageManager, platform);
+  if (!command) return [];
+  return [{ label: `Обновление: ${def.title}`, command }];
 }
 
 /**
@@ -139,6 +156,43 @@ export function buildInitSteps(
     }
   }
   return steps;
+}
+
+/**
+ * Шаги установки связки (Знание → Связки): цепочка buildInstallSteps каждого
+ * члена в порядке toolIds (установленные части пропускаются внутри сборки,
+ * поэтому общий neo4j двух связок ставится один раз). Метки шагов получают
+ * префикс инструмента. Возвращает и членов связки - для финализации записей.
+ */
+export function buildComboInstallSteps(opts: {
+  combo: ToolComboDef;
+  params: ToolInstallParams;
+  platform: NodeJS.Platform;
+  packageManager: PackageManager;
+  state: ConsoleState;
+  repoRoot: string;
+}): { ok: true; steps: ToolJobStep[]; members: ToolDef[] } | { ok: false; error: string } {
+  const steps: ToolJobStep[] = [];
+  const members: ToolDef[] = [];
+  for (const toolId of opts.combo.toolIds) {
+    const def = toolById(toolId);
+    if (!def) return { ok: false, error: `инструмент связки не найден: ${toolId}` };
+    const built = buildInstallSteps({
+      def,
+      runtimes: def.perRuntime?.supported ?? [],
+      params: opts.params,
+      platform: opts.platform,
+      packageManager: opts.packageManager,
+      state: opts.state,
+      repoRoot: opts.repoRoot,
+    });
+    if (!built.ok) return { ok: false, error: `${def.title}: ${built.error}` };
+    members.push(def);
+    for (const step of built.steps) {
+      steps.push({ ...step, label: `${def.title}: ${step.label}` });
+    }
+  }
+  return { ok: true, steps, members };
 }
 
 export function buildUninstallSteps(opts: {

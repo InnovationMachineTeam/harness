@@ -14,6 +14,7 @@ export const nxTool: ToolDef = {
   category: "code",
   bin: "nx",
   systemInstall: (pm) => globalInstallCommand(pm, "nx"),
+  systemUpdate: (pm) => globalInstallCommand(pm, "nx@latest"),
   perRuntime: {
     supported: [],
     installCommand: () => [],

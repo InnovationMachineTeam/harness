@@ -10,4 +10,5 @@ export const openwikiTool: ToolDef = {
   category: "graph",
   bin: "openwiki",
   systemInstall: (pm) => globalInstallCommand(pm, "openwiki"),
+  systemUpdate: (pm) => globalInstallCommand(pm, "openwiki@latest"),
 };

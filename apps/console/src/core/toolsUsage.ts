@@ -16,6 +16,7 @@ export type UsageAction =
   | "install"
   | "uninstall"
   | "reinstall"
+  | "update"
   | "toggle"
   | "build"
   | "graph"
