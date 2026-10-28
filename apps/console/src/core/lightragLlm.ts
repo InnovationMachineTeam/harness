@@ -64,9 +64,21 @@ export function lightragServiceEnv(state: ConsoleState): Record<string, string> 
 
 /**
  * Дополнительный env автономного сервиса инструмента при старте консолью
- * (startDashboard): пока только lightrag - LLM-биндинг и Neo4j-хранилище.
- * Общая точка для всех мест старта (action, autostart, dashboard).
+ * (startDashboard): lightrag - LLM-биндинг и Neo4j-хранилище; openbot -
+ * ключи из state.openbotConfig (dashboards.ts дописывает их в .env каталога
+ * клонирования перед docker compose up). Общая точка для всех мест старта
+ * (action, autostart, dashboard).
  */
 export function serviceExtraEnv(toolId: string, state: ConsoleState): Record<string, string> | undefined {
-  return toolId === "lightrag" ? lightragServiceEnv(state) : undefined;
+  if (toolId === "lightrag") return lightragServiceEnv(state);
+  if (toolId === "openbot") {
+    const config = state.openbotConfig ?? {};
+    return {
+      ...(config.intelligenceKey ? { INTELLIGENCE_API_KEY: config.intelligenceKey } : {}),
+      ...(config.modelKey ? { OPENAI_API_KEY: config.modelKey } : {}),
+      ...(config.modelBaseUrl ? { OPENAI_BASE_URL: config.modelBaseUrl } : {}),
+      OPENBOT_SINGLE_USER: config.singleUser === false ? "false" : "true",
+    };
+  }
+  return undefined;
 }

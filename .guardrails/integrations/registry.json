@@ -123,7 +123,7 @@
       "baseline"
     ],
     "expectedFailureMode": "closed",
-    "notes": "Требуется зеркало в пользовательском config.toml."
+    "notes": "Отсутствие bun - блок (exit 2); отсутствие guard в проекте - пропуск. Требуется зеркало в пользовательском config.toml."
   },
   {
     "id": "runtime:opencode:tool.execute.before",
@@ -152,6 +152,20 @@
     ],
     "expectedFailureMode": "open",
     "notes": "Блокировка после исполнения невозможна: находки уходят в журнал и лог плагина."
+  },
+  {
+    "id": "runtime:antigravity:PreToolUse",
+    "title": "Antigravity - PreToolUse",
+    "purpose": "Проверяет вызов инструмента до его исполнения в агентном runtime.",
+    "protects": "Рабочее дерево, секреты, Git, данные и инфраструктуру от опасных действий агента.",
+    "kind": "runtime-hook",
+    "source": ".agents/hooks.json",
+    "marker": ".guardrails/src/antigravity-hook.ts",
+    "bundles": [
+      "baseline"
+    ],
+    "expectedFailureMode": "open",
+    "notes": "Контракт Antigravity: вход - stdin JSON (toolCall), вердикт - stdout JSON decision; обёртка antigravity-hook.ts переводит exit-коды guard. Отсутствие bun или guard - пропуск (fail-open)."
   },
   {
     "id": "code:console:run-command",

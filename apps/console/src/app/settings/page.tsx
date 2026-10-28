@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { DesignPanel } from "@/uikit/components/design/DesignPanel";
 import { useActiveProviders } from "@/uikit/components/providers/useActiveProviders";
 import { AiSdkPanel } from "@/uikit/components/settings/AiSdkPanel";
+import { AguiEndpointPanel } from "@/uikit/components/settings/AguiEndpointPanel";
 import { GuardrailsPanel } from "@/uikit/components/settings/GuardrailsPanel";
 import { McpSettingsPanel } from "@/uikit/components/settings/McpSettingsPanel";
 import { ModsSettingsPanel } from "@/uikit/components/settings/ModsSettingsPanel";
@@ -200,6 +201,10 @@ export default function SettingsPage() {
       {tab === "general" ? (
         <>
           <AiSdkPanel />
+
+          <div className="mt-3">
+            <AguiEndpointPanel />
+          </div>
 
           <div className="mt-3 space-y-3">
             {TASKS.map((task) => (

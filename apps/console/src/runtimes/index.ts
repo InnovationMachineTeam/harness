@@ -1,4 +1,5 @@
 import type { RuntimeAdapter } from "@/core/types";
+import { antigravityAdapter } from "./antigravity";
 import { claudeAdapter } from "./claude";
 import { codexAdapter } from "./codex";
 import { cursorAdapter } from "./cursor";
@@ -16,7 +17,7 @@ import { zcodeAdapter } from "./zcode";
  *      и допиши адаптер в список ниже.
  */
 export const ADAPTERS: Record<string, RuntimeAdapter> = Object.fromEntries(
-  [claudeAdapter, codexAdapter, zcodeAdapter, cursorAdapter, kimiAdapter, opencodeAdapter].map((a) => [a.id, a]),
+  [claudeAdapter, codexAdapter, zcodeAdapter, cursorAdapter, kimiAdapter, opencodeAdapter, antigravityAdapter].map((a) => [a.id, a]),
 );
 
 export const ADAPTER_IDS = Object.keys(ADAPTERS);

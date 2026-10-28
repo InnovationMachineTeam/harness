@@ -7,5 +7,5 @@ source:
   version: 0.11.0
   hash: stitch-cli-0.11.0
   update: manual-review
-runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
 tags: [design, ui, stitch, brand]

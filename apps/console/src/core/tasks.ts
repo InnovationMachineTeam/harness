@@ -10,7 +10,7 @@ import { processAlive } from "./memory";
  * Задачи независимы и запускаются параллельно - глобальных блокировок нет.
  */
 
-export type TaskKind = "prompt" | "openwiki-build" | "graphify-build" | "graphify-wiki";
+export type TaskKind = "prompt" | "routine" | "openwiki-build" | "graphify-build" | "graphify-wiki" | "skill-evals" | "probe";
 
 export type TaskExecutor =
   | { type: "runtime"; id: string }
@@ -178,9 +178,12 @@ export async function readTaskMetas(repoRoot: string): Promise<TaskMeta[]> {
 /** Патерны ошибок в логе с момента старта - признак failed вместо completed. */
 const FAILURE_PATTERNS: Record<TaskKind, RegExp[]> = {
   prompt: [/Failed to authenticate/i, /Model creation failed/i, /KEY_MISSING|API key .*required/i],
+  routine: [/^error:/mi, /Failed to authenticate/i, /KEY_MISSING|API key .*required/i],
   "openwiki-build": [/^error:/mi, /Interrupted OpenWiki run/i, /Received tool input did not match/i, /Invalid input: expected/i],
   "graphify-build": [/^error:/mi],
   "graphify-wiki": [/^error:/mi],
+  "skill-evals": [/^error:/mi, /не найдена или уже завершена/i],
+  probe: [/^error:/mi, /не найдена или уже завершена/i, /worktree не создан/i],
 };
 
 /**
@@ -220,18 +223,23 @@ export const STALE_RUNNING_MS = 15 * 60_000;
 const LOG_READ_LIMIT = 64 * 1024;
 
 async function logHasFailure(meta: TaskMeta, _now: Date): Promise<boolean> {
-  if (!meta.logFile) return false;
+  return logHasFailurePatterns(meta.logFile, meta.logStartOffset, meta.kind);
+}
+
+/** Поиск паттернов ошибок вида задачи в хвосте лога (используется и финализацией routine_runs). */
+export async function logHasFailurePatterns(logFile: string | null, startOffset: number, kind: TaskKind): Promise<boolean> {
+  if (!logFile) return false;
   try {
-    const fh = await open(meta.logFile, "r");
+    const fh = await open(logFile, "r");
     try {
       const size = (await fh.stat()).size;
-      const start = Math.max(meta.logStartOffset, size - LOG_READ_LIMIT);
+      const start = Math.max(startOffset, size - LOG_READ_LIMIT);
       const length = Math.min(size - start, LOG_READ_LIMIT);
       if (length <= 0) return false;
       const buf = Buffer.alloc(length);
       await fh.read(buf, 0, length, start);
       const text = buf.toString("utf8");
-      return FAILURE_PATTERNS[meta.kind]?.some((re) => re.test(text)) ?? false;
+      return FAILURE_PATTERNS[kind]?.some((re) => re.test(text)) ?? false;
     } finally {
       await fh.close();
     }

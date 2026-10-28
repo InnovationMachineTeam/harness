@@ -1,9 +1,9 @@
 #!/usr/bin/env bun
 import { createHash } from "node:crypto";
-import { appendFileSync, mkdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
-import policy from "../policy.json";
 import { buildAudit } from "./audit";
+import { appendDecision } from "./audit-log";
 import { generate, generatedDocsCurrent } from "./generate";
 import { evaluate } from "./rules";
 import { RULES } from "./rules";
@@ -11,7 +11,7 @@ import { scanText } from "./content/scan";
 import { ProbeStore } from "./content/probes";
 import { randomUUID } from "node:crypto";
 import { policyDigest } from "./audit";
-import { findException } from "./exceptions/loader";
+import { consumeException, findException, loadExceptions, nextExceptionId, saveException } from "./exceptions/loader";
 import { writeHookStatus } from "./mimosa";
 
 function root(): string {
@@ -73,8 +73,7 @@ function settings(repo: string): void {
 }
 
 function recordAudit(repo: string, payload: unknown, result: ReturnType<typeof evaluate>, malformed = false, exceptionId: string | null = null, reason = "", latencyMs = 0): void {
-  const target = resolve(repo, policy.audit.events);
-  const event = {
+  appendDecision(repo, {
     schemaVersion: 1,
     decisionId: randomUUID(),
     at: new Date().toISOString(),
@@ -88,11 +87,7 @@ function recordAudit(repo: string, payload: unknown, result: ReturnType<typeof e
     reason: malformed ? "payload.invalid-json" : (result?.reason ?? reason),
     latencyMs,
     exceptionId,
-  };
-  try {
-    mkdirSync(dirname(target), { recursive: true });
-    appendFileSync(target, JSON.stringify(event) + "\n", { encoding: "utf8", mode: 0o600 });
-  } catch {}
+  });
 }
 
 async function evaluateStdin(repo: string): Promise<never> {
@@ -119,6 +114,10 @@ async function evaluateStdin(repo: string): Promise<never> {
     if (exception) {
       exceptionId = exception.id;
       console.error(`guardrails: исключение ${exception.id} применено к правилу ${result.ruleId} (${exception.reason}); решение - разрешить.`);
+      if (exception.singleUse) {
+        consumeException(repo, exception);
+        console.error(`guardrails: разовое исключение ${exception.id} израсходовано и удалено.`);
+      }
       result = null;
     }
   }
@@ -215,6 +214,53 @@ async function scanDiffStdin(repo: string): Promise<never> {
   process.exit(0);
 }
 
+/**
+ * approve: создать исключение политики из решения человека.
+ * bun .guardrails/src/cli.ts approve --rule <id> --reason "<текст>"
+ *   [--command "<regex>"] [--path "<regex>"] [--tools Bash,Edit] [--days N] [--once]
+ * --once - разовое разрешение: файл исключения удаляется после первого применения.
+ */
+function approve(repo: string, args: string[]): void {
+  const flag = (name: string): string | undefined => {
+    const index = args.indexOf(`--${name}`);
+    return index >= 0 && index + 1 < args.length ? args[index + 1] : undefined;
+  };
+  const fail = (message: string): never => {
+    console.error(`Guardrails: ${message}`);
+    console.error("Instead: bun .guardrails/src/cli.ts approve --rule <id> --reason \"<текст>\" [--command <regex>] [--path <regex>] [--tools Bash,Edit] [--days N] [--once]");
+    process.exit(1);
+  };
+  const ruleId = flag("rule");
+  const reason = flag("reason")?.trim();
+  if (!ruleId) fail("не указано --rule <id правила> (список - команда list).");
+  if (!RULES.find((rule) => rule.meta.id === ruleId)) fail(`неизвестное правило ${ruleId}.`);
+  if (!reason) fail("не указан --reason - причина решения человека обязательна.");
+  const singleUse = args.includes("--once");
+  const days = Number(flag("days") ?? (singleUse ? 1 : 7));
+  if (!Number.isInteger(days) || days < 1 || days > 365) fail("--days - целое от 1 до 365.");
+  const scope: { tools?: string[]; pathPattern?: string; commandPattern?: string } = {};
+  const tools = flag("tools")?.split(",").map((item) => item.trim()).filter(Boolean);
+  if (tools?.length) scope.tools = tools;
+  for (const [name, key] of [["path", "pathPattern"], ["command", "commandPattern"]] as const) {
+    const pattern = flag(name)?.trim();
+    if (!pattern) continue;
+    try { new RegExp(pattern, "i"); } catch { fail(`--${name} не компилируется как регулярное выражение: ${pattern}`); }
+    scope[key] = pattern;
+  }
+  const exception = {
+    id: nextExceptionId(repo),
+    ruleId,
+    reason: reason.slice(0, 500),
+    approvedBy: process.env.USER ?? "operator",
+    expiresAt: new Date(Date.now() + days * 24 * 60 * 60_000).toISOString(),
+    singleUse: singleUse || undefined,
+    scope: Object.keys(scope).length ? scope : undefined,
+  };
+  const file = saveException(repo, exception);
+  console.log(`Guardrails: создано исключение ${exception.id} для правила ${ruleId} (${singleUse ? "разовое" : `действует до ${exception.expiresAt}`}).`);
+  console.log(`Файл: ${file}`);
+}
+
 async function main() {
   const repo = root();
   const [command = "evaluate", ...args] = process.argv.slice(2);
@@ -225,6 +271,8 @@ async function main() {
   if (command === "context") { console.log(JSON.stringify(settingsData(repo), null, 2)); return; }
   if (command === "generate") { generate(repo); console.log("Guardrails: документы и реестр обновлены."); return; }
   if (command === "audit") { console.log(JSON.stringify(buildAudit(repo), null, args.includes("--json") ? 2 : 2)); return; }
+  if (command === "exceptions") { console.log(JSON.stringify(loadExceptions(repo), null, 2)); return; }
+  if (command === "approve") return approve(repo, args);
   if (command === "list") { for (const item of RULES) console.log(`${item.meta.id}\t${item.meta.effect}\t${item.meta.severity}\t${item.meta.title}`); return; }
   if (command === "explain") {
     const item = RULES.find((rule) => rule.meta.id === args[0]);

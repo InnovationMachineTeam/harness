@@ -1,4 +1,6 @@
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { homedir } from "node:os";
+import { dirname, join, resolve } from "node:path";
 import type { ActivitySignal, Issue, ProbeContext, RuntimeAdapter, SessionDetail, SessionSummary, SkillItem } from "@/core/types";
 import { hookFileIssue } from "@/core/issues";
 import { getZcodeSession, listZcodeSessions, zcodeAwaiting } from "@/core/sessions/zcode";
@@ -10,6 +12,24 @@ const SESS_ID_RE = /(sess_[A-Za-z0-9-]+)/;
 
 /** CLI ZCode: находится в бандле приложения; можно переопределить через ZCODE_CLI. */
 export const ZCODE_CLI = process.env.ZCODE_CLI ?? "/Applications/ZCode.app/Contents/Resources/glm/zcode.cjs";
+
+/** Встроенный конфиг провайдера лежит в бандле приложения рядом с glm/, а не рядом с zcode.cjs. */
+const ZCODE_APP_PROVIDER_CONFIG = resolve(dirname(ZCODE_CLI), "../config/provider/zcode-builtin.json");
+const ZCODE_PERSONAL_PROVIDER_CONFIG = join(homedir(), ".zcode", "v2", "provider_config.json");
+
+/**
+ * GUI ZCode передаёт CLI пути конфигов провайдера через эти две переменные; без
+ * них headless-CLI ищет встроенный конфиг рядом с zcode.cjs и завершается с
+ * "无法定位 CLI ZCode Built-in Provider Config". CLI принимает пути только парой,
+ * поэтому переменные выставляются, когда существуют оба файла.
+ */
+const ZCODE_RUN_ENV: Record<string, string> =
+  existsSync(ZCODE_APP_PROVIDER_CONFIG) && existsSync(ZCODE_PERSONAL_PROVIDER_CONFIG)
+    ? {
+        ZCODE_BUILTIN_PROVIDER_CONFIG_FILE: ZCODE_APP_PROVIDER_CONFIG,
+        ZCODE_PERSONAL_PROVIDER_CONFIG_FILE: ZCODE_PERSONAL_PROVIDER_CONFIG,
+      }
+    : {};
 
 export const zcodeAdapter: RuntimeAdapter = {
   id: "zcode",
@@ -119,4 +139,5 @@ export const zcodeAdapter: RuntimeAdapter = {
 
   replyCommand: (sessionId, text) => ({ command: "node", args: [ZCODE_CLI, "-p", "--resume", sessionId, text] }),
   runCommand: (text) => ({ command: "node", args: [ZCODE_CLI, "-p", text] }),
+  runEnv: ZCODE_RUN_ENV,
 };

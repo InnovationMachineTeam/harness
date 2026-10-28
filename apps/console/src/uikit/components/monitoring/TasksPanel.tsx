@@ -23,9 +23,12 @@ const STATUS_CHIPS: Record<TaskDTO["status"], { tone: "sky" | "emerald" | "red" 
 
 const KIND_LABELS: Record<TaskDTO["kind"], string> = {
   prompt: "промт",
+  routine: "рутина",
   "openwiki-build": "сборка OpenWiki",
   "graphify-build": "сборка Graphify",
   "graphify-wiki": "wiki Graphify",
+  probe: "контрастивная проба",
+  "skill-evals": "оценка навыка",
 };
 
 /**

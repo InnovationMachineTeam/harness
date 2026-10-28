@@ -12,6 +12,7 @@
 | zcode | `~/.zcode/cli/rollout/model-io-sess_*.jsonl` | глобальный список; связь с репо - корреляция sess-id с `.zcode/plans/plan-sess_*.md` |
 | opencode | SQLite `~/.local/share/opencode/opencode.db`, таблица `session` (`sqlite3 -readonly -json`; `core/sessions/opencode.ts`) | колонка `directory` сессии → точная фильтрация; нет БД или sqlite3 - пустой список |
 | cursor | SQLite (`state.vscdb`) | не поддерживается - в UI честно помечено |
+| antigravity | `~/.gemini/antigravity-cli/history.jsonl` (индекс CLI; сессии IDE - protobuf `~/.gemini/antigravity/conversations/*.pb`, не парсятся) | `workDir` записи индекса, если указан → фильтрация |
 
 Фильтрация - по рабочим папкам консоли (`/workspaces`, см. [operations.md](operations.md)); без папки - все папки.
 
@@ -22,7 +23,8 @@
 - claude: текстовые блоки user/assistant из jsonl-строк;
 - codex: `payload.type` user_message/agent_message;
 - opencode: best-effort из таблицы `message` БД (JSON `data` - роль и текстовые parts; схема зависит от версии OpenCode, пустое превью - не ошибка);
-- zcode/kimi: метаданные (формат логов - сырые запросы/ответы модели).
+- zcode/kimi: метаданные (формат логов - сырые запросы/ответы модели);
+- antigravity: метаданные (полный диалог остаётся в хранилище Antigravity - protobuf у IDE, SQLite у CLI).
 
 Полные данные остаются в файле сессии; консоль читает только первые/последние чанки (head/tail хелперы). Список обогащается индексом сессий (раздел ниже); параметр `refresh=1` форсирует пересбор индекса, поле `metrics` в строке списка - накопленные метрики из индекса.
 
@@ -35,7 +37,7 @@
 - Запуск сбора - ленивый, TTL 5 минут, из `/api/sessions`, `/api/sessions/search`, `/api/stats` и heatmap-роута; параллельные вызовы разделяют один проход.
 - Полнотекстовый поиск - FTS5 над `session_messages` (внешний содержимый индекс, поддержка триггерами); при отсутствии FTS5 в сборке SQLite и при пустом результате - LIKE-фолбэк. Настройка `settings.sessionIndex.contentSearch` в `state.json` (по умолчанию true): false - тексты сообщений в индекс не пишутся, поиск остаётся по метаданным (заголовок, папки). Поиск: `GET /api/sessions/search?q=<строка>&runtime=&dir=&limit=`, ответ - сниппеты сообщений с метаданными сессии.
 - `GET /api/stats` содержит блок `sessions` за тот же период: число сессий, токены, оценка стоимости, средняя длительность, топ проектов и микс инструментов; heatmap-метрика `sessions` - сессии по дню старта.
-- Ограничения по рантаймам: kimi - только метаданные (токенов в файлах нет), новые записи - по хвосту `session_index.jsonl`; zcode - usage и модель из model-io-лога, тексты сообщений не пишутся (лог - сырые запросы/ответы модели), заголовок - последний запрос пользователя; cursor - не индексируется (история в state.vscdb).
+- Ограничения по рантаймам: kimi - только метаданные (токенов в файлах нет), новые записи - по хвосту `session_index.jsonl`; zcode - usage и модель из model-io-лога, тексты сообщений не пишутся (лог - сырые запросы/ответы модели), заголовок - последний запрос пользователя; cursor - не индексируется (история в state.vscdb); antigravity - не индексируется (live-список из history.jsonl; коллектор - follow-up).
 
 ## Ожидание ввода и ответы
 
@@ -50,8 +52,9 @@ Headless-resume команды (cwd = папка сессии, таймаут 12
 | zcode | `node /Applications/ZCode.app/Contents/Resources/glm/zcode.cjs -p --resume sess_<id> "<text>"` |
 | kimi | `kimi --session <sessionId> -p "<text>"` |
 | opencode | `opencode run -s <sessionId> "<text>"` |
+| antigravity | `agy -p "<text>" --conversation <sessionId> --output-format json` |
 | cursor | - (нет headless CLI) |
 
 Ответ выполняется **отдельным процессом** - интерактивная сессия пользователя не изменяется; в UI это явно подписано. Превью новых ходов появится в списке сессий после обновления.
 
-Родственный механизм - запуск промта в **новой** сессии ([operations.md](operations.md)): команды `claude -p "<text>"`, `codex exec "<text>"`, `zcode -p`, `kimi -p`, `opencode run "<text>"`.
+Родственный механизм - запуск промта в **новой** сессии ([operations.md](operations.md)): команды `claude -p "<text>"`, `codex exec "<text>"`, `zcode -p`, `kimi -p`, `opencode run "<text>"`, `agy -p "<text>"`.

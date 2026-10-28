@@ -117,6 +117,11 @@ export interface RuntimeAdapter {
   /** Команда запуска НОВОЙ headless-сессии с промтом (для "Исправить" и запуска промтов). */
   runCommand?(text: string): { command: string; args: string[] } | null;
   /**
+   * Дополнительные переменные окружения headless-запуска CLI (поверх process.env
+   * во всех spawn-местах: prompts.ts, reply-маршрут, design/run).
+   */
+  runEnv?: Record<string, string>;
+  /**
    * CLI умеет `--output-format json`: headless-вызов workflow печатает конверт
    * результата (текст, usage, стоимость), из которого движок извлекает статистику.
    */

@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:PreToolUse bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/cli.ts\" evaluate",
+            "command": "command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:PreToolUse bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/cli.ts\" evaluate",
             "timeout": 30
           }
         ]
@@ -48,7 +48,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" codegraph prompt-hook || exit 0",
+            "command": "command -v bun >/dev/null 2>&1 && AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:UserPromptSubmit bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/cli.ts\" prompt || exit 0",
             "timeout": 10
           }
         ]
@@ -57,7 +57,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "command -v bun >/dev/null 2>&1 && AGENT_RUNTIME=claude AGENT_RUNTIME_CONFIG=\"${CLAUDE_PROJECT_DIR}/.agents/runtime/claude/config.json\" GUARDRAILS_INTEGRATION=runtime:claude:UserPromptSubmit bun \"${CLAUDE_PROJECT_DIR}/.guardrails/src/cli.ts\" prompt || exit 0",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" codegraph prompt-hook || exit 0",
             "timeout": 10
           }
         ]
@@ -85,6 +85,15 @@
           }
         ],
         "matcher": "startup|resume"
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" memory session-start || exit 0",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "SessionEnd": [
@@ -93,6 +102,17 @@
           {
             "type": "command",
             "command": "command -v bun >/dev/null 2>&1 && bun \"${CLAUDE_PROJECT_DIR}/tooling/harness/src/cli.ts\" serena session-end || exit 0",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "command -v node >/dev/null 2>&1 && node \"${CLAUDE_PROJECT_DIR}/.agents/skills/master/skills/unlazy/scripts/stop-hook.mjs\" || exit 0",
             "timeout": 10
           }
         ]

@@ -1,10 +1,13 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Оцениватель исключений: временные, персонально одобренные послабления
 // для отдельных правил. Файлы - .guardrails/exceptions/EX-YYYY-NNNN.json
 // по схеме schemas/exception.schema.json. Просроченные исключения
 // игнорируются; применение всегда фиксируется в журнале решений.
+// singleUse-исключение (разовое разрешение) удаляется после первого
+// применения; создание и удаление - saveException/removeException
+// (CLI approve и консоль "Настройки → Guardrails").
 
 export interface GuardException {
   id: string;
@@ -12,6 +15,8 @@ export interface GuardException {
   reason: string;
   approvedBy: string;
   expiresAt: string;
+  /** Разовое разрешение: файл удаляется после первого применения. */
+  singleUse?: boolean;
   scope?: {
     tools?: string[];
     pathPattern?: string;
@@ -44,6 +49,7 @@ export function parseException(raw: string, file: string): { exception?: GuardEx
     reason: source.reason as string,
     approvedBy: source.approvedBy as string,
     expiresAt: source.expiresAt as string,
+    singleUse: source.singleUse === true ? true : undefined,
     scope: (source.scope as GuardException["scope"]) ?? undefined,
   };
   if (!ID_PATTERN.test(exception.id)) return { error: `${file}: id не соответствует EX-YYYY-NNNN` };
@@ -83,4 +89,51 @@ export function exceptionMatches(exception: GuardException, target: { ruleId: st
 export function findException(repoRoot: string, target: { ruleId: string; tool?: string; path?: string; command?: string }, now = new Date()): GuardException | null {
   const { active } = loadExceptions(repoRoot, now);
   return active.find((exception) => exceptionMatches(exception, target)) ?? null;
+}
+
+function exceptionsDir(repoRoot: string): string {
+  return join(repoRoot, ".guardrails", "exceptions");
+}
+
+/** Следующий свободный id вида EX-<год>-NNNN по текущему каталогу исключений. */
+export function nextExceptionId(repoRoot: string): string {
+  const year = new Date().getFullYear();
+  let max = 0;
+  const dir = exceptionsDir(repoRoot);
+  if (existsSync(dir)) {
+    for (const name of readdirSync(dir)) {
+      const match = name.match(/^EX-(\d{4})-(\d{3,})\.json$/);
+      if (match && Number(match[1]) === year) max = Math.max(max, Number(match[2]));
+    }
+  }
+  return `EX-${year}-${String(max + 1).padStart(4, "0")}`;
+}
+
+/** Атомарная запись исключения в каталог (создаёт каталог при отсутствии). */
+export function saveException(repoRoot: string, exception: GuardException): string {
+  const dir = exceptionsDir(repoRoot);
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, `${exception.id}.json`);
+  const tmp = `${file}.tmp`;
+  writeFileSync(tmp, JSON.stringify(exception, null, 2) + "\n", "utf8");
+  renameSync(tmp, file);
+  return file;
+}
+
+/** Удаление файла исключения; false - файла нет. Id проверяется паттерном. */
+export function removeException(repoRoot: string, id: string): boolean {
+  if (!ID_PATTERN.test(id)) return false;
+  const file = join(exceptionsDir(repoRoot), `${id}.json`);
+  if (!existsSync(file)) return false;
+  unlinkSync(file);
+  return true;
+}
+
+/** Расходование singleUse-исключения после применения (best-effort). */
+export function consumeException(repoRoot: string, exception: GuardException): void {
+  try {
+    removeException(repoRoot, exception.id);
+  } catch {
+    // Файл мог быть удалён параллельным вызовом; решение уже разрешено и записано в журнал.
+  }
 }

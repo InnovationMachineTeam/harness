@@ -7,5 +7,5 @@ source:
   version: 1.0.0
   hash: builtin-agent-handoff-1
   update: manual-review
-runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
 tags: [handoff, session-end, todo, notes, передача-контекста]

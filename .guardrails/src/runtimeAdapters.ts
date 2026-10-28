@@ -30,8 +30,11 @@ export interface RuntimeAdapter {
   extensionNotes: string;
 }
 
+// Fail-closed: без bun shell вернул бы exit 127, который рантайм трактует
+// как неблокирующую ошибку, и политика обходилась бы под флагом "closed".
+// Отсутствие bun - явный exit 2 (блок вызова).
 const evaluate = (projectDirVar: string, runtime: string, wrapper = ""): string =>
-  `${wrapper}AGENT_RUNTIME=${runtime} AGENT_RUNTIME_CONFIG=\${${projectDirVar}}/.agents/runtime/${runtime}/config.json GUARDRAILS_INTEGRATION=runtime:${runtime}:PreToolUse bun "\${${projectDirVar}}/.guardrails/src/cli.ts" evaluate`;
+  `${wrapper}command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=${runtime} AGENT_RUNTIME_CONFIG=\${${projectDirVar}}/.agents/runtime/${runtime}/config.json GUARDRAILS_INTEGRATION=runtime:${runtime}:PreToolUse bun "\${${projectDirVar}}/.guardrails/src/cli.ts" evaluate`;
 
 const prompt = (projectDirVar: string, runtime: string): string =>
   `command -v bun >/dev/null 2>&1 && AGENT_RUNTIME=${runtime} AGENT_RUNTIME_CONFIG=\${${projectDirVar}}/.agents/runtime/${runtime}/config.json GUARDRAILS_INTEGRATION=runtime:${runtime}:UserPromptSubmit bun "\${${projectDirVar}}/.guardrails/src/cli.ts" prompt || exit 0`;
@@ -77,7 +80,7 @@ export const RUNTIME_ADAPTERS: RuntimeAdapter[] = [
     hooks: [
       {
         event: "PreToolUse", file: ".codex/hooks.json", marker: ".guardrails/src/cli.ts",
-        command: `AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json GUARDRAILS_INTEGRATION=runtime:codex:PreToolUse bun .guardrails/src/cli.ts evaluate`, matcher: TOOLS,
+        command: `command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json GUARDRAILS_INTEGRATION=runtime:codex:PreToolUse bun .guardrails/src/cli.ts evaluate`, matcher: TOOLS,
         purpose: "Проверяет вызов инструмента до его исполнения в агентном runtime.",
         protects: "Рабочее дерево, секреты, Git, данные и инфраструктуру от опасных действий агента.",
         notes: "Активен после доверия каталогу .codex/.", failMode: "closed",
@@ -121,7 +124,7 @@ export const RUNTIME_ADAPTERS: RuntimeAdapter[] = [
     hooks: [
       {
         event: "preToolUse", file: ".cursor/hooks.json", marker: ".guardrails/src/cli.ts",
-        command: `AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG="$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json" GUARDRAILS_INTEGRATION=runtime:cursor:preToolUse bun "$CURSOR_PROJECT_DIR/.guardrails/src/cli.ts" evaluate`,
+        command: `command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG="$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json" GUARDRAILS_INTEGRATION=runtime:cursor:preToolUse bun "$CURSOR_PROJECT_DIR/.guardrails/src/cli.ts" evaluate`,
         purpose: "Проверяет вызов инструмента до его исполнения в агентном runtime.",
         protects: "Рабочее дерево, секреты, Git, данные и инфраструктуру от опасных действий агента.",
         notes: "Guardrails-хук работает в режиме fail-closed.", failMode: "closed",
@@ -136,10 +139,10 @@ export const RUNTIME_ADAPTERS: RuntimeAdapter[] = [
     hooks: [
       {
         event: "PreToolUse", file: ".kimi/config.toml", marker: ".guardrails/src/cli.ts",
-        command: `sh -c 'if [ -f .guardrails/src/cli.ts ]; then AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json GUARDRAILS_INTEGRATION=runtime:kimi:PreToolUse bun .guardrails/src/cli.ts evaluate; else exit 0; fi'`,
+        command: `sh -c 'if [ -f .guardrails/src/cli.ts ]; then command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json GUARDRAILS_INTEGRATION=runtime:kimi:PreToolUse bun .guardrails/src/cli.ts evaluate; else exit 0; fi'`,
         purpose: "Проверяет вызов инструмента до его исполнения в агентном runtime.",
         protects: "Рабочее дерево, секреты, Git, данные и инфраструктуру от опасных действий агента.",
-        notes: "Требуется зеркало в пользовательском config.toml.", failMode: "closed",
+        notes: "Отсутствие bun - блок (exit 2); отсутствие guard в проекте - пропуск. Требуется зеркало в пользовательском config.toml.", failMode: "closed",
       },
     ],
     llmGuard: "manual",
@@ -166,6 +169,23 @@ export const RUNTIME_ADAPTERS: RuntimeAdapter[] = [
     ],
     llmGuard: "manual",
     extensionNotes: "OpenCode не имеет декларативных хуков: события подключаются плагином .opencode/plugins/agentos-guard.ts.",
+  },
+  {
+    id: "antigravity",
+    title: "Antigravity",
+    hooks: [
+      {
+        event: "PreToolUse", file: ".agents/hooks.json", marker: ".guardrails/src/antigravity-hook.ts",
+        command: `sh -c 'if [ -f .guardrails/src/antigravity-hook.ts ]; then command -v bun >/dev/null 2>&1 || exit 0; AGENT_RUNTIME=antigravity AGENT_RUNTIME_CONFIG=.agents/runtime/antigravity/config.json GUARDRAILS_INTEGRATION=runtime:antigravity:PreToolUse exec bun .guardrails/src/antigravity-hook.ts; else exit 0; fi'`,
+        matcher: "run_command|view_file|edit_file|write_file|replace_file_content|code_action|list_directory",
+        purpose: "Проверяет вызов инструмента до его исполнения в агентном runtime.",
+        protects: "Рабочее дерево, секреты, Git, данные и инфраструктуру от опасных действий агента.",
+        notes: "Контракт Antigravity: вход - stdin JSON (toolCall), вердикт - stdout JSON decision; обёртка antigravity-hook.ts переводит exit-коды guard. Отсутствие bun или guard - пропуск (fail-open).",
+        failMode: "open",
+      },
+    ],
+    llmGuard: "none",
+    extensionNotes: "Antigravity не имеет аналога UserPromptSubmit и блокирующего PostToolUse (события PreInvocation/PostInvocation/Stop не подключены); правила промптов - в AGENTS.md. Хуки читаются из .agents/hooks.json воркспейса или ~/.gemini/config/hooks.json.",
   },
 ];
 

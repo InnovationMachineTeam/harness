@@ -70,6 +70,39 @@ export interface WorkflowEvent {
   payload: Record<string, unknown>;
 }
 
+/** Рутина: периодический запуск промта (планировщик - worker-loop, исполнение - core/routines.ts). */
+export interface RoutineRecord {
+  id: string;
+  workspaceDir: string;
+  title: string;
+  prompt: string;
+  /** Рантайм ("claude", ...) или провайдер ("provider:<id>"). */
+  executor: string;
+  intervalMin: number;
+  /** Вид расписания: интервал (interval_min) или cron-выражение (cron_expr). */
+  scheduleType: "interval" | "cron";
+  cronExpr: string | null;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastRunAt: string | null;
+  nextRunAt: string | null;
+  consecutiveFailures: number;
+}
+
+/** Запуск рутины: строка истории и счётчик сбоев (финализация - core/routines.ts). */
+export interface RoutineRunRecord {
+  id: string;
+  routineId: string;
+  status: "running" | "completed" | "failed";
+  trigger: "schedule" | "manual";
+  pid: number | null;
+  logFile: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  error: string | null;
+}
+
 function redactSecrets(value: string): string {
   return value
     .replace(/(api[_-]?key|token|password|secret)\s*[:=]\s*[^\s,;]+/gi, "$1=[REDACTED]")
@@ -108,6 +141,9 @@ const SCHEMA_DDL = [
   "CREATE TABLE IF NOT EXISTS node_cache (cache_key TEXT PRIMARY KEY, workflow_id TEXT NOT NULL, step_id TEXT NOT NULL, source_run_id TEXT NOT NULL, outputs_json TEXT NOT NULL, created_at TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS worker_lease (key TEXT PRIMARY KEY, owner TEXT NOT NULL, heartbeat_at TEXT NOT NULL)",
   "CREATE TABLE IF NOT EXISTS usage_receipts (receipt_id TEXT PRIMARY KEY, at TEXT NOT NULL, run_id TEXT, step_id TEXT, provider TEXT NOT NULL, runtime TEXT, model TEXT, input_tokens INTEGER NOT NULL, output_tokens INTEGER NOT NULL, cache_tokens INTEGER NOT NULL DEFAULT 0, cost_value REAL, cost_currency TEXT, pricing_coverage REAL NOT NULL DEFAULT 0, raw_json TEXT NOT NULL)",
+  "CREATE TABLE IF NOT EXISTS routines (id TEXT PRIMARY KEY, workspace_dir TEXT NOT NULL, title TEXT NOT NULL, prompt TEXT NOT NULL, executor TEXT NOT NULL, interval_min INTEGER NOT NULL, schedule_type TEXT NOT NULL DEFAULT 'interval', cron_expr TEXT, enabled INTEGER NOT NULL DEFAULT 1, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, last_run_at TEXT, next_run_at TEXT, manual_run_at TEXT, consecutive_failures INTEGER NOT NULL DEFAULT 0)",
+  "CREATE TABLE IF NOT EXISTS routine_runs (id TEXT PRIMARY KEY, routine_id TEXT NOT NULL, status TEXT NOT NULL, trigger_kind TEXT NOT NULL DEFAULT 'schedule', pid INTEGER, log_file TEXT, started_at TEXT NOT NULL, finished_at TEXT, error TEXT)",
+  "CREATE INDEX IF NOT EXISTS idx_routine_runs_routine ON routine_runs(routine_id, started_at)",
   "CREATE TABLE IF NOT EXISTS migrations (id TEXT PRIMARY KEY, applied_at TEXT NOT NULL)",
 ];
 
@@ -140,6 +176,17 @@ export class WorkflowStore {
         this.db.prepare("ALTER TABLE attempts_rebuild RENAME TO attempts").run();
         this.db.prepare("CREATE INDEX IF NOT EXISTS idx_attempts_run_step ON attempts(run_id, step_id)").run();
         this.markMigration("attempts-rebuild");
+      }
+    } catch {
+      // Конкурентная миграция из другого процесса - повторится при следующем открытии.
+    }
+    // Рутины: расписание второго вида - cron-выражение (schedule_type, cron_expr);
+    // базы, созданные до cron-поддержки, получают колонки через ALTER TABLE.
+    try {
+      const routineColumns = new Set((this.db.prepare("PRAGMA table_info(routines)").all() as Array<{ name: string }>).map((column) => column.name));
+      if (routineColumns.has("id")) {
+        if (!routineColumns.has("schedule_type")) this.db.prepare("ALTER TABLE routines ADD COLUMN schedule_type TEXT NOT NULL DEFAULT 'interval'").run();
+        if (!routineColumns.has("cron_expr")) this.db.prepare("ALTER TABLE routines ADD COLUMN cron_expr TEXT").run();
       }
     } catch {
       // Конкурентная миграция из другого процесса - повторится при следующем открытии.
@@ -304,6 +351,134 @@ export class WorkflowStore {
 
   hasMigration(id: string): boolean { return Boolean(this.db.prepare("SELECT 1 FROM migrations WHERE id = ?").get(id)); }
   markMigration(id: string) { this.db.prepare("INSERT OR IGNORE INTO migrations(id, applied_at) VALUES (?, ?)").run(id, new Date().toISOString()); }
+
+  /* ------------------------------- рутины ------------------------------- */
+
+  listRoutines(): RoutineRecord[] {
+    return (this.db.prepare("SELECT * FROM routines ORDER BY created_at").all() as Record<string, unknown>[]).map(rowToRoutine);
+  }
+
+  getRoutine(id: string): RoutineRecord | null {
+    const row = this.db.prepare("SELECT * FROM routines WHERE id = ?").get(id) as Record<string, unknown> | undefined;
+    return row ? rowToRoutine(row) : null;
+  }
+
+  countEnabledRoutines(): number {
+    return Number((this.db.prepare("SELECT COUNT(*) AS count FROM routines WHERE enabled = 1").get() as { count: number }).count);
+  }
+
+  createRoutine(input: {
+    workspaceDir: string;
+    title: string;
+    prompt: string;
+    executor: string;
+    intervalMin: number;
+    scheduleType?: "interval" | "cron";
+    cronExpr?: string | null;
+    enabled: boolean;
+    nextRunAt: string | null;
+  }): RoutineRecord {
+    const now = new Date().toISOString();
+    const routine: RoutineRecord = {
+      id: "routine-" + Date.now() + "-" + randomUUID().slice(0, 8),
+      workspaceDir: input.workspaceDir,
+      title: input.title,
+      prompt: input.prompt,
+      executor: input.executor,
+      intervalMin: input.intervalMin,
+      scheduleType: input.scheduleType ?? "interval",
+      cronExpr: input.scheduleType === "cron" ? (input.cronExpr ?? null) : null,
+      enabled: input.enabled,
+      createdAt: now,
+      updatedAt: now,
+      lastRunAt: null,
+      nextRunAt: input.nextRunAt,
+      consecutiveFailures: 0,
+    };
+    this.db.prepare("INSERT INTO routines (id, workspace_dir, title, prompt, executor, interval_min, schedule_type, cron_expr, enabled, created_at, updated_at, last_run_at, next_run_at, manual_run_at, consecutive_failures) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, NULL, 0)")
+      .run(routine.id, routine.workspaceDir, routine.title, routine.prompt, routine.executor, routine.intervalMin, routine.scheduleType, routine.cronExpr, routine.enabled ? 1 : 0, routine.createdAt, routine.updatedAt, routine.nextRunAt);
+    return routine;
+  }
+
+  updateRoutine(id: string, patch: { title?: string; prompt?: string; executor?: string; intervalMin?: number; scheduleType?: "interval" | "cron"; cronExpr?: string | null; enabled?: boolean; nextRunAt?: string | null }) {
+    const current = this.getRoutine(id);
+    if (!current) throw new Error("рутина не найдена: " + id);
+    const scheduleType = patch.scheduleType ?? current.scheduleType;
+    const cronExpr = scheduleType === "cron" ? (patch.cronExpr !== undefined ? patch.cronExpr : current.cronExpr) : null;
+    this.db.prepare("UPDATE routines SET title = ?, prompt = ?, executor = ?, interval_min = ?, schedule_type = ?, cron_expr = ?, enabled = ?, next_run_at = ?, updated_at = ? WHERE id = ?")
+      .run(
+        patch.title ?? current.title,
+        patch.prompt ?? current.prompt,
+        patch.executor ?? current.executor,
+        patch.intervalMin ?? current.intervalMin,
+        scheduleType,
+        cronExpr,
+        (patch.enabled ?? current.enabled) ? 1 : 0,
+        patch.nextRunAt !== undefined ? patch.nextRunAt : current.nextRunAt,
+        new Date().toISOString(),
+        id,
+      );
+  }
+
+  deleteRoutine(id: string) {
+    this.db.prepare("DELETE FROM routine_runs WHERE routine_id = ?").run(id);
+    this.db.prepare("DELETE FROM routines WHERE id = ?").run(id);
+  }
+
+  /** Рутины к запуску: включённые с наступившим next_run_at или с запросом ручного запуска (в т.ч. выключенные). */
+  dueRoutines(nowIso: string): RoutineRecord[] {
+    const rows = this.db.prepare("SELECT * FROM routines WHERE (enabled = 1 AND (next_run_at IS NULL OR next_run_at <= ?)) OR (manual_run_at IS NOT NULL AND manual_run_at <= ?) ORDER BY created_at")
+      .all(nowIso, nowIso) as Record<string, unknown>[];
+    return rows.map(rowToRoutine);
+  }
+
+  /** Плановый запуск взят в работу: последний запуск - сейчас, следующий - через интервал. */
+  claimRoutineSchedule(id: string, lastRunAtIso: string, nextRunAtIso: string) {
+    this.db.prepare("UPDATE routines SET last_run_at = ?, next_run_at = ? WHERE id = ?").run(lastRunAtIso, nextRunAtIso, id);
+  }
+
+  /** Запрос ручного запуска ("запустить сейчас"): воркер возьмёт при следующем тике. */
+  requestManualRun(id: string) {
+    this.db.prepare("UPDATE routines SET manual_run_at = ? WHERE id = ?").run(new Date().toISOString(), id);
+  }
+
+  /** Ручной запуск взят в работу: запрос снимается, расписание не сдвигается. */
+  clearManualRun(id: string) {
+    this.db.prepare("UPDATE routines SET manual_run_at = NULL WHERE id = ?").run(id);
+  }
+
+  /** Итог запуска: успех сбрасывает счётчик сбоев; серия сбоев выключает рутину. */
+  recordRoutineResult(id: string, ok: boolean, maxConsecutiveFailures: number) {
+    if (ok) {
+      this.db.prepare("UPDATE routines SET consecutive_failures = 0 WHERE id = ?").run(id);
+      return;
+    }
+    this.db.prepare("UPDATE routines SET consecutive_failures = consecutive_failures + 1, enabled = CASE WHEN consecutive_failures + 1 >= ? THEN 0 ELSE enabled END WHERE id = ?")
+      .run(maxConsecutiveFailures, id);
+  }
+
+  insertRoutineRun(routineId: string, trigger: "schedule" | "manual", pid: number | null, logFile: string | null): string {
+    const id = "routine-run-" + randomUUID();
+    this.db.prepare("INSERT INTO routine_runs (id, routine_id, status, trigger_kind, pid, log_file, started_at, finished_at, error) VALUES (?, ?, 'running', ?, ?, ?, ?, NULL, NULL)")
+      .run(id, routineId, trigger, pid, logFile, new Date().toISOString());
+    return id;
+  }
+
+  finishRoutineRun(id: string, status: "completed" | "failed", error: string | null) {
+    this.db.prepare("UPDATE routine_runs SET status = ?, finished_at = ?, error = ? WHERE id = ?")
+      .run(status, new Date().toISOString(), error, id);
+  }
+
+  listRoutineRuns(routineId: string | null, limit = 20): RoutineRunRecord[] {
+    const rows = routineId
+      ? this.db.prepare("SELECT * FROM routine_runs WHERE routine_id = ? ORDER BY started_at DESC LIMIT ?").all(routineId, limit) as Record<string, unknown>[]
+      : this.db.prepare("SELECT * FROM routine_runs ORDER BY started_at DESC LIMIT ?").all(limit) as Record<string, unknown>[];
+    return rows.map(rowToRoutineRun);
+  }
+
+  runningRoutineRuns(): RoutineRunRecord[] {
+    return (this.db.prepare("SELECT * FROM routine_runs WHERE status = 'running'").all() as Record<string, unknown>[]).map(rowToRoutineRun);
+  }
 
   listAttempts(runId?: string) {
     return runId
@@ -559,6 +734,39 @@ function rowToRun(row: Record<string, unknown>): WorkflowRunRecord {
     roadmapItemId: row.roadmap_item_id ? String(row.roadmap_item_id) : null,
     createdAt: String(row.created_at),
     startedAt: row.started_at ? String(row.started_at) : null,
+    finishedAt: row.finished_at ? String(row.finished_at) : null,
+    error: row.error ? String(row.error) : null,
+  };
+}
+
+function rowToRoutine(row: Record<string, unknown>): RoutineRecord {
+  return {
+    id: String(row.id),
+    workspaceDir: String(row.workspace_dir),
+    title: String(row.title),
+    prompt: String(row.prompt),
+    executor: String(row.executor),
+    intervalMin: Number(row.interval_min),
+    scheduleType: row.schedule_type === "cron" ? "cron" : "interval",
+    cronExpr: row.cron_expr ? String(row.cron_expr) : null,
+    enabled: Number(row.enabled) === 1,
+    createdAt: String(row.created_at),
+    updatedAt: String(row.updated_at),
+    lastRunAt: row.last_run_at ? String(row.last_run_at) : null,
+    nextRunAt: row.next_run_at ? String(row.next_run_at) : null,
+    consecutiveFailures: Number(row.consecutive_failures ?? 0),
+  };
+}
+
+function rowToRoutineRun(row: Record<string, unknown>): RoutineRunRecord {
+  return {
+    id: String(row.id),
+    routineId: String(row.routine_id),
+    status: row.status as RoutineRunRecord["status"],
+    trigger: row.trigger_kind === "manual" ? "manual" : "schedule",
+    pid: typeof row.pid === "number" ? row.pid : null,
+    logFile: row.log_file ? String(row.log_file) : null,
+    startedAt: String(row.started_at),
     finishedAt: row.finished_at ? String(row.finished_at) : null,
     error: row.error ? String(row.error) : null,
   };

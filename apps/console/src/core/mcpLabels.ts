@@ -4,6 +4,7 @@ import type { ConsoleState } from "./state";
 
 /**
  * Лейблы происхождения MCP-серверов (по образцу лейблов навыков):
+ * - builtin: собственный MCP-сервер harness (имена harness и harness-http);
  * - tool: сервер инструмента (mcpPreset из ToolDef, имя = id инструмента);
  * - plugin: имя числится в mcp включённого установленного плагина;
  * - preset: имя из каталога пресетов (стандартная установка "Установить MCP");
@@ -12,11 +13,12 @@ import type { ConsoleState } from "./state";
  * из текущего состояния плагинов, инструментов и каталога пресетов.
  */
 
-export type McpLabel = "preset" | "plugin" | "tool" | "manual";
+export type McpLabel = "builtin" | "preset" | "plugin" | "tool" | "manual";
 
 type LabelState = Pick<ConsoleState, "plugins">;
 
 export function mcpServerLabel(state: LabelState, name: string): McpLabel {
+  if (name === "harness" || name === "harness-http") return "builtin";
   if (toolById(name)?.mcpPreset) return "tool";
   for (const plugin of Object.values(state.plugins.installed)) {
     if (!plugin.enabled) continue;

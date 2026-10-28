@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: unlazy
+title: Unlazy
+description: "Используй этот навык для длинной, многочастной или вернувшейся наполовину готовой работы, аудитов и сборок, параллельных листьев и конвейеров: гейты принятия записываются до реализации (CHECK с EXPECT), работа делится деревом Depth Tree, завершение доказывается механическим чекером гейтов, а не уверенным отчётом. Адаптация unlazy (github.com/Leonxlnx/unlazy, MIT)."
+source:
+  version: 2.1.0
+  hash: builtin-unlazy-1
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
+tags: [gates, verification, completion, discipline, planning, parallel, гейты, дисциплина, завершение]

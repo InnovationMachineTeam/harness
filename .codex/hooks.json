@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json GUARDRAILS_INTEGRATION=runtime:codex:PreToolUse bun .guardrails/src/cli.ts evaluate",
+            "command": "command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/codex/config.json GUARDRAILS_INTEGRATION=runtime:codex:PreToolUse bun .guardrails/src/cli.ts evaluate",
             "timeout": 30,
             "statusMessage": "Checking against repository policy"
           }

@@ -1,6 +1,6 @@
 # Роли
 
-Роль - один файл `.agents/roles/<папка>/<id>.md`: YAML frontmatter и markdown-инструкции. Каталог содержит 64 роли в папках `product/` (16), `execution/` (4) и `engineering/` (44); ссылка на роль в шаге workflow - по `id`. Execution-роль описывает способ выполнения (`workflow-coordinator`, `task-worker`, `independent-reviewer`, `research-subagent`) и комбинируется в массиве `roles` шага с продуктовой или инженерной ролью.
+Роль - один файл `.agents/roles/<папка>/<id>.md`: YAML frontmatter и markdown-инструкции. Каталог содержит 72 роли в папках `product/` (17), `execution/` (11) и `engineering/` (44); ссылка на роль в шаге workflow - по `id`. Execution-роль описывает способ выполнения (`workflow-coordinator`, `task-worker`, `independent-reviewer`, `research-subagent`, семь Goldfish-персон ревью: `design-critic`, `zoom-out-architect`, `naive-reader`, `structural-validator`, `implementation-readiness`, `codebase-auditor`, `synthesizer`) и комбинируется в массиве `roles` шага с продуктовой или инженерной ролью.
 
 Engineering-каталог разбит по доменам: frontend (web, iOS, Android, cross-platform, design system, accessibility, performance), backend (API, services, realtime, auth, performance), data (engineering, architecture, database, analytics, quality, governance), AI (agents, ML, LLM, retrieval, evaluation, MLOps), integration (MCP, API, events, identity, automation), platform (general, DevOps, SRE, cloud, observability, developer experience), security (general, application, cloud, privacy, operations) и quality (general, automation, performance, accessibility).
 
@@ -15,6 +15,7 @@ Engineering-каталог разбит по доменам: frontend (web, iOS,
 | `mcp` | MCP-серверы, которые роль использует |
 | `tools` | CLI-инструменты роли (например `open-design`) |
 | `defaultTier`, `defaultEffort` | Значения по умолчанию для шага, не задавшего tier/effort |
+| `subagent` | Роль публикуется как именованный read-only субагент-персона в каталогах агентов рантаймов с файловыми субагентами (`.claude/agents`, `.zcode/agents`; синк - [skills.md](skills.md)) |
 
 ## Секции markdown-тела
 

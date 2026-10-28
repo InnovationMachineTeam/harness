@@ -13,6 +13,7 @@
 | `runtime:kimi:PreToolUse` | runtime-hook | `.kimi/config.toml` | closed |
 | `runtime:opencode:tool.execute.before` | runtime-hook | `.opencode/plugins/agentos-guard.ts` | closed |
 | `runtime:opencode:tool.execute.after` | runtime-hook | `.opencode/plugins/agentos-guard.ts` | open |
+| `runtime:antigravity:PreToolUse` | runtime-hook | `.agents/hooks.json` | open |
 | `code:console:run-command` | code | `apps/console/src/core/agentTools.ts` | closed |
 | `code:console:lifecycle-hook` | code | `apps/console/src/core/lifecycleHooks.ts` | closed |
 | `code:console:model-wrapper` | code | `apps/console/src/core/langchain/chatModel.ts` | closed |

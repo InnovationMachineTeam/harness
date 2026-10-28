@@ -113,7 +113,7 @@ async function runSessionTarget(opts: {
     let error = "";
     const child = spawn(cmd.command, cmd.args, {
       cwd: opts.cwd,
-      env: process.env,
+      env: { ...process.env, ...(opts.adapter.runEnv ?? {}) },
       stdio: ["ignore", "pipe", "pipe"],
     });
     const timer = setTimeout(() => {

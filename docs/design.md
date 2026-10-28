@@ -44,7 +44,7 @@
 Канал синхронизации - файлы рабочей папки (`core/design/sync.ts`). Кнопка "Синхронизировать в рантаймы" пишет managed-блок `<!-- harness-design:start|end -->`:
 
 - в `CLAUDE.md` - Claude Code читает `@DESIGN.md` и `@BRAND.md` импорты нативно (полное содержимое обоих файлов);
-- в `AGENTS.md` - OpenCode, Codex, ZCode, Kimi читают AGENTS.md: пути всех четырёх файлов, ключевые токены DESIGN.md инлайном и правило приоритетов (смысл - BRAND.md, значения токенов - DESIGN.md); @-импорты не гарантированы, поэтому файлы читаются из директории по указанию в блоке.
+- в `AGENTS.md` - OpenCode, Codex, ZCode, Kimi, Antigravity читают AGENTS.md: пути всех четырёх файлов, ключевые токены DESIGN.md инлайном и правило приоритетов (смысл - BRAND.md, значения токенов - DESIGN.md); @-импорты не гарантированы, поэтому файлы читаются из директории по указанию в блоке.
 
 Блок описывает и дизайн-MCP. Управляет только содержимым блока - остальной текст файлов не меняется (утилиты `src/lib/managed-block.ts`). MCP-серверы попадают в рантаймы проектным `.mcp.json` - его пишет общий синк [mcp.md](mcp.md); здесь консоль только показывает статус.
 
@@ -60,7 +60,7 @@
 
 | target | Исполнение |
 |---|---|
-| `{kind: "runtime", id}` | Headless-рантайм (claude, opencode, codex, kimi, zcode): `launchPromptRun` с cwd = папка, промт дополнен преамбулой пакета (DESIGN.md, BRAND.md, ui-kit, components); лог в `.agents/console/runs/` |
+| `{kind: "runtime", id}` | Headless-рантайм (claude, opencode, codex, kimi, zcode, antigravity): `launchPromptRun` с cwd = папка, промт дополнен преамбулой пакета (DESIGN.md, BRAND.md, ui-kit, components); лог в `.agents/console/runs/` |
 | `{kind: "provider", id}` | Агентный цикл в процессе консоли (`runAgentLoop`): в системном промте - токены, правила кита, содержимое BRAND.md (лимит 6000 симв.) и компоненты; инструменты - встроенные + MCP open-design/figma; таймаут 600 с |
 | `{kind: "session", runtime, sessionId}` | Headless-resume отдельно запущенной сессии (`adapter.replyCommand`, cwd = папка сессии); таймаут 300 с |
 
@@ -70,7 +70,7 @@
 
 Группа design - второй internal-каталог навыков по механике master: `.agents/skills/design/skills/<id>/{manifest.yaml, SKILL.md}`, корень - `designSkillRoot` из `.agents/runtime/config.json`. Лейбл `design` в едином реестре навыков (фильтр во вкладке "Навыки"), itemId `design:<id>`, симлинки и хуки манифеста - как у master (`core/skillHooks.ts`, префикс `design:`); `/skill:<id>`, preflight и workflow-движок подхватывают группу через общий `loadInternalSkills` (группа в поле `group` записи).
 
-Панель "Навыки" вкладки "Дизайн" (`components/design/DesignSkillsPanel.tsx`): список design-навыков с тогглом уровня default (PATCH /api/skills) и кнопкой "В Задачу" (упоминание навыка в промте). Члены группы установлены своими утилитами и перенесены в группу: **taste-skill** (набор из 12: brandkit, design-taste-frontend, gpt-taste, high-end-visual-design, image-to-code, imagegen-frontend-*, industrial-brutalist-ui, minimalist-ui, redesign-existing-projects, stitch-design-taste), **impeccable** (impeccable.style: дизайн-словарь, ~61 анти-паттерн AI-UI), **ui-ux-pro-max** (+banner-design, brand, design, design-system, slides, ui-styling; CSV-каталоги стилей/палитр/шрифтов, BM25-поиск, генератор дизайн-систем), **stitch** - официальный навык Google Stitch (CLI `@google/stitch`, `stitch agent-skills add`; плейбуки: Canvas и экраны, синхронизация DESIGN.md со Stitch-проектом, локальный UI-ревью по DESIGN.md). Смежный публичный навык - `frontend-design` (остаётся в skills.sh). Манифесты группы: runtimes [claude, codex, cursor, kimi, zcode, opencode, provider], теги design/ui/ux/brand.
+Панель "Навыки" вкладки "Дизайн" (`components/design/DesignSkillsPanel.tsx`): список design-навыков с тогглом уровня default (PATCH /api/skills) и кнопкой "В Задачу" (упоминание навыка в промте). Члены группы установлены своими утилитами и перенесены в группу: **taste-skill** (набор из 12: brandkit, design-taste-frontend, gpt-taste, high-end-visual-design, image-to-code, imagegen-frontend-*, industrial-brutalist-ui, minimalist-ui, redesign-existing-projects, stitch-design-taste), **impeccable** (impeccable.style: дизайн-словарь, ~61 анти-паттерн AI-UI), **ui-ux-pro-max** (+banner-design, brand, design, design-system, slides, ui-styling; CSV-каталоги стилей/палитр/шрифтов, BM25-поиск, генератор дизайн-систем), **stitch** - официальный навык Google Stitch (CLI `@google/stitch`, `stitch agent-skills add`; плейбуки: Canvas и экраны, синхронизация DESIGN.md со Stitch-проектом, локальный UI-ревью по DESIGN.md). Смежный публичный навык - `frontend-design` (остаётся в skills.sh). Манифесты группы: runtimes [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider], теги design/ui/ux/brand.
 
 ## Дизайн-контуры (workflows)
 

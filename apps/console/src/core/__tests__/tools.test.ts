@@ -28,7 +28,7 @@ const params = (p: Partial<ToolInstallParams> = {}): ToolInstallParams => ({
 });
 
 describe("реестр инструментов", () => {
-  test("14 инструментов с уникальными id и бинарями", () => {
+  test("16 инструментов с уникальными id и бинарями", () => {
     expect(TOOLS.map((t) => t.id).sort()).toEqual(
       [
         "agentplane",
@@ -40,9 +40,11 @@ describe("реестр инструментов", () => {
         "neo4j",
         "nx",
         "open-design",
+        "openbot",
         "openwiki",
         "qdrant",
         "qmd",
+        "rea",
         "rtk",
         "serena",
       ].sort(),
@@ -89,6 +91,23 @@ describe("реестр инструментов", () => {
     expect(def.bin).toBe("agentplane");
     expect(def.systemInstall("bun", "darwin")).toEqual(["bun", "add", "-g", "agentplane"]);
     expect(def.perRuntime).toBeUndefined();
+  });
+
+  test("rea: npm-глобальная установка, MCP stdio и компактный профиль ответов", () => {
+    const def = toolById("rea")!;
+    expect(def.bin).toBe("rea");
+    expect(def.category).toBe("code");
+    expect(def.systemInstall("bun", "darwin")).toEqual(["bun", "add", "-g", "rea-agents"]);
+    expect(def.systemInstall("npm", "linux")).toEqual(["npm", "install", "-g", "rea-agents"]);
+    expect(def.systemUpdate?.("bun", "darwin")).toEqual(["bun", "add", "-g", "rea-agents@latest"]);
+    expect(def.mcpPreset?.(params())).toEqual({ type: "stdio", command: "rea", args: ["mcp"] });
+    expect(def.mcpPreset?.(params({ compactMcpOutput: true }))).toEqual({
+      type: "stdio",
+      command: "rea",
+      args: ["mcp"],
+      env: { REA_MCP_OUTPUT_SCHEMA_PROFILE: "compact" },
+    });
+    expect(def.perRuntime?.supported).toEqual([]); // MCP расходится через managed sync
   });
 
   test("install-команды graphify: платформа + scope + strict (только claude)", () => {
@@ -266,6 +285,22 @@ describe("реестр инструментов", () => {
       args: ["mcp-server-qdrant"],
       env: { QDRANT_URL: "http://127.0.0.1:6333", COLLECTION_NAME: "harness-memory" },
     });
+  });
+
+  test("openbot: категория agents, зависимость docker, клон в postInstall, дашборд :3010", () => {
+    const def = toolById("openbot")!;
+    expect(def.category).toBe("agents");
+    expect(def.bin).toBe("docker");
+    expect(def.requires?.bin).toBe("docker");
+    expect(def.requires?.installCommand("darwin")).toBeNull();
+    expect(def.systemInstall("bun", "darwin")).toBeNull();
+    expect(def.mcpPreset).toBeUndefined();
+    expect(def.dashboard).toEqual({ url: "http://127.0.0.1:3010", label: "OpenBot" });
+    expect(def.uninstallStopsDashboard).toBe(true);
+    // обновление - git pull каталога клонирования; без каталога шаг не строится
+    const update = def.systemUpdate?.("bun", "darwin");
+    if (update) expect(update.slice(0, 2)).toEqual(["git", "-C"]);
+    else expect(update).toBeNull();
   });
 
   test("lightragLlm: env биндинга по пресетам, сервисный env содержит Neo4j-хранилище", () => {

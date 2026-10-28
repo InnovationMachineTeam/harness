@@ -1,0 +1,135 @@
+apiVersion: harness/v1
+kind: Workflow
+id: spec-review
+title: Spec Review
+description: "Goldfish-ревью концепции или документа: веер изолированных ревьюеров-персон (каждый узел - отдельный headless-вызов без истории диалога), синтез находок и цикл доработки с подтверждением правок. Адаптация модели elephant-goldfish-model (Apache-2.0)."
+inputs:
+  target:
+    type: string
+    required: true
+defaults:
+  privacy: metadata
+  runtime:
+    candidates: [provider:ollama, zcode, cursor]
+nodes:
+  - id: intake
+    title: Ввод и план ревью
+    phase: intake
+    description: "Проверить вход как цель ревью и зафиксировать план: режим, ревьюеры, стандарт."
+    dependsOn: []
+    roles: [verifier]
+    inputControl:
+      roles: [verifier]
+      prompt: "Проверь target как вход ревью. pass - если различим режим (концепция или документ) и целевой артефакт доступен для чтения; недостающие детали фиксируй как допущения в плане, а не возвратом. fail - только если цель ревью не различима."
+      dor:
+        - "из target различим режим ревью: концепция или документ"
+        - целевой артефакт назван или текст концепции содержится в target
+      maxAttempts: 3
+    execution:
+      prompt: "Составь план ревью по target: режим (CONCEPT для концепции, DOCUMENT для документа), целевой артефакт, состав ревьюеров (не более 3 из ролей design-critic, zoom-out-architect, naive-reader, structural-validator, implementation-readiness, codebase-auditor) и стандарт из каталога .agents/skills/master/skills/spec-review/standards/. Для спецификации фичи применяй feature-spec, для концепции - heilmeier, для плана реализации - implementation-readiness. Структура ответа: 'Режим', 'Цель', 'Ревьюеры', 'Стандарт'. Заверши финальным текстом без вызова инструментов; не создавай файлов."
+      confirmPlan: false
+    inputs: [target]
+    outputs: [plan]
+    runtime: { tier: standard, effort: medium }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: zoom-out
+    title: "Ревью: простота и переиспользование"
+    phase: review
+    description: "Goldfish-узел с ролью zoom-out-architect: корневая проблема, YAGNI, переиспользование, тупики."
+    dependsOn: [intake]
+    roles: [zoom-out-architect]
+    execution:
+      prompt: "Выполни ревью цели из plan по роли Zoom-out architect: корневая проблема названа отдельно от решения; каждый новый элемент обоснован текущей потребностью; существующие компоненты и библиотеки проверены поиском по коду; преждевременная детализация и архитектурные тупики отмечены. Применяй стандарт из plan. Каждая находка: severity (Blocker/Major/Nit), место в целевом артефакте, обоснование. Заверши списком находок; подтверждённые аналоги укажи с файлом и строками."
+      confirmPlan: false
+    inputs: [plan]
+    outputs: [zoomOutFindings]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: critic
+    title: "Ревью: допущения и полнота"
+    phase: review
+    description: "Goldfish-узел с ролью design-critic: скрытые допущения, неявные требования, противоречия."
+    dependsOn: [intake]
+    roles: [design-critic]
+    execution:
+      prompt: "Выполни ревью цели из plan по роли Design critic: скрытые допущения, неявные требования (ошибки, граничные случаи, доступ, совместимость), противоречия между разделами. Применяй стандарт из plan. Каждая находка: severity (Blocker/Major/Nit), место в целевом артефакте, расхождение, обоснование. Не перечисляй достоинства; согласие без проверки не допускается. Заверши списком находок."
+      confirmPlan: false
+    inputs: [plan]
+    outputs: [criticFindings]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: readiness
+    title: "Ревью: готовность к следующему шагу"
+    phase: review
+    description: "Goldfish-узел с ролью implementation-readiness: точки неопределённости и вердикт готовности."
+    dependsOn: [intake]
+    roles: [implementation-readiness]
+    execution:
+      prompt: "Выполни ревью цели из plan по роли Implementation readiness: точки, где следующий шаг (реализация для документа, спецификация для концепции) требует решение, не записанное в артефакте; проверяемость критериев; границы и зависимости. Для каждой точки: требуемое решение и владелец. Заверши вердиктом (готов / готов после доработки / не готов) с минимальным списком решений."
+      confirmPlan: false
+    inputs: [plan]
+    outputs: [readinessFindings]
+    runtime: { tier: standard, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: read }
+  - id: synthesize
+    title: Синтез находок
+    phase: synthesis
+    description: "Роль synthesizer собирает находки трёх ревьюеров: дедупликация, итоговый severity, неразрешённые противоречия."
+    dependsOn: [zoom-out, critic, readiness]
+    roles: [synthesizer]
+    execution:
+      prompt: "Собери находки zoomOutFindings, criticFindings, readinessFindings в сводный список по роли Synthesizer: одна проблема - одна объединённая находка со ссылкой на исходных ревьюеров; итоговый severity по правилу максимума из исходных; противоречия ревьюеров вынеси отдельным блоком без слияния. Сохрани отчёт в .agents/.tmp/goldfish_review_report.md по формату роли. В ответе верни краткое резюме: число находок по уровням и рекомендация."
+      confirmPlan: false
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - каждая входная находка отражена в сводном списке или явно отозвана
+        - каждая находка имеет итоговый severity
+        - противоречия ревьюеров не скрыты слиянием
+      ac:
+        - отчёт сохранён в .agents/.tmp/goldfish_review_report.md
+        - резюме содержит число находок по уровням
+      manualReview: false
+      maxAttempts: 3
+    inputs: [zoomOutFindings, criticFindings, readinessFindings]
+    outputs: [report]
+    runtime: { tier: strong, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 2 }
+    resources: { workspace: write }
+  - id: resolve
+    title: Резолюция и правки
+    phase: resolution
+    description: "Категоризация находок (CONTEST или PROPOSE FIX), правки целевого артефакта после подтверждения оператора."
+    dependsOn: [synthesize]
+    roles: [task-worker]
+    execution:
+      prompt: "Выполни резолюцию по отчёту report: для каждой находки прими решение CONTEST (отклонена, запиши причину) или PROPOSE FIX (сформулируй правку целевого артефакта). Предложи правки оператору и жди подтверждения; применяй только подтверждённые. После применения перечисли изменённые места. Отчёт резолюции допиши в .agents/.tmp/goldfish_review_report.md разделом 'Резолюция'."
+      confirmPlan: true
+    outputControl:
+      roles: [verifier]
+      tests: []
+      dod:
+        - каждая находка из report имеет решение CONTEST или PROPOSE FIX
+        - применены только подтверждённые оператором правки
+        - отклонённые находки имеют причину
+      ac:
+        - раздел 'Резолюция' дописан в отчёт
+        - изменённые места целевого артефакта перечислены
+      manualReview: true
+      maxAttempts: 3
+    inputs: [report, target]
+    outputs: [resolution]
+    runtime: { tier: standard, effort: high }
+    timeoutMs: 900000
+    retry: { maxAttempts: 1 }
+    resources: { workspace: write }

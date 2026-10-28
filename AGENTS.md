@@ -1,6 +1,6 @@
 # AGENTS.md - канонические инструкции репозитория
 
-Этот файл - `canonicalInstructions` из `.agents/runtime/config.json`. Он обязателен для каждого рантайма (Claude Code, Codex, ZCode, Cursor, Kimi Code, OpenCode) и связывает переменные из `.agents/runtime/` с контекстами, в которых они применяются. Значения, указанные здесь, - рабочие значения по умолчанию; если в конфиге твоего рантайма значение отличается - действует конфиг.
+Этот файл - `canonicalInstructions` из `.agents/runtime/config.json`. Он обязателен для каждого рантайма (Claude Code, Codex, ZCode, Cursor, Kimi Code, OpenCode, Antigravity) и связывает переменные из `.agents/runtime/` с контекстами, в которых они применяются. Значения, указанные здесь, - рабочие значения по умолчанию; если в конфиге твоего рантайма значение отличается - действует конфиг.
 
 Два файла - источник всех настроек:
 
@@ -19,12 +19,14 @@
 | Cursor | `.cursor/hooks.json` (`preToolUse`, fail-open) | native | `cursor` · `.agents/runtime/cursor/config.json` |
 | Kimi Code | `.kimi/config.toml` → зеркало в `~/.kimi-code/config.toml` | user-mirror | `kimi` · `.agents/runtime/kimi/config.json` |
 | OpenCode | `opencode.json` + `.opencode/plugins/agentos-guard.ts` | native (плагин) | `opencode` · `.agents/runtime/opencode/config.json` |
+| Antigravity | `.agents/hooks.json` (PreToolUse; вердикт - decision-JSON через обёртку) | native | `antigravity` · `.agents/runtime/antigravity/config.json` |
 
 Правила по рантайму:
 
 - **Kimi**: проектных хуков нет. На первом запуске попроси пользователя скопировать `[[hooks]]`-блок из `.kimi/config.toml` в `~/.kimi-code/config.toml`   (хуки Kimi запускаются с cwd = каталог проекта, относительные пути работают). До зеркала политика соблюдается поведенчески - прогоняй сомнительные вызовы через guard вручную (см. §3).
 - **Codex**: репозитарные хуки грузятся только после доверия слою `.codex/` (команда `/hooks` в Codex). Проверь это на первом запуске.
 - **Cursor**: хук настроен с `failClosed: false` - упавший хук пропускает вызов. Guard здесь - слой поверх одобрений IDE, а не единственная защита.
+- **Antigravity**: контракт хуков отличается - вердикт передаётся stdout JSON `{"decision": ...}`, а не exit-кодом; переводит обёртка `.guardrails/src/antigravity-hook.ts`. Отсутствие bun или guard - fail-open (действует политика Antigravity); сомнительные вызовы прогоняй через guard вручную (см. §3).
 
 ## 2. Вывод основных настроек в терминал - TEMP (временно для теста)
 
@@ -41,7 +43,7 @@ AGENT_RUNTIME=<id> AGENT_RUNTIME_CONFIG=.agents/runtime/<id>/config.json bun .gu
 
 ## 3. Guard: проверка вызовов до выполнения
 
-Guardrails — единый движок политики: `.guardrails/src/cli.ts` (поле `guard` в `.agents/runtime/config.json`). Все шесть адаптеров из §1 запускают его как PreToolUse-хук с переменными `AGENT_RUNTIME` и `AGENT_RUNTIME_CONFIG`.
+Guardrails — единый движок политики: `.guardrails/src/cli.ts` (поле `guard` в `.agents/runtime/config.json`). Все семь адаптеров из §1 запускают его как PreToolUse-хук с переменными `AGENT_RUNTIME` и `AGENT_RUNTIME_CONFIG` (Antigravity - через обёртку `antigravity-hook.ts`, переводящую exit-коды в decision-JSON).
 
 - Контракт: stdin `{"tool_name":"Bash","tool_input":{"command":"…"}}`; **exit 0** - разрешено (warn-правила печатаются в stderr), **exit 2** - блок.
 - При блоке stderr содержит id правила, причину и строку `Instead: …` - следуй ей, не обходи блок.
@@ -52,6 +54,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | bun .g
 ```
 
 - Самопроверка guard на каждом рантайме - `verifyCommand` из твоего конфига (ожидается exit 2 и причина в stderr).
+- Разрешение на заблокированное действие выдаёт только пользователь - исключение политики: консоль "Настройки → Guardrails → Исключения" или `bun .guardrails/src/cli.ts approve --rule <id> --reason "<текст>" [--command <regex>] [--days N] [--once]` (разовое `--once` удаляется после первого применения). Сам не создавай и не редактируй файлы исключений.
 - Ключевое из политики: рекурсивное удаление (`rm -r`) разрешено только под `.agents/.tmp/`, `/tmp`, `.nx/`, `node_modules/`; worktree удаляется `bun run worktree:remove <slug>`, не `rm`; push без `--force-with-lease` запрещён; секреты (`.env*`, `*.pem`, `id_rsa`, `secrets/`) не читаются и не пишутся; `.git/`, `node_modules/`, lock-файлы не редактируются; правки `.agents/roles|skills|runtime|agents` - warn: сначала предложение пользователю; правка самого guard - блок: только через пользователя.
 
 ## 4. Модели: tier → контекст
@@ -67,12 +70,12 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | bun .g
 
 Текущие значения по рантаймам (из конфигов; актуальность - §2):
 
-| Tier | claude | codex | cursor | kimi | zcode | opencode |
-|---|---|---|---|---|---|---|
-| fast | claude-sonnet-5-5 | GPT 6 Luna | Composer 2.5 (Fast) | kimi-k2.7-code-highspeed | GLM 5.3 Flash | GLM 5.3 Flash |
-| standard | claude-opus-5-5 | GPT 6 Sol | Composer 2.5 | kimi-k3 | GLM 5.3 Flash | GLM 5.3 |
-| strong | claude-fable-5-1 | GPT 6 Astra | Claude Fable 5.1 | kimi-k3 | GLM 5.3 | Claude Opus 5 |
-| subagents | claude-sonnet-5-5 | GPT 6 Sol | Claude Sonnet 5.5 | kimi-k2.7-code | GLM 5.3 Flash | GLM 5.3 Flash |
+| Tier | claude | codex | cursor | kimi | zcode | opencode | antigravity |
+|---|---|---|---|---|---|---|---|
+| fast | claude-sonnet-5-5 | GPT 6 Luna | Composer 2.5 (Fast) | kimi-k2.7-code-highspeed | GLM 5.3 Flash | GLM 5.3 Flash | gemini-3-flash |
+| standard | claude-opus-5-5 | GPT 6 Sol | Composer 2.5 | kimi-k3 | GLM 5.3 Flash | GLM 5.3 | gemini-3-pro |
+| strong | claude-fable-5-1 | GPT 6 Astra | Claude Fable 5.1 | kimi-k3 | GLM 5.3 | Claude Opus 5 | gemini-3-pro |
+| subagents | claude-sonnet-5-5 | GPT 6 Sol | Claude Sonnet 5.5 | kimi-k2.7-code | GLM 5.3 Flash | GLM 5.3 Flash | gemini-3-flash |
 
 - `thinkingLevel` у tier - целевой уровень рассуждений (`low` / `medium` / `high` / `max`); для zcode `standard`/`strong`/`subagents` это `max`.
 - Модель с `verified: false` (все, кроме claude) - подтверди маппинг у пользователя на первом запуске в этом рантайме, затем впиши подтверждённое значение обратно в конфиг.
@@ -136,6 +139,7 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | bun .g
 - `temp` = `.agents/.tmp` - все временные артефакты только там.
 - Разрешённые зоны рекурсивного удаления - только `.agents/.tmp`, `/tmp`, `.nx`, `node_modules`; защищённые пути - `.git/`, `node_modules/`, lock-файлы, секреты (см. §3).
 - Worktree под `.agents/.worktrees/` - удаление только через `bun run worktree:remove <slug>`.
+- Библиотека уроков `.agents/lessons/` (`kind: Lesson`) - накопленные уроки прогонов и спринтов; принятые уроки движок workflow внедряет в задания секций (см. `docs/optimization.md`).
 
 ## 10. Системные зависимости и установка
 
@@ -161,8 +165,10 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | bun .g
 | `neo4j` | опциональный | графовая СУБД памяти: knowledge graph для связок "neo4j + LightRAG" / "neo4j + Qdrant" (MCP mcp-neo4j-memory, Browser :7474) |
 | `lightrag` | опциональный | графовый RAG-сервер связки "neo4j + LightRAG" (REST API/WebUI :9621; LLM-биндинг - в консоли) |
 | `qdrant` | опциональный | векторная СУБД памяти связки "neo4j + Qdrant" (MCP mcp-server-qdrant, WebUI :6333) |
+| `openbot` | опциональный | платформа AI-котрудников CopilotKit: стек docker compose из клона `~/.local/opt/openbot` (интерфейс :3010), у бота свой контейнер с браузером; требует Docker Desktop и ключ CopilotKit Intelligence; агенты Harness подключаются через AG-UI endpoint (см. docs/agui.md) |
+| `rea` | опциональный | реверс-инжиниринг приложений и бинарников без исходников (Reverse Engineer Anything): статический анализ форматов, декомпиляция через Ghidra/Hopper/IDA/JADX, evidence; MCP-сервер и CLI; результаты для развития - в `sources/` (см. docs/tools.md) |
 
-Способы установки: macOS - Homebrew (нет brew - скрипт предложит поставить и его), Linux - официальный инсталлер bun и NodeSource для node. Системные утилиты (`ps`, `sh`, `which`, `open`, `git`) только проверяются. **Рантаймы агентов (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode) в установку не входят** - их пользователь ставит самостоятельно. Per-runtime настройку опциональных инструментов (`graphify install` / `rtk init` / `headroom wrap`) делает консоль: "Настройки → Инструменты".
+Способы установки: macOS - Homebrew (нет brew - скрипт предложит поставить и его), Linux - официальный инсталлер bun и NodeSource для node. Системные утилиты (`ps`, `sh`, `which`, `open`, `git`) только проверяются. **Рантаймы агентов (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode, Antigravity) в установку не входят** - их пользователь ставит самостоятельно. Per-runtime настройку опциональных инструментов (`graphify install` / `rtk init` / `headroom wrap`) делает консоль: "Настройки → Инструменты".
 
 ### Инструменты экономии контекста и диспетчер tool.sh
 
@@ -184,9 +190,12 @@ echo '{"tool_name":"Bash","tool_input":{"command":"<команда>"}}' | bun .g
 | codeburn | вопрос "куда уходит расход токенов и стоимость" | `tool.sh codeburn <args…>`; без установки отчёт CodeBurn (вкладка "Оптимизация") показывает null-state |
 | neo4j | операции с графовой СУБД памяти (status, cypher-shell) | `tool.sh neo4j <args…>`; сервисы связок запускает консоль (вкладка "Связки" раздела "Знание") |
 | lightrag | проверка графового RAG-сервера | `tool.sh lightrag <args…>` (CLI lightrag-server); сервис и LLM-биндинг - вкладка "Связки" |
+| lightrag-query | семантический запрос к документации репозитория | `tool.sh lightrag-query "<вопрос>"` (REST POST /query, mode hybrid); ответ - поля response и references |
 | qdrant | проверка векторной СУБД памяти | `tool.sh qdrant <args…>`; сервис запускает консоль (вкладка "Связки") |
+| openbot | управление стеком OpenBot (compose-проект в ~/.local/opt/openbot) | `tool.sh openbot <compose-args…>`; сервис запускает консоль (карточка инструмента) |
+| rea | анализ приложения или бинарника без исходников: декомпиляция, форматы, evidence | `tool.sh rea <args…>`; MCP-инструменты rea доступны рантаймам из реестра MCP после установки |
 
-Internal skills (master skills) находятся в мастер-каталоге `.agents/skills/master/skills` (`privateSkillRoot` из `.agents/runtime/config.json`; каталоги с `manifest.yaml` + `SKILL.md`), определения workflow - в `.agents/skills/master/workflows` (`workflowsRoot`). Группа дизайн-навыков - `.agents/skills/design/skills` (`designSkillRoot`, лейбл `design` в консоли, панель "Навыки" раздела "Дизайн"; та же механика manifest.yaml + SKILL.md). Публичные навыки skills.sh остаются в `.agents/skills` (каталоги без manifest). В native каталоги навык попадает только через хук включения (симлинк в обязательной рабочей папке). В Console команды раскрываются на сервере перед отправкой промта: `/master <промт>` выбирает master skill автоматически, `/master:<id> <промт>` - явно; `/agent:<id> <промт>` подключает роль из `.agents/roles` (в direct-чате; в workflow агенты выбираются в узлах); `/workflow:<id> <промт>` запускает workflow из direct-режима; `@<путь>` - файл или папка рабочей папки (рантайм резолвит нативно, провайдеру консоль разворачивает содержимое; секреты не читаются). Переключение навыка выполняет хуки (симлинк + команды манифеста после guard-проверки) и синк нативных команд: мастер-навыки и workflow становятся слэш-командами `/master:<id>` и `/workflow:<id>` (или `/master-<id>`; у codex и kimi - навыками `/master-<id>` и `/skill:master-<id>`) в каталогах команд и навыков рантаймов обязательной папки и работают в отдельно запущенном рантайме. Размещение навыков: каноническое хранилище - `.agents/skills`, каталоги рантаймов - только симлинки (исключение - graphify, рабочий каталог); статус и ручная регенерация - Настройки → Навыки → "Команды рантаймов" и "Симлинки навыков" (детали - `docs/skills.md`).
+Internal skills (master skills) находятся в мастер-каталоге `.agents/skills/master/skills` (`privateSkillRoot` из `.agents/runtime/config.json`; каталоги с `manifest.yaml` + `SKILL.md`), определения workflow - в `.agents/skills/master/workflows` (`workflowsRoot`). Группа дизайн-навыков - `.agents/skills/design/skills` (`designSkillRoot`, лейбл `design` в консоли, панель "Навыки" раздела "Дизайн"; та же механика manifest.yaml + SKILL.md). Публичные навыки skills.sh остаются в `.agents/skills` (каталоги без manifest). В native каталоги навык попадает только через хук включения (симлинк в обязательной рабочей папке). В Console команды раскрываются на сервере перед отправкой промта: `/master <промт>` выбирает master skill автоматически, `/master:<id> <промт>` - явно; `/agent:<id> <промт>` подключает роль из `.agents/roles` (в direct-чате; в workflow агенты выбираются в узлах); `/workflow:<id> <промт>` запускает workflow из direct-режима; `@<путь>` - файл или папка рабочей папки (рантайм резолвит нативно, провайдеру консоль разворачивает содержимое; секреты не читаются). Переключение навыка выполняет хуки (симлинк + команды манифеста после guard-проверки) и синк нативных команд: мастер-навыки и workflow становятся слэш-командами `/master:<id>` и `/workflow:<id>` (или `/master-<id>`; у codex и kimi - навыками `/master-<id>` и `/skill:master-<id>`) в каталогах команд и навыков рантаймов обязательной папки и работают в отдельно запущенном рантайме. Antigravity каталогов команд не имеет: он читает `.agents/skills` нативно, и навык доступен как `/<имя-навыка>`. Роли `.agents/roles` с полем `subagent: true` публикуются как именованные read-only субагенты-персоны (Goldfish-ревью) в каталогах `.claude/agents/` и `.zcode/agents/` - тем же синком "Команды рантаймов" или CLI `bun tooling/harness/src/cli.ts agent-links --write`. Размещение навыков: каноническое хранилище - `.agents/skills`, каталоги рантаймов - только симлинки (исключение - graphify, рабочий каталог); статус и ручная регенерация - Настройки → Навыки → "Команды рантаймов" и "Симлинки навыков" (детали - `docs/skills.md`).
 
 Развёрнутые правила:
 
@@ -197,7 +206,7 @@ Internal skills (master skills) находятся в мастер-катало�
 - **qmd**: "что в доках написано про Y" - `tool.sh qmd query "Y"` вместо чтения `docs/` целиком.
 - **RTK**: если хук рантайма не активен, префиксуй шумные команды (`tool.sh rtk git status`, `tool.sh rtk npm run lint`) - вывод сожмётся до попадания в контекст; полный вывод - `rtk recall <hash>`.
 - **Headroom**: сжатие происходит в локальном прокси автоматически; ничего дополнительно вызывать не нужно.
-- **Хуки индексов**: событийные хуки Serena, CodeGraph и Graphify вызывают только обёртку `tooling/harness/src/cli.ts` - единый источник списка (реестр `tooling/harness/src/registry.ts`), проверки - `bun run validate:hooks`, бюджеты и журнал `.agents/.tmp/hooks/hooks.log` - `bun run harness-doctor run`; покрытие рантаймов: Claude и ZCode - полный набор, Cursor - агрегатор `pretooluse`, Kimi - PreToolUse через зеркало `~/.kimi-code/config.toml`, Codex и OpenCode - правила AGENTS.md; детали - `docs/tools.md`.
+- **Хуки индексов**: событийные хуки Serena, CodeGraph, Graphify и Memory вызывают только обёртку `tooling/harness/src/cli.ts` - единый источник списка (реестр `tooling/harness/src/registry.ts`), проверки - `bun run validate:hooks`, бюджеты и журнал `.agents/.tmp/hooks/hooks.log` - `bun run harness-doctor run`; покрытие рантаймов: Claude и ZCode - полный набор, Cursor - агрегатор `pretooluse`, Kimi - PreToolUse через зеркало `~/.kimi-code/config.toml`, Codex и OpenCode - правила AGENTS.md, Antigravity - только guard-хук через `.agents/hooks.json` (индекс-хуки не подключены); детали - `docs/tools.md`.
 - **Serena в Codex** (S-4): хуки с additionalContext не поддерживаются - для файлов `*.ts`/`*.tsx` больше 300 строк начинайте с `mcp__serena__find_symbol` или `get_symbols_overview` вместо чтения файла целиком.
 
 Инициализация и обновление: Serena и CodeGraph проиндексируйте в проекте после установки - кнопка **"Инициализировать"** в карточке (скрывается, когда инициализация выполнена): `serena project index`, `codegraph init`. Граф Graphify рабочей папки собирается в хранилище воркспейсов консоли: `graphify extract <папка> --code-only --out graphify/<имя>/` (локальный AST без LLM-ключа; полный режим с доками требует API-ключ; повторный запуск инкрементален). То же выполняется кнопкой из консоли; интеграционный граф самого репозитория (`graphify-out/` в корне) ставит setup.sh (`graphify extract . --code-only`). OpenWiki собирается **на русском**: `openwiki --language ru --init|--update "Веди вики на русском языке."`.
@@ -223,6 +232,7 @@ Internal skills (master skills) находятся в мастер-катало�
 | навыки: уровни, семантика тогглов, флоу skills.sh (find/add/remove/create) | `docs/skills.md` |
 | новые/изменённые API-роуты, схема `state.json`, кеши/производительность, безопасность | `docs/architecture.md` |
 | процессы, промпты/"Исправить", настройки задач, рабочие папки, guard-совместимость | `docs/operations.md` |
+| библиотека уроков, оценка навыков (evals), контрастивные пробы обвеса, workflow рефайнмента | `docs/optimization.md` |
 | хуки индексов: обёртки, реестр, бюджеты, журнал, doctor, защита установщиков | `docs/tools.md` |
 | запуск/навигация консоли (как пользоваться) | `apps/console/README.md`, `docs/README.md` |
 
@@ -321,6 +331,18 @@ This repository has a generated `openwiki/` evidence index. It is optional just-
 The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
 
 <!-- OPENWIKI:END -->
+
+<!-- MEMORY-START -->
+## Память агентов (neo4j-memory, LightRAG, Qdrant)
+
+Связки памяти (Знание → Связки в консоли) наполнены знаниями репозитория; сервисы запускает и держит консоль, агенты читают и дополняют. Какие сервисы отвечают, сообщает хук SessionStart; ручная проверка - `bash tooling/scripts/tool.sh status`.
+
+- **LightRAG** - семантический RAG по документации (`docs/`, apps/console/README.md): `bash tooling/scripts/tool.sh lightrag-query "<вопрос>"`; ответ - поля response и references.
+- **Neo4j (MCP mcp__neo4j-memory__*)** - граф фактов и долгая память: `search_nodes` / `read_graph` - чтение; `create_entities`, `create_relations`, `add_observations` - запись устойчивых фактов (решения, первопричины, договорённости). Узлы сеятеля несут seed="repo-seed" - их не редактируй; факты о репозитории обновляются сеятелем.
+- **Qdrant (MCP mcp__qdrant__*)** - семантический поиск по документации и фактам: `qdrant-find "<запрос>"`; запись факта - `qdrant-store` с metadata {topic, source}.
+- Порядок источников: код - serena/codegraph/graphify; документация - qmd, затем LightRAG и qdrant; факты прошлых сессий - neo4j-memory и qdrant.
+- Повторное наполнение после крупных правок документации - `bun run tooling/scripts/src/seed-memory.ts` (neo4j, qdrant, lightrag; недоступное хранилище пропускается). Извлечение LightRAG идёт фоном несколько минут.
+<!-- MEMORY-END -->
 
 <!-- nx configuration start-->
 <!-- Leave the start & end comments to automatically receive updates. -->

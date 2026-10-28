@@ -239,7 +239,7 @@ async function toolRunCommand(ctx: ToolContext, rawArgs: unknown, startedAt: num
   }
   const verdict = guardVerdict(ctx.repoRoot, command);
   if (!verdict.allowed) {
-    return toolError(`run_command: команда отклонена guard-политикой.\n${capToolOutput(verdict.reason)}`, startedAt, true);
+    return toolError(`run_command: команда отклонена guard-политикой.\n${capToolOutput(verdict.reason)}\nРазрешение выдаёт только пользователь: консоль "Настройки → Guardrails → Исключения" или CLI "bun .guardrails/src/cli.ts approve".`, startedAt, true);
   }
   const timeoutMs = Math.min(
     Number.isInteger(args.timeout_ms) && (args.timeout_ms as number) > 0 ? (args.timeout_ms as number) : COMMAND_TIMEOUT_MS,

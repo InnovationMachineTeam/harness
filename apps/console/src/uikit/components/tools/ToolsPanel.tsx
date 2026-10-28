@@ -7,7 +7,7 @@ import { GRAPHIFY_PRESETS, LIGHTRAG_PRESETS, OPENWIKI_PRESETS, type LlmPreset } 
 import { InstallTerminal } from "@/uikit/components/skillsSh/InstallTerminal";
 import { ToolInstallModal } from "@/uikit/components/tools/ToolInstallModal";
 import { LlmSettingsModal, type LlmSettingsValue } from "@/uikit/components/tools/LlmSettingsModal";
-import { Button, Chip, confirmDialog, IconButton, Loading, Modal, Notice, Panel, SectionLabel, Select, Toggle } from "@/uikit";
+import { Button, Chip, confirmDialog, FieldLabel, IconButton, Input, Loading, Modal, Notice, Panel, SectionLabel, Select, Toggle } from "@/uikit";
 import { LifecycleInfoModal, toolLifecycleInfo } from "@/uikit/components/common/LifecycleInfoModal";
 
 interface DiagnosticCheck {
@@ -93,6 +93,34 @@ export function ToolsPanel() {
     getUrl: string;
     toolKey?: "openwiki" | "graphify";
   } | null>(null);
+  const [openbotModal, setOpenbotModal] = useState<{
+    intelligenceKey: string;
+    modelKey: string;
+    modelBaseUrl: string;
+    singleUser: boolean;
+  } | null>(null);
+  const [openbotBusy, setOpenbotBusy] = useState(false);
+  const [openbotError, setOpenbotError] = useState<string | null>(null);
+
+  const saveOpenbotConfig = async () => {
+    if (!openbotModal) return;
+    setOpenbotBusy(true);
+    setOpenbotError(null);
+    try {
+      const res = await fetch("/api/tools/openbot/config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(openbotModal),
+      });
+      const json = (await res.json()) as { error?: string };
+      if (!res.ok) throw new Error(json.error ?? res.statusText);
+      setOpenbotModal(null);
+    } catch (error) {
+      setOpenbotError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setOpenbotBusy(false);
+    }
+  };
 
   /** Промпт headless-исправления провалившегося job'а (init/clone/install). */
   function jobFixPrompt(toolId: string, action: string): string {
@@ -507,6 +535,32 @@ export function ToolsPanel() {
                     }}
                   />
                 ) : null}
+                {tool.id === "openbot" ? (
+                  <IconButton
+                    icon={Settings2}
+                    label="Ключи OpenBot"
+                    variant="ghostDim"
+                    onClick={() => {
+                      setOpenbotError(null);
+                      void (async () => {
+                        try {
+                          const res = await fetch("/api/tools/openbot/config", { cache: "no-store" });
+                          const json = (await res.json()) as {
+                            config?: { intelligenceKey?: string; modelKey?: string; modelBaseUrl?: string; singleUser?: boolean };
+                          };
+                          setOpenbotModal({
+                            intelligenceKey: json.config?.intelligenceKey ?? "",
+                            modelKey: json.config?.modelKey ?? "",
+                            modelBaseUrl: json.config?.modelBaseUrl ?? "",
+                            singleUser: json.config?.singleUser !== false,
+                          });
+                        } catch {
+                          setError("не удалось загрузить ключи OpenBot");
+                        }
+                      })();
+                    }}
+                  />
+                ) : null}
                 {hasProjectInit(tool) && tool.projectInit && !tool.projectInit.initialized ? (
                   <Button
                     size="xs"
@@ -768,6 +822,67 @@ export function ToolsPanel() {
             }
           }}
         />
+      ) : null}
+
+      {openbotModal ? (
+        <Modal
+          open
+          onClose={() => setOpenbotModal(null)}
+          title="Ключи OpenBot"
+          description="Значения дописываются в .env каталога клонирования (~/.local/opt/openbot) перед docker compose up и хранятся локально в state.json (вне git). Прочие переменные стека - правьте .env вручную."
+          footer={
+            <>
+              <Button variant="ghost" size="md" onClick={() => setOpenbotModal(null)}>Отмена</Button>
+              <Button variant="primary" size="md" disabled={openbotBusy} onClick={() => void saveOpenbotConfig()}>
+                {openbotBusy ? "Сохранение…" : "Сохранить"}
+              </Button>
+            </>
+          }
+        >
+          <div className="space-y-3">
+            {openbotError ? <Notice tone="error">{openbotError}</Notice> : null}
+            <div>
+              <FieldLabel htmlFor="openbot-intelligence">Ключ CopilotKit Intelligence</FieldLabel>
+              <Input
+                id="openbot-intelligence"
+                className="mt-1 w-full font-mono"
+                type="password"
+                value={openbotModal.intelligenceKey}
+                onChange={(event) => setOpenbotModal({ ...openbotModal, intelligenceKey: event.target.value })}
+                placeholder="ключ проекта (Developer-план; npx copilotkit login)"
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="openbot-model">Ключ модели (OpenAI-совместимый)</FieldLabel>
+              <Input
+                id="openbot-model"
+                className="mt-1 w-full font-mono"
+                type="password"
+                value={openbotModal.modelKey}
+                onChange={(event) => setOpenbotModal({ ...openbotModal, modelKey: event.target.value })}
+                placeholder="sk-…"
+              />
+            </div>
+            <div>
+              <FieldLabel htmlFor="openbot-baseurl">Базовый URL модели (необязательно)</FieldLabel>
+              <Input
+                id="openbot-baseurl"
+                className="mt-1 w-full font-mono"
+                value={openbotModal.modelBaseUrl}
+                onChange={(event) => setOpenbotModal({ ...openbotModal, modelBaseUrl: event.target.value })}
+                placeholder="https://api.openai.com/v1"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Toggle
+                checked={openbotModal.singleUser}
+                onChange={(value) => setOpenbotModal({ ...openbotModal, singleUser: value })}
+                ariaLabel="однопользовательский режим"
+              />
+              <span className="text-xs text-fg-faint">однопользовательский режим без входа (локальное использование)</span>
+            </div>
+          </div>
+        </Modal>
       ) : null}
 
       {diagnostic ? (

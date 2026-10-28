@@ -1,22 +1,25 @@
 # Документация harness и Harness Console
 
-Документация репозитория `harness`: архитектура консоли, модульная система рантаймов, MCP-синк, плагины, навыки, сессии и эксплуатация. Пользовательский гид по запуску - в [`apps/console/README.md`](../apps/console/README.md); канонические правила работы агентов - в [`AGENTS.md`](../AGENTS.md).
+Документация репозитория `harness`: системная архитектура, архитектура консоли, модульная система рантаймов, Guardrails, hook tooling, MCP-синк, плагины, навыки, сессии и эксплуатация. Пользовательский гид по запуску - в [`apps/console/README.md`](../apps/console/README.md); канонические правила работы агентов - в [`AGENTS.md`](../AGENTS.md).
 
 ## Карта документов
 
 | Документ | О чём |
 |---|---|
-| [architecture.md](architecture.md) | Общий обзор: стек, слои, потоки данных, реестр API, состояние консоли, производительность, безопасность |
-| [../guardrails/README.md](../guardrails/README.md) | Исполняемая политика: каталог правил, тесты, интеграции, модель угроз, аудит и команды Bun |
+| [architecture.md](architecture.md) | Архитектура репозитория: границы системы, пакеты, плоскости исполнения, сквозные потоки, данные, отказы, решения; затем подробности Console, API, производительности и безопасности |
+| [architecture-interactive.html](architecture-interactive.html) | Интерактивная карта архитектуры: контуры системы, сквозные потоки, данные, поиск и инспектор компонентов |
+| [../.guardrails/README.md](../.guardrails/README.md) | Исполняемая политика: каталог правил, тесты, интеграции, модель угроз, аудит и команды Bun |
 | [ui-kit.md](ui-kit.md) | UIKit консоли: примитивы интерфейса и layout (Page/PageHeader/NavBar), кастомные контролы вместо нативных, confirmDialog, дизайн-токены и темы (DESIGN.md, пресеты, вкладка "Внешний вид"), правила расширения |
 | [runtimes.md](runtimes.md) | Модульная система рантаймов: адаптеры, сигналы активности, статусы, диагностика, design-возможности, подключение нового рантайма |
 | [design.md](design.md) | Дизайн-слой: design pack обязательной директории (DESIGN.md, BRAND.md, ui-kit, компоненты), вклады (Обзор/Токены/Бренд/UIKit/Компоненты/Навыки/Инструменты), редакторы DESIGN.md/BRAND.md/ui-kit.md, менеджер components.json, синхронизация в CLAUDE.md/AGENTS.md, провайдеры дизайна (Claude Design, Open Design, Figma MCP), группа навыков design, дизайн-контуры, инструменты дизайна, сессии OpenCode |
 | [providers.md](providers.md) | Провайдеры LLM: пресеты (онлайн и локальные), модели по tiers, заполнение и проверка, интеграции (OpenWiki, Graphify, LangGraph, задачи консоли) |
+| [agui.md](agui.md) | AG-UI endpoint: внешний доступ к агентам Harness по протоколу AG-UI (OpenBot bring-your-own-agent), включение, токен, контракт, ограничения |
 | [mcp.md](mcp.md) | Глобальный MCP-реестр и синк в форматы рантаймов (таргеты, managed-имена, overrides, пресеты) |
 | [plugins.md](plugins.md) | Плагины-бандли MCP(+навыков), builtin Chrome DevTools, marketplace-манифесты |
 | [skills.md](skills.md) | Навыки: уровни, семантика тогглов, установка/удаление/создание через skills.sh |
 | [sessions.md](sessions.md) | История сессий по рантаймам, фильтрация по рабочим папкам, headless-ответы в сессию |
 | [operations.md](operations.md) | Эксплуатация: процессы, промпты и "Исправить", настройки задач, мониторинг (задачи, статистика), рабочие папки, знание (Docs/OpenWiki/Graphify/Память), guard-совместимость |
+| [optimization.md](optimization.md) | Оптимизация обвеса: библиотека уроков (.agents/lessons), оценка навыков по evals-кейсам с судьёй-провайдером, контрастивные пробы вариантов обвеса в worktree, workflow Harness Refinement |
 | [tools.md](tools.md) | Инструменты экономии контекста: реестр (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, Open Design), жизненный цикл в настройках, диспетчер tool.sh, статистика |
 | [tools-dev.md](tools-dev.md) | Разработка tool-плагинов: структура ToolDef, чек-лист нового инструмента, диагностика, ограничения безопасности |
 | [workflows.md](workflows.md) | LangGraph worker, шаг с секциями контроля, failover, папки задач, lessons learned и доска задач |

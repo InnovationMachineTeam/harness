@@ -7,5 +7,5 @@ source:
   version: 1.1.0
   hash: builtin-system-design-2
   update: manual-review
-runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
 tags: [architecture, system-design, api, data-model, security, observability, migration, adr, архитектура]

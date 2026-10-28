@@ -108,7 +108,7 @@ export function asStringList(value: unknown): string[] {
 /* ------------------------------- поля формы ------------------------------- */
 
 /** Список рантаймов harness - источник чипов Runtime candidates. */
-export const RUNTIME_OPTIONS = ["claude", "codex", "cursor", "kimi", "zcode", "opencode"].map((value) => ({ value, label: value }));
+export const RUNTIME_OPTIONS = ["claude", "codex", "cursor", "kimi", "zcode", "opencode", "antigravity"].map((value) => ({ value, label: value }));
 
 export function TextField({ label, value, onChange, mono, disabled, placeholder }: {
   label: string;

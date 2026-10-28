@@ -8,9 +8,11 @@ import { IconButton, NavBar } from "@/uikit";
 const LINKS = [
   { href: "/agent", label: "Агент" },
   { href: "/design", label: "Дизайн" },
+  { href: "/rea", label: "Реверс" },
   { href: "/runtimes", label: "Рантаймы" },
   { href: "/memory", label: "Знание" },
   { href: "/monitoring", label: "Мониторинг" },
+  { href: "/architecture", label: "Архитектура" },
   { href: "/settings", label: "Настройки" },
 ];
 

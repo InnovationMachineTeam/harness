@@ -22,6 +22,7 @@ export function sanitizeToolParams(input: unknown): ToolInstallParams {
     scope: raw.scope === "global" ? "global" : "project",
     ...(raw.strict === true ? { strict: true } : {}),
     ...(raw.indexWorkspaces === true ? { indexWorkspaces: true } : {}),
+    ...(raw.compactMcpOutput === true ? { compactMcpOutput: true } : {}),
     mode: raw.mode === "mcp" ? "mcp" : "wrap",
   };
 }

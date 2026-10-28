@@ -4,7 +4,9 @@
 .agents/.tmp/
 !.agents/adapters/
 !.agents/internal-skills/
+!.agents/hooks.json
 !.agents/mcp.json
+!.agents/mcp_config.json
 !.agents/pricing/
 !.agents/providers/
 !.agents/roadmap/
@@ -54,6 +56,7 @@
 .agents/providers/*/*.pem
 .agents/providers/*/key.env
 .claude/.headroom_wrap_settings.lock
+.claude/agents/
 .claude/commands/
 .claude/settings.local.json
 .codegraph/
@@ -70,6 +73,7 @@
 .nx/
 .opencode/command/
 .playwright-mcp/
+.zcode/agents/
 .zcode/commands/
 .zcode/plans/
 /graphify/

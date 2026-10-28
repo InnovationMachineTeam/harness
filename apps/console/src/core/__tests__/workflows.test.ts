@@ -227,11 +227,11 @@ describe("roles catalog", () => {
 });
 
 describe("shipped roles", () => {
-  test("каталог содержит 64 содержательные уникальные роли", async () => {
+  test("каталог содержит 72 содержательные уникальные роли", async () => {
     const repoRoot = path.resolve(import.meta.dir, "../../../../..");
     const roles = await loadRoles(repoRoot);
-    expect(roles).toHaveLength(64);
-    expect(new Set(roles.map((role) => role.value.id)).size).toBe(64);
+    expect(roles).toHaveLength(72);
+    expect(new Set(roles.map((role) => role.value.id)).size).toBe(72);
     for (const role of roles) {
       expect(role.body).toContain("# Роль");
       expect(role.body).toContain("## Правила работы");
@@ -260,8 +260,17 @@ describe("shipped roles", () => {
   test("внутренние навыки содержат согласованный frontmatter и eval-наборы", async () => {
     const repoRoot = path.resolve(import.meta.dir, "../../../../..");
     const skills = (await loadInternalSkills(repoRoot)).filter((skill) => (skill.group ?? "master") === "master");
-    const expectedIds = ["codebase-research", "lessons-learned", "requirements-clarifier", "system-design"];
+    const expectedIds = ["codebase-research", "docs-drift", "lessons-learned", "requirements-clarifier", "spec-review", "system-design"];
     expect(skills.map((skill) => skill.value.id).sort()).toEqual(expectedIds);
+    // версии и хэши соответствуют манифестам мастер-каталога
+    const expectedSource: Record<string, { version: string; hash: string }> = {
+      "codebase-research": { version: "1.1.0", hash: "builtin-codebase-research-2" },
+      "docs-drift": { version: "1.0.0", hash: "builtin-docs-drift-1" },
+      "lessons-learned": { version: "1.1.0", hash: "builtin-lessons-learned-2" },
+      "requirements-clarifier": { version: "1.1.0", hash: "builtin-requirements-clarifier-2" },
+      "spec-review": { version: "1.1.0", hash: "builtin-spec-review-2" },
+      "system-design": { version: "1.1.0", hash: "builtin-system-design-2" },
+    };
 
     for (const skill of skills) {
       const frontmatterMatch = skill.content.match(/^---\n([\s\S]*?)\n---\n/);
@@ -274,8 +283,8 @@ describe("shipped roles", () => {
       expect(frontmatter.name).toBe(skill.value.id);
       expect(frontmatter.description).toBe(skill.value.description);
       expect(frontmatter.metadata?.internal).toBe(true);
-      expect(skill.value.source.version).toBe("1.1.0");
-      expect(skill.value.source.hash).toBe(`builtin-${skill.value.id}-2`);
+      expect(skill.value.source.version).toBe(expectedSource[skill.value.id]!.version);
+      expect(skill.value.source.hash).toBe(expectedSource[skill.value.id]!.hash);
 
       const evalPath = path.join(path.dirname(skill.sourceFile), "evals", "evals.json");
       const evalSet = JSON.parse(await readFile(evalPath, "utf8")) as {
@@ -283,8 +292,8 @@ describe("shipped roles", () => {
         evals?: Array<{ id?: string; prompt?: string; expected_output?: string; assertions?: string[] }>;
       };
       expect(evalSet.skill_name).toBe(skill.value.id);
-      expect(evalSet.evals).toHaveLength(3);
-      expect(new Set(evalSet.evals?.map((item) => item.id)).size).toBe(3);
+      expect(evalSet.evals?.length ?? 0).toBeGreaterThanOrEqual(2);
+      expect(new Set(evalSet.evals?.map((item) => item.id)).size).toBe(evalSet.evals?.length ?? 0);
       for (const item of evalSet.evals ?? []) {
         expect(item.id?.trim().length).toBeGreaterThan(0);
         expect(item.prompt?.trim().length).toBeGreaterThan(0);

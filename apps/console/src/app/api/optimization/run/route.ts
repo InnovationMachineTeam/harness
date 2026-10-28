@@ -10,9 +10,11 @@ export const dynamic = "force-dynamic";
 
 /**
  * POST /api/optimization/run {kind, ids} - запуск оптимизации: промпт из
- * выбранных рекомендаций отчёта уходит исполнителю задачи "Оптимизация"
- * (headless-рантайм или провайдер). При успешном запуске фиксируется время
- * последней оптимизации; задача видна в "Мониторинг → Задачи".
+ * выбранных автоматизируемых рекомендаций отчёта (mode != manual, ещё не
+ * выполненные) уходит исполнителю задачи "Оптимизация" (headless-рантайм или
+ * провайдер). При успешном запуске рекомендации помечаются выполненными
+ * (settings.optimization.done) и фиксируется время последней оптимизации;
+ * задача видна в "Мониторинг → Задачи".
  */
 export async function POST(request: Request) {
   const ctx = await serverContext();
@@ -29,15 +31,24 @@ export async function POST(request: Request) {
   if (notReady) {
     return NextResponse.json({ error: notReady }, { status: 400 });
   }
+  const doneMap = ctx.state.settings.optimization.done[kind] ?? {};
   const ids = Array.isArray(body?.ids) ? body.ids.filter((id): id is string => typeof id === "string") : [];
   if (ids.length === 0) {
     return NextResponse.json({ error: "не выбрано ни одной рекомендации" }, { status: 400 });
   }
+  // запускаются только автоматизируемые (mode != manual) и ещё не выполненные
   const selected = ids
     .map((id) => report.recommendations.find((rec) => rec.id === id))
-    .filter((rec): rec is NonNullable<typeof rec> => Boolean(rec));
+    .filter((rec): rec is NonNullable<typeof rec> => {
+      if (!rec) return false;
+      if (rec.mode === "manual" || doneMap[rec.id]) return false;
+      return true;
+    });
   if (selected.length === 0) {
-    return NextResponse.json({ error: "выбранных рекомендаций нет в отчёте - обновите отчёт" }, { status: 400 });
+    return NextResponse.json(
+      { error: "среди выбранных нет автоматизируемых рекомендаций (ручные отмечаются кнопкой \"Отметить выполненной\")" },
+      { status: 400 },
+    );
   }
 
   const prompt = buildOptimizePrompt(kind, selected);
@@ -48,9 +59,15 @@ export async function POST(request: Request) {
     : await launchRuntimePrompt(ctx, executor, prompt);
   if (!result.ok) return NextResponse.json(result, { status: 400 });
 
-  ctx.state.settings.optimization.lastOptimizedAt[kind] = new Date().toISOString();
+  // запущенные рекомендации помечаются выполненными и уходят из активного списка
+  const stamp = new Date().toISOString();
+  for (const rec of selected) {
+    doneMap[rec.id] = { at: stamp, via: "run" };
+  }
+  ctx.state.settings.optimization.done[kind] = doneMap;
+  ctx.state.settings.optimization.lastOptimizedAt[kind] = stamp;
   await ctx.saveState();
-  return NextResponse.json(result);
+  return NextResponse.json({ ...result, done: selected.map((rec) => rec.id) });
 }
 
 /** Запуск промта в headless-рантайме; отсутствие адаптера - ошибка запуска. */

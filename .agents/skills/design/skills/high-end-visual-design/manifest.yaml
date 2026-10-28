@@ -7,5 +7,5 @@ source:
   version: 1.0.0
   hash: design-group-high-end-visual-design
   update: manual-review
-runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
 tags: [design, ui, ux, brand]

@@ -21,6 +21,8 @@ import { codeburnTool } from "./tools/codeburn";
 import { neo4jTool } from "./tools/neo4j";
 import { lightragTool } from "./tools/lightrag";
 import { qdrantTool } from "./tools/qdrant";
+import { openbotTool } from "./tools/openbot";
+import { reaTool } from "./tools/rea";
 
 /**
  * Реестр инструментов экономии контекста (Serena, qmd, CodeGraph, Graphify,
@@ -99,7 +101,7 @@ export interface ToolDef {
   /** 1-2 строки для карточки настроек. */
   description: string;
   docsUrl?: string;
-  category: "code" | "graph" | "search" | "context" | "design" | "memory";
+  category: "code" | "graph" | "search" | "context" | "design" | "memory" | "agents";
   /** CLI-бинарник для детекта (`which`). */
   bin: string;
   /** Хуки жизненного цикла (install/remove/enable/disable); cwd - обязательная рабочая папка. */
@@ -201,6 +203,8 @@ export const TOOLS: ToolDef[] = [
   neo4jTool,
   lightragTool,
   qdrantTool,
+  openbotTool,
+  reaTool,
 ];
 
 export function toolById(id: string): ToolDef | undefined {
@@ -298,6 +302,8 @@ function toolVersion(bin: string): string | null {
         return spawnSync("neo4j", ["--version"], { encoding: "utf8", timeout: 3000 });
       case "qdrant":
         return spawnSync("qdrant", ["--version"], { encoding: "utf8", timeout: 3000 });
+      case "rea":
+        return spawnSync("rea", ["--version"], { encoding: "utf8", timeout: 3000 });
       // lightrag-server: стабильного --version нет - детекция по which
       default:
         return null; // openwiki: --version нет, версия читается из package.json ниже

@@ -1,0 +1,51 @@
+{
+  "$schema": "docs/platform/agent-runtime-configs.md",
+  "id": "antigravity",
+  "vendorAdapter": ".agents/hooks.json",
+  "guard": {
+    "command": "bun .guardrails/src/antigravity-hook.ts",
+    "hooksSupport": "native",
+    "notes": ".agents/hooks.json registers a PreToolUse hook that runs bun .guardrails/src/antigravity-hook.ts with AGENT_RUNTIME=antigravity. Antigravity uses a JSON contract instead of exit codes: the hook receives a camelCase payload on stdin (toolCall: {name, args}) and returns a verdict on stdout ({\"decision\":\"allow\"|\"deny\", \"reason\": ...}). The wrapper translates this to the guard's contract by spawning .guardrails/src/cli.ts evaluate and mapping exit 0 to allow and exit 2 to deny. The wrapper always exits 0: when bun or the guard is unavailable it prints no decision, and Antigravity applies its own default policy (fail-open).",
+    "verifyCommand": "echo '{\"toolCall\":{\"name\":\"run_command\",\"args\":{\"command\":\"rm -rf /\"}}}' | bun .guardrails/src/antigravity-hook.ts"
+  },
+  "capabilities": {
+    "subagentSpawn": "unknown",
+    "resume": "unknown",
+    "cancel": "unknown",
+    "toolEvents": "unknown",
+    "usage": "unknown",
+    "worktreeAwareness": "unknown"
+  },
+  "capabilitiesNotes": "The Antigravity CLI (agy) documents headless runs (agy -p), resume by conversation id (--conversation) and --output-format json with a usage envelope; none of this has been exercised in this repository yet, so every capability stays unknown until the first run. Hook payloads carry snake_case tool names (run_command, view_file, edit_file, write_file, replace_file_content, list_directory, code_action, search_web); the wrapper maps them to guard tool names. Skills are read natively from .agents/skills and global ~/.gemini/config/skills.",
+  "models": {
+    "fast": {
+      "model": "gemini-3-flash",
+      "thinkingLevel": "low",
+      "verified": false
+    },
+    "standard": {
+      "model": "gemini-3-pro",
+      "thinkingLevel": "high",
+      "verified": false
+    },
+    "strong": {
+      "model": "gemini-3-pro",
+      "thinkingLevel": "max",
+      "verified": false
+    },
+    "subagents": {
+      "model": "gemini-3-flash",
+      "thinkingLevel": "low",
+      "verified": false
+    }
+  },
+  "pricingVerified": false,
+  "pricingNotes": "No rates are recorded for this vendor; Google pricing sources are a follow-up.",
+  "permissions": {
+    "filesystem": { "read": true, "write": true },
+    "git": { "commit": true, "push": false, "forcePush": false },
+    "shell": "policy-guarded",
+    "mcp": [".agents/mcp_config.json", "~/.gemini/config/mcp_config.json"],
+    "notes": "Reads and writes go through the host's own permission prompt (MCP tools run in Ask mode by default); shell runs on top of the guard policy via the .agents/hooks.json PreToolUse hook. Structural changes to roles, agents or skills, destructive actions and releases always need explicit user approval, in every mode."
+  }
+}

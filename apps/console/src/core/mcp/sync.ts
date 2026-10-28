@@ -73,6 +73,18 @@ function kimiEntry(t: McpTransport): JsonEntry {
   return base;
 }
 
+/** Antigravity: stdio без поля type; remote - serverUrl (streamable HTTP, SSE не поддерживается). */
+function antigravityEntry(t: McpTransport): JsonEntry {
+  if (t.type === "http") {
+    const headers = t.headers && Object.keys(t.headers).length > 0 ? { headers: t.headers } : {};
+    return { serverUrl: t.url, ...headers };
+  }
+  const base: JsonEntry = { command: t.command };
+  if (t.args?.length) base.args = t.args;
+  if (t.env && Object.keys(t.env).length > 0) base.env = t.env;
+  return base;
+}
+
 function registryNames(state: ConsoleState): string[] {
   return Object.keys(state.mcp.servers);
 }
@@ -280,6 +292,21 @@ const targets: Target[] = [
         managedNames,
         desiredFor(state, "kimi"),
         kimiEntry,
+      );
+    },
+  },
+  {
+    id: "antigravity-project",
+    label: "Antigravity (.agents/mcp_config.json)",
+    runtimes: ["antigravity"],
+    runtimeId: "antigravity",
+    async apply(repoRoot, state, managedNames) {
+      await mergeJsonMap(
+        path.join(repoRoot, ".agents", "mcp_config.json"),
+        "mcpServers",
+        managedNames,
+        desiredFor(state, "antigravity"),
+        antigravityEntry,
       );
     },
   },

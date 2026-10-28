@@ -6,6 +6,7 @@ import type { McpServerDef, TargetSyncResult } from "@/core/types";
 import type { McpLabel } from "@/core/mcpLabels";
 import { McpSettingsModal } from "@/uikit/components/McpSettingsModal";
 import { LifecycleInfoModal, mcpLifecycleInfo } from "@/uikit/components/common/LifecycleInfoModal";
+import { HarnessMcpServerPanel } from "@/uikit/components/settings/HarnessMcpServerPanel";
 import { Button, Chip, confirmDialog, IconButton, Input, Loading, Notice, Panel, Select, Textarea } from "@/uikit";
 
 interface McpData {
@@ -13,17 +14,19 @@ interface McpData {
   targets: TargetSyncResult[];
 }
 
-const RUNTIMES = ["claude", "codex", "zcode", "cursor", "kimi", "opencode"];
+const RUNTIMES = ["claude", "codex", "zcode", "cursor", "kimi", "opencode", "antigravity"];
 
 const LABEL_FILTERS: Array<{ key: McpLabel | "all"; label: string }> = [
   { key: "all", label: "Все" },
+  { key: "builtin", label: "builtin" },
   { key: "preset", label: "preset" },
   { key: "plugin", label: "plugin" },
   { key: "tool", label: "tool" },
   { key: "manual", label: "manual" },
 ];
 
-const LABEL_TONE: Record<McpLabel, "neutral" | "amber" | "emerald" | "sky"> = {
+const LABEL_TONE: Record<McpLabel, "solid" | "neutral" | "amber" | "emerald" | "sky"> = {
+  builtin: "solid",
   preset: "neutral",
   plugin: "amber",
   tool: "emerald",
@@ -92,7 +95,7 @@ export function McpPanel() {
     if (
       !(await confirmDialog({
         title: `Добавить MCP-сервер "${form.name.trim()}"?`,
-        message: "Сервер войдёт в глобальный реестр включённым и будет синхронизирован: запись появится в проектном .mcp.json и пользовательских конфигах рантаймов (claude, codex, cursor, opencode). Выполнится hook install, если он объявлен у сервера.",
+        message: "Сервер войдёт в глобальный реестр включённым и будет синхронизирован: запись появится в проектном .mcp.json, .agents/mcp_config.json и пользовательских конфигах рантаймов (claude, codex, cursor, opencode). Выполнится hook install, если он объявлен у сервера.",
         confirmLabel: "Добавить и синк",
       }))
     ) {
@@ -154,6 +157,7 @@ export function McpPanel() {
 
   return (
     <Panel title="MCP-серверы (глобально)">
+      <HarnessMcpServerPanel className="mb-4" />
       <p className="mb-4 text-[11px] leading-relaxed text-fg-faint">
         Синк: проектный <span className="font-mono">.mcp.json</span> - по глобальному toggle; пользовательские
         конфиги рантаймов - с учётом override. Отключение удаляет сервер из файлов, но сохраняет в реестре.

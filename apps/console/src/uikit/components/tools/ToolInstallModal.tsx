@@ -8,10 +8,17 @@ interface InstallParamsState {
   scope: "global" | "project";
   strict: boolean;
   indexWorkspaces: boolean;
+  compactMcpOutput: boolean;
   mode: "wrap" | "mcp";
 }
 
-const DEFAULT_PARAMS: InstallParamsState = { scope: "project", strict: false, indexWorkspaces: true, mode: "wrap" };
+const DEFAULT_PARAMS: InstallParamsState = {
+  scope: "project",
+  strict: false,
+  indexWorkspaces: true,
+  compactMcpOutput: false,
+  mode: "wrap",
+};
 
 interface StepPreview {
   label: string;
@@ -107,6 +114,7 @@ export function ToolInstallModal({
   const hasScope = tool.paramDefs.some((p) => p.key === "scope");
   const hasStrict = tool.paramDefs.some((p) => p.key === "strict");
   const hasIndex = tool.paramDefs.some((p) => p.key === "indexWorkspaces");
+  const hasCompact = tool.paramDefs.some((p) => p.key === "compactMcpOutput");
   const mcpMode = tool.hasModes && params.mode === "mcp";
 
   return (
@@ -217,6 +225,19 @@ export function ToolInstallModal({
               ariaLabel="индексация рабочих папок"
             />
             <span className="text-xs text-fg-muted">Проиндексировать рабочие папки (qmd collection add)</span>
+          </div>
+        ) : null}
+
+        {hasCompact ? (
+          <div className="flex items-center gap-3">
+            <Toggle
+              checked={params.compactMcpOutput}
+              onChange={(compactMcpOutput) => setParams((p) => ({ ...p, compactMcpOutput }))}
+              ariaLabel="компактный профиль ответов MCP"
+            />
+            <span className="text-xs text-fg-muted">
+              {tool.paramDefs.find((p) => p.key === "compactMcpOutput")?.label ?? "Компактный профиль ответов MCP"}
+            </span>
           </div>
         ) : null}
 

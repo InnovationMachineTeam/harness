@@ -1,8 +1,8 @@
 import { expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { exceptionMatches, findException, loadExceptions, parseException } from "../src/exceptions/loader";
+import { consumeException, exceptionMatches, findException, loadExceptions, nextExceptionId, parseException, removeException, saveException } from "../src/exceptions/loader";
 
 const VALID = JSON.stringify({
   id: "EX-2026-001",
@@ -55,4 +55,40 @@ test("findException находит активное исключение и иг
   const target = { ruleId: "content.write-pii", tool: "Write", path: "tests/fixtures/contacts/a.md" };
   expect(findException(root, target)?.id).toBe("EX-2026-001");
   expect(findException(repoWith([]), target)).toBeNull();
+});
+
+test("singleUse читается из файла и сохраняется вместе с исключением", () => {
+  const once = JSON.stringify({ ...JSON.parse(VALID), singleUse: true });
+  const parsed = parseException(once, "EX-2026-001.json");
+  expect(parsed.exception?.singleUse).toBe(true);
+  expect(parseException(VALID, "EX-2026-001.json").exception?.singleUse).toBeUndefined();
+
+  const root = repoWith([]);
+  const exception = { ...parsed.exception!, id: nextExceptionId(root) };
+  const file = saveException(root, exception);
+  const reread = loadExceptions(root);
+  expect(reread.active).toHaveLength(1);
+  expect(reread.active[0]!.singleUse).toBe(true);
+  expect(readFileSync(file, "utf8")).toContain("\"singleUse\": true");
+});
+
+test("saveException и nextExceptionId создают последовательные id", () => {
+  const root = repoWith([]);
+  const first = nextExceptionId(root);
+  saveException(root, { ...JSON.parse(VALID), id: first });
+  expect(nextExceptionId(root)).not.toBe(first);
+});
+
+test("removeException и consumeException удаляют файл исключения", () => {
+  const root = repoWith([VALID]);
+  const id = loadExceptions(root).active[0]!.id;
+  expect(removeException(root, id)).toBe(true);
+  expect(loadExceptions(root).active).toHaveLength(0);
+  expect(removeException(root, id)).toBe(false);
+  expect(removeException(root, "../outside")).toBe(false);
+
+  saveException(root, { ...JSON.parse(VALID), singleUse: true });
+  const once = loadExceptions(root).active[0]!;
+  consumeException(root, once);
+  expect(loadExceptions(root).active).toHaveLength(0);
 });

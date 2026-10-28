@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-export type RuntimeId = "claude" | "codex" | "zcode" | "cursor" | "kimi";
+export type RuntimeId = "claude" | "codex" | "zcode" | "cursor" | "kimi" | "antigravity";
 
 export interface HookEntry {
   event: string;
@@ -14,6 +14,8 @@ export interface HookEntry {
 // вызывают обёртку cli.ts; прямые вызовы CLI запрещены (проверяет validate:hooks).
 // Codex без записей: additionalContext отклоняется - правила в AGENTS.md (S-4, G-4).
 // OpenCode - без декларативных хуков: политика в плагине, правила в AGENTS.md.
+// Antigravity без записей: обёртка требует двойной spawn bun и не укладывается
+// в бюджет PreToolUse 200 мс; файл .agents/hooks.json сканируется на прямые вызовы.
 export const WRAPPER_MARKER = "tooling/harness/src/cli.ts";
 const INDEX_TOOL_RE = /\b(codegraph|graphify|serena-hooks)\b/;
 
@@ -47,6 +49,7 @@ export const RUNTIMES: RuntimeWiring[] = [
       ...PRETOOL.map((g) => ({ event: "PreToolUse", matcher: g.matcher, sub: g.sub, timeout: 10 })),
       { event: "UserPromptSubmit", matcher: null, sub: "codegraph prompt-hook", timeout: 10 },
       { event: "SessionStart", matcher: "startup|resume", sub: "serena session-start", timeout: 10 },
+      { event: "SessionStart", matcher: null, sub: "memory session-start", timeout: 10 },
       { event: "SessionEnd", matcher: null, sub: "serena session-end", timeout: 10 },
     ],
   },
@@ -58,6 +61,7 @@ export const RUNTIMES: RuntimeWiring[] = [
       ...PRETOOL.map((g) => ({ event: "PreToolUse", matcher: g.matcher, sub: g.sub, timeout: 10 })),
       { event: "UserPromptSubmit", matcher: null, sub: "codegraph prompt-hook", timeout: 10 },
       { event: "SessionStart", matcher: null, sub: "serena session-start", timeout: 10 },
+      { event: "SessionStart", matcher: null, sub: "memory session-start", timeout: 10 },
     ],
   },
   {
@@ -74,6 +78,7 @@ export const RUNTIMES: RuntimeWiring[] = [
     entries: PRETOOL.map((g) => ({ event: "PreToolUse", matcher: g.matcher, sub: g.sub, timeout: 10 })),
   },
   { id: "codex", file: ".codex/hooks.json", command: () => "", entries: [] },
+  { id: "antigravity", file: ".agents/hooks.json", command: () => "", entries: [] },
 ];
 
 interface HookConfig {
@@ -133,6 +138,20 @@ export function docsCheck(root: string): string[] {
           for (const command of commandsOf(group)) {
             if (isIndexCommand(command)) {
               problems.push(`codex: вызов индексного инструмента в ${event}: ${command} (S-4, G-4 - только правила в AGENTS.md)`);
+            }
+          }
+        }
+      }
+    } else if (runtime.id === "antigravity") {
+      // формат Antigravity: имя хука -> событие -> группы с матчером
+      const file = readJson(path) as Record<string, Record<string, EventConfig[]>>;
+      for (const [name, events] of Object.entries(file)) {
+        for (const [event, groups] of Object.entries(events ?? {})) {
+          for (const group of (groups as EventConfig[]) ?? []) {
+            for (const command of commandsOf(group)) {
+              if (isIndexCommand(command)) {
+                problems.push(`antigravity: вызов индексного инструмента в ${name}.${event}: ${command} (бюджет PreToolUse - только guard-обёртка)`);
+              }
             }
           }
         }
@@ -301,6 +320,16 @@ export function docsWrite(root: string): void {
       if (!file.hooks) file.hooks = {};
       for (const [event, groups] of Object.entries(file.hooks as Record<string, EventConfig[] | undefined>)) {
         file.hooks[event] = (groups ?? []).filter((group) => !commandsOf(group).some((command) => isIndexCommand(command)));
+      }
+      writeFileSync(path, JSON.stringify(file, null, 2) + "\n");
+    } else if (runtime.id === "antigravity") {
+      const file = readJson(path) as Record<string, Record<string, EventConfig[]>>;
+      for (const [name, events] of Object.entries(file)) {
+        for (const [event, groups] of Object.entries(events ?? {})) {
+          file[name]![event] = (groups as EventConfig[] | undefined ?? []).filter(
+            (group) => !commandsOf(group).some((command) => isIndexCommand(command)),
+          );
+        }
       }
       writeFileSync(path, JSON.stringify(file, null, 2) + "\n");
     }

@@ -9,6 +9,7 @@ import {
   probePort,
   startDashboard,
   stopDashboard,
+  waitForPortState,
 } from "@/core/dashboards";
 
 let dir = "";
@@ -40,6 +41,19 @@ describe("probePort", () => {
     const port = typeof address === "object" && address ? address.port : 0;
     expect(await probePort(port)).toBe(true);
     server.close();
+  });
+});
+
+describe("waitForPortState", () => {
+  test("слушающий порт - wantOpen true; после закрытия - wantOpen false", async () => {
+    const server = createServer();
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    const address = server.address();
+    const port = typeof address === "object" && address ? address.port : 0;
+    expect(await waitForPortState(port, true, 2000)).toBe(true);
+    expect(await waitForPortState(port, false, 300)).toBe(false); // занят - таймаут
+    server.close();
+    expect(await waitForPortState(port, false, 2000)).toBe(true);
   });
 });
 

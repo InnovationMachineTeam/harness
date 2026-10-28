@@ -46,7 +46,7 @@ function ServiceDot({ live, managedPid }: { live: boolean; managedPid: number | 
 export function CombosTab() {
   const [combos, setCombos] = useState<ComboDTO[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<{ tone: "info" | "error"; text: string } | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [job, setJob] = useState<{ comboId: string; jobId: string } | null>(null);
   const [jobFailed, setJobFailed] = useState(false);
@@ -96,10 +96,16 @@ export function CombosTab() {
         body: JSON.stringify({ toolId: tool.id, action }),
       });
       const json = (await res.json()) as { detail?: string; error?: string };
-      setNotice(json.detail ?? json.error ?? null);
+      setNotice(
+        json.error
+          ? { tone: "error", text: json.error }
+          : json.detail
+            ? { tone: "info", text: json.detail }
+            : null,
+      );
       await load();
     } catch {
-      setNotice("не удалось выполнить действие");
+      setNotice({ tone: "error", text: "не удалось выполнить действие" });
     } finally {
       setBusy(null);
     }
@@ -129,7 +135,7 @@ export function CombosTab() {
           (автономные инстансы, только localhost). Управление компонентами по отдельности - &quot;Настройки →
           Инструменты&quot;. MCP-серверы памяти попадают в рантаймы вместе с установкой.
         </p>
-        {notice ? <div className="mt-2"><Notice tone="info">{notice}</Notice></div> : null}
+        {notice ? <div className="mt-2"><Notice tone={notice.tone}>{notice.text}</Notice></div> : null}
       </Panel>
 
       {combos.map((combo) => {

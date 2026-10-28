@@ -43,3 +43,10 @@ registerRuntimePlugin({
   monogram: "Oc",
   monogramClass: "border-swatch-4/30 bg-swatch-4/15 text-swatch-4",
 });
+
+registerRuntimePlugin({
+  id: "antigravity",
+  displayName: "Antigravity",
+  monogram: "Ag",
+  monogramClass: "border-swatch-1/30 bg-swatch-1/15 text-swatch-1",
+});

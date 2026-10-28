@@ -2,19 +2,22 @@ import { emit, parseHookInput, readStdin, repoRoot, SILENT, type HookInput, type
 import { logHook } from "./lib/log";
 import { codegraphPromptHook } from "./indexes/codegraph";
 import { graphifyGuardRead, graphifyGuardSearch } from "./indexes/graphify";
+import { memorySessionStart } from "./indexes/memory";
 import { preToolUseAll } from "./indexes/pretooluse";
 import { serenaRemind, serenaSessionEnd, serenaSessionStart } from "./indexes/serena";
 import { docsCheck, docsWrite } from "./registry";
 import { validateHooks } from "./validate";
 import { hookBudgetReport } from "./doctor";
 import { auditSkillLinks } from "./skill-links";
+import { auditAgentLinks, writeAgentLinks } from "./agent-links";
 
-type HookFn = (root: string, raw: string, input: HookInput) => HookOutcome;
+type HookFn = (root: string, raw: string, input: HookInput) => HookOutcome | Promise<HookOutcome>;
 
 const HOOKS: Record<string, HookFn> = {
   "graphify/guard-search": graphifyGuardSearch,
   "graphify/guard-read": graphifyGuardRead,
   "codegraph/prompt-hook": codegraphPromptHook,
+  "memory/session-start": memorySessionStart,
   "serena/session-start": serenaSessionStart,
   "serena/session-end": serenaSessionEnd,
   "serena/remind": serenaRemind,
@@ -56,6 +59,17 @@ async function main(): Promise<number> {
     return 0;
   }
 
+  if (tool === "agent-links") {
+    if (sub === "--write" || flag === "--write") {
+      const changed = await writeAgentLinks(root);
+      process.stdout.write(changed.length ? `agent-links: записано и обновлено ${changed.length}\n${changed.map((e) => `  ${e.file} (${e.kind})`).join("\n")}\n` : "agent-links: изменений нет\n");
+      return 0;
+    }
+    const audit = await auditAgentLinks(root);
+    process.stdout.write(JSON.stringify(audit, null, 2) + "\n");
+    return 0;
+  }
+
   const key = `${tool}/${sub}`;
   const hook = HOOKS[key];
   if (!hook) return 0;
@@ -65,7 +79,7 @@ async function main(): Promise<number> {
   const started = Date.now();
   let outcome: HookOutcome = SILENT;
   try {
-    outcome = hook(root, raw, input);
+    outcome = await hook(root, raw, input);
   } catch {
     outcome = SILENT;
   }

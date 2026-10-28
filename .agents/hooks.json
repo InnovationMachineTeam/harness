@@ -1,0 +1,16 @@
+{
+  "guardrails-pretooluse": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command|view_file|edit_file|write_file|replace_file_content|code_action|list_directory",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "sh -c 'if [ -f .guardrails/src/antigravity-hook.ts ]; then command -v bun >/dev/null 2>&1 || exit 0; AGENT_RUNTIME=antigravity AGENT_RUNTIME_CONFIG=.agents/runtime/antigravity/config.json GUARDRAILS_INTEGRATION=runtime:antigravity:PreToolUse exec bun .guardrails/src/antigravity-hook.ts; else exit 0; fi'",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

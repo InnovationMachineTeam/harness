@@ -19,11 +19,24 @@ export const OPTIMIZATION_KINDS: OptimizationKind[] = ["claudeInsights", "codebu
 /** Вес рекомендации в отчёте оптимизации. */
 export type OptimizationImpact = "high" | "medium" | "low";
 
+/** Способ выполнения рекомендации: auto - агентом из консоли, manual - вручную. */
+export type OptimizationMode = "auto" | "manual";
+
 export interface OptimizationRecommendation {
   id: string;
   title: string;
   detail: string;
   impact?: OptimizationImpact;
+  /** Отсутствие поля (старые отчёты) трактуется как auto. */
+  mode?: OptimizationMode;
+  /** Привязка к рабочей папке: путь папки; "global" или отсутствие - ко всем папкам. */
+  scope?: string;
+}
+
+/** Отметка выполненной рекомендации: время и способ (запуск агентом или ручная отметка). */
+export interface OptimizationDoneEntry {
+  at: string;
+  via: "run" | "manual";
 }
 
 /** Отчёт вкладки оптимизации: рекомендации и время генерации. */
@@ -32,13 +45,33 @@ export interface OptimizationReport {
   recommendations: OptimizationRecommendation[];
 }
 
-/** Состояние оптимизации по отчётам: последний отчёт и время последнего запуска. */
+/** Состояние оптимизации по отчётам: отчёты, время последних запусков и выполненные рекомендации. */
 export interface OptimizationSettings {
   reports: Record<OptimizationKind, OptimizationReport | null>;
   lastOptimizedAt: Record<OptimizationKind, string | null>;
+  /** Выполненные (запущенные или отмечённые вручную) рекомендации по виду: id -> отметка. */
+  done: Record<OptimizationKind, Record<string, OptimizationDoneEntry>>;
 }
 
 const OPTIMIZATION_IMPACTS: OptimizationImpact[] = ["high", "medium", "low"];
+const OPTIMIZATION_MODES: OptimizationMode[] = ["auto", "manual"];
+
+/** Нормализация одной рекомендации: битые поля отбрасываются, mode по умолчанию - auto. */
+function normalizeRecommendation(item: unknown): OptimizationRecommendation | null {
+  if (!item || typeof item !== "object") return null;
+  const rec = item as { id?: unknown; title?: unknown; detail?: unknown; impact?: unknown; mode?: unknown; scope?: unknown };
+  if (typeof rec.id !== "string" || !rec.id.trim()) return null;
+  if (typeof rec.title !== "string" || !rec.title.trim()) return null;
+  if (typeof rec.detail !== "string" || !rec.detail.trim()) return null;
+  return {
+    id: rec.id.trim().slice(0, 80),
+    title: rec.title.trim().slice(0, 200),
+    detail: rec.detail.trim().slice(0, 2000),
+    impact: OPTIMIZATION_IMPACTS.includes(rec.impact as OptimizationImpact) ? (rec.impact as OptimizationImpact) : undefined,
+    mode: OPTIMIZATION_MODES.includes(rec.mode as OptimizationMode) ? (rec.mode as OptimizationMode) : "auto",
+    scope: typeof rec.scope === "string" && rec.scope.trim() ? rec.scope.trim().slice(0, 300) : undefined,
+  };
+}
 
 /** Нормализация отчёта из файла состояния или запроса: битые записи отбрасываются. */
 export function normalizeOptimizationReport(value: unknown): OptimizationReport | null {
@@ -48,19 +81,26 @@ export function normalizeOptimizationReport(value: unknown): OptimizationReport 
   if (!Array.isArray(raw.recommendations)) return null;
   const recommendations: OptimizationRecommendation[] = [];
   for (const item of raw.recommendations.slice(0, 50)) {
-    if (!item || typeof item !== "object") continue;
-    const rec = item as { id?: unknown; title?: unknown; detail?: unknown; impact?: unknown };
-    if (typeof rec.id !== "string" || !rec.id.trim()) continue;
-    if (typeof rec.title !== "string" || !rec.title.trim()) continue;
-    if (typeof rec.detail !== "string" || !rec.detail.trim()) continue;
-    recommendations.push({
-      id: rec.id.trim().slice(0, 80),
-      title: rec.title.trim().slice(0, 200),
-      detail: rec.detail.trim().slice(0, 2000),
-      impact: OPTIMIZATION_IMPACTS.includes(rec.impact as OptimizationImpact) ? (rec.impact as OptimizationImpact) : undefined,
-    });
+    const rec = normalizeRecommendation(item);
+    if (rec) recommendations.push(rec);
   }
   return { generatedAt: raw.generatedAt, recommendations };
+}
+
+/** Нормализация карты выполненных рекомендаций: битые записи отбрасываются. */
+function normalizeDone(value: unknown): Record<string, OptimizationDoneEntry> {
+  const result: Record<string, OptimizationDoneEntry> = {};
+  if (!value || typeof value !== "object") return result;
+  for (const [id, entry] of Object.entries(value as Record<string, unknown>).slice(0, 200)) {
+    if (!id.trim()) continue;
+    if (entry && typeof entry === "object") {
+      const raw = entry as { at?: unknown; via?: unknown };
+      if (typeof raw.at === "string" && !Number.isNaN(Date.parse(raw.at)) && (raw.via === "run" || raw.via === "manual")) {
+        result[id] = { at: raw.at, via: raw.via };
+      }
+    }
+  }
+  return result;
 }
 
 /** Нормализация settings.optimization из запроса или файла состояния. */
@@ -68,9 +108,10 @@ export function normalizeOptimization(value: unknown): OptimizationSettings {
   const result: OptimizationSettings = {
     reports: { claudeInsights: null, codeburn: null },
     lastOptimizedAt: { claudeInsights: null, codeburn: null },
+    done: { claudeInsights: {}, codeburn: {} },
   };
   if (!value || typeof value !== "object") return result;
-  const raw = value as { reports?: unknown; lastOptimizedAt?: unknown };
+  const raw = value as { reports?: unknown; lastOptimizedAt?: unknown; done?: unknown };
   if (raw.reports && typeof raw.reports === "object") {
     const reports = raw.reports as Record<string, unknown>;
     for (const kind of OPTIMIZATION_KINDS) {
@@ -82,6 +123,12 @@ export function normalizeOptimization(value: unknown): OptimizationSettings {
     for (const kind of OPTIMIZATION_KINDS) {
       const value2 = stamps[kind];
       result.lastOptimizedAt[kind] = typeof value2 === "string" && !Number.isNaN(Date.parse(value2)) ? value2 : null;
+    }
+  }
+  if (raw.done && typeof raw.done === "object") {
+    const done = raw.done as Record<string, unknown>;
+    for (const kind of OPTIMIZATION_KINDS) {
+      result.done[kind] = normalizeDone(done[kind]);
     }
   }
   return result;
@@ -184,6 +231,8 @@ export interface ToolInstallParams {
   indexWorkspaces?: boolean;
   /** Headroom: режим интеграции - прокси-wrap или MCP. */
   mode?: "wrap" | "mcp";
+  /** rea: компактный профиль ответов MCP (REA_MCP_OUTPUT_SCHEMA_PROFILE=compact). */
+  compactMcpOutput?: boolean;
 }
 
 /** Запись об установленном инструменте (жизненный цикл - /api/tools/action). */
@@ -313,6 +362,36 @@ export interface ConsoleState {
     /** Последний экспорт провайдера в .agents/console/langgraph.env. */
     langgraphExport: { providerId: string; at: string } | null;
   };
+  /**
+   * AG-UI endpoint (POST /api/agui): внешний доступ к агентам Harness по
+   * протоколу AG-UI (CopilotKit OpenBot и совместимые). Включённый endpoint
+   * требует заголовок Authorization: Bearer <token>.
+   */
+  agui?: {
+    enabled: boolean;
+    token: string;
+  };
+  /**
+   * HTTP-транспорт собственного MCP-сервера harness (POST /api/mcp/harness):
+   * streamable HTTP в процессе консоли. Включённый endpoint требует заголовок
+   * Authorization: Bearer <token>.
+   */
+  mcpHttp?: {
+    enabled: boolean;
+    token: string;
+  };
+  /**
+   * Ключи OpenBot (заполняются в карточке инструмента; пишутся в .env
+   * каталога клонирования перед docker compose up): ключ CopilotKit
+   * Intelligence, ключ и базовый URL модели (OpenAI-совместимый),
+   * однопользовательский режим без входа.
+   */
+  openbotConfig?: {
+    intelligenceKey?: string;
+    modelKey?: string;
+    modelBaseUrl?: string;
+    singleUser?: boolean;
+  };
   lastMcpSync: Record<string, TargetSyncResult>;
 }
 
@@ -401,6 +480,9 @@ export function defaultState(repoRoot: string): ConsoleState {
       modelId: "",
     },
     providers: { entries: {}, langgraphExport: null },
+    agui: { enabled: false, token: "" },
+    mcpHttp: { enabled: false, token: "" },
+    openbotConfig: { singleUser: true },
     lastMcpSync: {},
   };
 }
@@ -501,6 +583,20 @@ export async function loadConsoleState(repoRoot: string): Promise<ConsoleState> 
         // в .agents/providers/<id>/ и обрезает их здесь с сохранением state
         entries: (raw.providers?.entries ?? {}) as Record<string, ProviderVerification>,
         langgraphExport: raw.providers?.langgraphExport ?? null,
+      },
+      agui: {
+        enabled: raw.agui?.enabled === true,
+        token: typeof raw.agui?.token === "string" ? raw.agui.token : "",
+      },
+      mcpHttp: {
+        enabled: raw.mcpHttp?.enabled === true,
+        token: typeof raw.mcpHttp?.token === "string" ? raw.mcpHttp.token : "",
+      },
+      openbotConfig: {
+        intelligenceKey: typeof raw.openbotConfig?.intelligenceKey === "string" ? raw.openbotConfig.intelligenceKey : "",
+        modelKey: typeof raw.openbotConfig?.modelKey === "string" ? raw.openbotConfig.modelKey : "",
+        modelBaseUrl: typeof raw.openbotConfig?.modelBaseUrl === "string" ? raw.openbotConfig.modelBaseUrl : "",
+        singleUser: raw.openbotConfig?.singleUser !== false,
       },
       lastMcpSync: raw.lastMcpSync ?? {},
     };

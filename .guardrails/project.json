@@ -6,13 +6,13 @@
       "command": "bun test ./.guardrails/tests",
       "options": { "cwd": "{workspaceRoot}" },
       "cache": true,
-      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*", "{workspaceRoot}/.codex/**/*", "{workspaceRoot}/.claude/**/*", "{workspaceRoot}/.cursor/**/*", "{workspaceRoot}/.zcode/**/*", "{workspaceRoot}/.kimi/**/*", "{workspaceRoot}/.opencode/**/*", "{workspaceRoot}/.husky/**/*"]
+      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*", "{workspaceRoot}/.agents/hooks.json", "{workspaceRoot}/.codex/**/*", "{workspaceRoot}/.claude/**/*", "{workspaceRoot}/.cursor/**/*", "{workspaceRoot}/.zcode/**/*", "{workspaceRoot}/.kimi/**/*", "{workspaceRoot}/.opencode/**/*", "{workspaceRoot}/.husky/**/*"]
     },
     "validate": {
       "command": "bun .guardrails/src/cli.ts check",
       "options": { "cwd": "{workspaceRoot}" },
       "cache": true,
-      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*", "{workspaceRoot}/.codex/**/*", "{workspaceRoot}/.claude/**/*", "{workspaceRoot}/.cursor/**/*", "{workspaceRoot}/.zcode/**/*", "{workspaceRoot}/.kimi/**/*", "{workspaceRoot}/.opencode/**/*", "{workspaceRoot}/.husky/**/*"]
+      "inputs": ["default", "{workspaceRoot}/.agents/runtime/**/*", "{workspaceRoot}/.agents/hooks.json", "{workspaceRoot}/.codex/**/*", "{workspaceRoot}/.claude/**/*", "{workspaceRoot}/.cursor/**/*", "{workspaceRoot}/.zcode/**/*", "{workspaceRoot}/.kimi/**/*", "{workspaceRoot}/.opencode/**/*", "{workspaceRoot}/.husky/**/*"]
     }
   }
 }

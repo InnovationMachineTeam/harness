@@ -2,6 +2,24 @@
 @import "@xyflow/react/dist/style.css";
 
 /*
+ * React Flow в токенах темы (разделы Workflow и Архитектура): контролы,
+ * миникарта, подписи рёбер и атрибуция читают переменные --design-*.
+ */
+.react-flow__controls { box-shadow: none; }
+.react-flow__controls-button {
+  background: var(--design-surface);
+  border-bottom: 1px solid var(--design-line);
+  fill: var(--design-fg-muted);
+}
+.react-flow__controls-button:hover { background: var(--design-raised); }
+.react-flow__controls-button svg { fill: var(--design-fg-muted); }
+.react-flow__minimap { background: var(--design-surface); }
+.react-flow__edge-text { fill: var(--design-fg-muted); }
+.react-flow__edge-textbg { fill: var(--design-surface); }
+.react-flow__attribution { background: transparent; color: var(--design-fg-faint); }
+
+
+/*
  * Дизайн-токены консоли. Канонический источник значений - DESIGN.md (тёмная)
  * и DESIGN.light.md (светлая) в корне репозитория; значения ниже -
  * стартовые значения по умолчанию, синхронизируемые вкладкой "Настройки → Design"

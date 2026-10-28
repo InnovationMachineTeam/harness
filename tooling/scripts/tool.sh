@@ -34,7 +34,10 @@ TOOL_SPECS=(
   "codeburn|codeburn|анализ расхода AI-токенов - установи глобально (bun add -g codeburn / npm install -g codeburn)"
   "neo4j|neo4j|графовая СУБД памяти - установи через консоль (Настройки → Инструменты) или brew install neo4j"
   "lightrag|lightrag-server|графовый RAG - установи через консоль (Знание → Связки) или uv tool install 'lightrag-hku[api,offline-llm,offline-storage]'"
+  "lightrag-query|lightrag-server|семантический запрос к документации: bash tooling/scripts/tool.sh lightrag-query \"вопрос\" (REST :9621); сервис - Знание → Связки"
   "qdrant|qdrant|векторная СУБД памяти - установи через консоль (Настройки → Инструменты) или релиз GitHub (docs/tools.md)"
+  "openbot|docker|платформа AI-котрудников CopilotKit - установи через консоль (Настройки → Инструменты); требуется Docker Desktop и каталог ~/.local/opt/openbot"
+  "rea|rea|реверс-инжиниринг приложений и бинарников - установи глобально (bun add -g rea-agents / npm install -g rea-agents) или через консоль (Настройки → Инструменты)"
 )
 
 usage() {
@@ -44,7 +47,7 @@ usage() {
   status        статус всех инструментов (on/off/missing)
   <id> <args…>  запустить инструмент; exit 3 = недоступен (обычный порядок работы)
 
-Инструменты: serena, qmd, codegraph, graphify, rtk, headroom, nx, open-design, agentplane, codeburn, neo4j, lightrag, qdrant.
+Инструменты: serena, qmd, codegraph, graphify, rtk, headroom, nx, open-design, agentplane, codeburn, neo4j, lightrag, lightrag-query, qdrant, openbot, rea.
 Состояние - .agents/console/tools.env (консоль), fallback - наличие бина в PATH.
 EOF
 }
@@ -109,6 +112,10 @@ fi
 shift
 
 state="$(env_state "$id" || true)"
+# lightrag-query - REST-команда над сервисом lightrag: состояние читается из его записи
+state_key="$id"
+[ "$id" = "lightrag-query" ] && state_key="lightrag"
+[ -z "$state" ] && state="$(env_state "$state_key" || true)"
 if [ "$state" = "off" ]; then
   unavailable "$id"
 fi
@@ -130,5 +137,23 @@ case "$id" in
   codeburn)  exec codeburn "$@" ;;
   neo4j)     exec neo4j "$@" ;;
   lightrag)  exec lightrag-server "$@" ;;
+  lightrag-query)
+    query="${1:-}"
+    [ -n "$query" ] || { printf 'использование: bash tooling/scripts/tool.sh lightrag-query "<вопрос>"\n' >&2; exit 1; }
+    port_open=0
+    (exec 3<>"/dev/tcp/127.0.0.1/9621") 2>/dev/null && port_open=1
+    [ "$port_open" = "1" ] || unavailable "lightrag-query"
+    body="$(python3 -c 'import json, sys; print(json.dumps({"query": sys.argv[1], "mode": "hybrid"}))' "$query")"
+    response="$(curl -s -m 120 -X POST http://127.0.0.1:9621/query -H 'Content-Type: application/json' -d "$body")"
+    code=$?
+    [ "$code" = "0" ] && [ -n "$response" ] || { printf 'TOOL_UNAVAILABLE lightrag-query: запрос не прошёл (порт отвечает, но POST /query завершился с кодом %s)\n' "$code" >&2; exit 3; }
+    printf '%s\n' "$response"
+    ;;
   qdrant)    exec qdrant "$@" ;;
+  openbot)
+    OPENBOT_DIR="$HOME/.local/opt/openbot"
+    [ -d "$OPENBOT_DIR" ] || unavailable "openbot"
+    exec docker compose --project-directory "$OPENBOT_DIR" "$@"
+    ;;
+  rea)       exec rea "$@" ;;
 esac

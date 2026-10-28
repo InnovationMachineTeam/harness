@@ -3,7 +3,7 @@
   "hooks": {
     "preToolUse": [
       {
-        "command": "AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG=\"$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json\" GUARDRAILS_INTEGRATION=runtime:cursor:preToolUse bun \"$CURSOR_PROJECT_DIR/.guardrails/src/cli.ts\" evaluate",
+        "command": "command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=cursor AGENT_RUNTIME_CONFIG=\"$CURSOR_PROJECT_DIR/.agents/runtime/cursor/config.json\" GUARDRAILS_INTEGRATION=runtime:cursor:preToolUse bun \"$CURSOR_PROJECT_DIR/.guardrails/src/cli.ts\" evaluate",
         "timeout": 30,
         "failClosed": true
       },

@@ -9,7 +9,7 @@
 # и предлагается блок опциональных инструментов консоли (Serena, qmd,
 # CodeGraph, Graphify, RTK, Headroom, Open Design - экономия токенов агентов).
 # Системные POSIX-утилиты (ps, sh, which, open, git) только проверяются.
-# Рантаймы агентов (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode)
+# Рантаймы агентов (Claude Code, Codex, ZCode, Cursor, Kimi, OpenCode, Antigravity)
 # в установку НЕ входят - их ставит пользователь самостоятельно.
 #
 # Внешние инсталлеры (Homebrew, bun, NodeSource, uv, rtk) не исполняются из
@@ -51,7 +51,7 @@ usage() {
 консоли (Serena, qmd, CodeGraph, Graphify, RTK, Headroom, Open Design),
 устанавливает недостающее (macOS - Homebrew, Linux - официальные инсталлеры;
 npm-пакеты - выбранным менеджером Bun/NPM). Рантаймы агентов (Claude Code,
-Codex, ZCode, Cursor, Kimi, OpenCode) не устанавливаются.
+Codex, ZCode, Cursor, Kimi, OpenCode, Antigravity) не устанавливаются.
 EOF
 }
 for arg in "$@"; do
@@ -263,7 +263,7 @@ fi
 
 printf '\nОПЦИОНАЛЬНЫЕ ИНСТРУМЕНТЫ КОНСОЛИ (экономия токенов; per-runtime настройка - в консоли)\n\n'
 
-OPT_ACTIONS=()      # serena | qmd | codegraph | graphify | rtk | headroom | nx | open-design | agentplane | codeburn | neo4j | lightrag | qdrant | uv
+OPT_ACTIONS=()      # serena | qmd | codegraph | graphify | rtk | headroom | nx | open-design | agentplane | codeburn | neo4j | lightrag | qdrant | openbot | uv
 OPT_DESC=()
 
 opt_status() { # $1 - bin, $2 - подпись, $3 - действие, $4 - описание шага
@@ -309,6 +309,17 @@ if [ "$OS" = "Darwin" ]; then
 fi
 opt_status "lightrag" "lightrag ${C_DIM}- графовый RAG (связка neo4j + LightRAG; LLM-биндинг - в консоли)${C_R}" \
   "lightrag" "lightrag - uv tool install 'lightrag-hku[api,offline-llm,offline-storage]'"
+# OpenBot: детект по каталогу клонирования (docker - только зависимость стека)
+if [ -d "$HOME/.local/opt/openbot" ]; then
+  ok "openbot ${C_DIM}- платформа AI-котрудников CopilotKit (docker compose, ключи - в консоли)${C_R}"
+else
+  miss "openbot ${C_DIM}- платформа AI-котрудников CopilotKit (docker compose; требуется Docker Desktop и ключ CopilotKit Intelligence)${C_R} - НЕ НАЙДЕН"
+  OPT_ACTIONS+=("openbot")
+  OPT_DESC+=("openbot - клон репозитория в ~/.local/opt/openbot (docker compose; запуск - консоль)")
+fi
+opt_status "rea" "rea ${C_DIM}- реверс-инжиниринг приложений и бинарников (MCP + CLI)${C_R}" \
+  "rea" "rea - $(npm_global) rea-agents"
+
 # od из Open Design проверяется отдельно: `which od` находит системный
 # octal-dump (/usr/bin/od) - установленность определяем по выводу od --help
 # или по наличию desktop-приложения.
@@ -696,6 +707,36 @@ if [ "${#OPT_ACTIONS[@]}" -gt 0 ]; then
           else
             warn "qdrant не установлен."
             MANUAL+=("qdrant: релиз GitHub v${QDRANT_VERSION} - ${QDRANT_URL}")
+          fi
+          ;;
+        openbot)
+          mkdir -p "$HOME/.local/opt"
+          if [ ! -d "$HOME/.local/opt/openbot" ] && run_step "Клонирование OpenBot…" git clone --depth 1 https://github.com/CopilotKit/openbot "$HOME/.local/opt/openbot"; then
+            :
+          fi
+          if [ -d "$HOME/.local/opt/openbot" ]; then
+            if [ ! -f "$HOME/.local/opt/openbot/.env" ]; then
+              cp "$HOME/.local/opt/openbot/.env.example" "$HOME/.local/opt/openbot/.env" || warn ".env OpenBot не создан из примера."
+            fi
+            INSTALLED+=("openbot")
+            INSTALLED+=("openbot: ключи Intelligence/модели - карточка инструмента в консоли; стек поднимает docker compose (Настройки → Инструменты → Запустить)")
+          else
+            warn "openbot не установлен."
+            MANUAL+=("openbot: git clone --depth 1 https://github.com/CopilotKit/openbot ~/.local/opt/openbot")
+          fi
+          ;;
+        rea)
+          if ! has npm && [ "$PM" = "npm" ]; then
+            MANUAL+=("rea: $(npm_global) rea-agents (после появления npm)")
+            continue
+          fi
+          # shellcheck disable=SC2046
+          if run_step "Установка rea…" $(npm_global_cmd) rea-agents; then
+            INSTALLED+=("rea")
+            INSTALLED+=("rea: MCP-сервер подключается в консоли (Настройки → Инструменты → Установить)")
+          else
+            warn "rea не установлен."
+            MANUAL+=("rea: $(npm_global) rea-agents")
           fi
           ;;
         open-design)

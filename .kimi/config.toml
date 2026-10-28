@@ -9,7 +9,7 @@
 [[hooks]]
 event = "PreToolUse"
 matcher = "Bash|Write|Edit|Read|Grep|Glob"
-command = "sh -c 'if [ -f .guardrails/src/cli.ts ]; then AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json GUARDRAILS_INTEGRATION=runtime:kimi:PreToolUse bun .guardrails/src/cli.ts evaluate; else exit 0; fi'"
+command = "sh -c 'if [ -f .guardrails/src/cli.ts ]; then command -v bun >/dev/null 2>&1 || exit 2; AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json GUARDRAILS_INTEGRATION=runtime:kimi:PreToolUse bun .guardrails/src/cli.ts evaluate; else exit 0; fi'"
 timeout = 30
 
 [[hooks]]
@@ -27,19 +27,3 @@ event = "PreToolUse"
 matcher = "Read|Grep"
 command = "sh -c 'if [ -f tooling/harness/src/cli.ts ] && command -v bun >/dev/null 2>&1; then exec bun tooling/harness/src/cli.ts serena remind; else exit 0; fi'"
 timeout = 10
-
-# Поддержка событий UserPromptSubmit и PostToolUse в Kimi Code не проверена:
-# проба требует настроенного провайдера (kimi provider catalog add moonshotai-cn
-# с ключом) и headless-запуска. После проверки раскомментируйте и скопируйте
-# в ~/.kimi-code/config.toml вместе с остальными блоками.
-#
-# [[hooks]]
-# event = "UserPromptSubmit"
-# command = "sh -c 'if [ -f .guardrails/src/cli.ts ]; then AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json GUARDRAILS_INTEGRATION=runtime:kimi:UserPromptSubmit bun .guardrails/src/cli.ts prompt; else exit 0; fi'"
-# timeout = 10
-#
-# [[hooks]]
-# event = "PostToolUse"
-# matcher = "Bash|Read|Grep|Glob|WebFetch|WebSearch"
-# command = "sh -c 'if [ -f .guardrails/src/posttooluse.ts ]; then AGENT_RUNTIME=kimi AGENT_RUNTIME_CONFIG=.agents/runtime/kimi/config.json GUARDRAILS_INTEGRATION=runtime:kimi:PostToolUse bun .guardrails/src/posttooluse.ts; else exit 0; fi'"
-# timeout = 15

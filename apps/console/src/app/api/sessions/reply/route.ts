@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     let error = "";
     const child = spawn(cmd.command, cmd.args, {
       cwd: cwd && cwd.startsWith("/") ? cwd : ctx.repoRoot,
-      env: process.env,
+      env: { ...process.env, ...(adapter.runEnv ?? {}) },
       stdio: ["ignore", "pipe", "pipe"],
     });
     const timer = setTimeout(() => {

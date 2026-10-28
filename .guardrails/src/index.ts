@@ -20,3 +20,4 @@ export { classifierGate } from "./llm/classifierGate";
 export { loadExceptions, exceptionMatches, findException } from "./exceptions/loader";
 export type { GuardException, ExceptionLoadResult } from "./exceptions/loader";
 export { readDecisions, appendDecision, eventsPath, MAX_LOG_BYTES } from "./audit-log";
+export { nextExceptionId, saveException, removeException, consumeException } from "./exceptions/loader";

@@ -60,7 +60,7 @@ export interface UpdateRegistryDTO {
 /* ------------------------------- константы --------------------------------- */
 
 /** npm-глобальные пакеты harness (setup.sh: $(npm_global) <pkg>). */
-const NPM_GLOBAL_PACKAGES = ["openwiki", "@tobilu/qmd", "@colbymchenry/codegraph", "nx", "agentplane", "codeburn"] as const;
+const NPM_GLOBAL_PACKAGES = ["openwiki", "@tobilu/qmd", "@colbymchenry/codegraph", "nx", "agentplane", "codeburn", "rea-agents"] as const;
 
 /** uv-инструменты harness: бинарник → пакет PyPI (спек обновления сохраняет extras). */
 const UV_TOOLS = [

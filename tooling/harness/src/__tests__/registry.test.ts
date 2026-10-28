@@ -9,6 +9,8 @@ const GUARD_CODEX = "AGENT_RUNTIME=codex AGENT_RUNTIME_CONFIG=.agents/runtime/co
 const GUARD_ZCODE = "AGENT_RUNTIME=zcode node \"${ZCODE_PROJECT_DIR}/.agents/runtime/guard.mjs\"";
 const GUARD_CURSOR = "AGENT_RUNTIME=cursor node \"$CURSOR_PROJECT_DIR/.agents/runtime/guard.mjs\"";
 const GUARD_KIMI = "sh -c 'if [ -f .agents/runtime/guard.mjs ]; then node .agents/runtime/guard.mjs; else exit 0; fi'";
+const GUARD_ANTIGRAVITY =
+  "sh -c 'if [ -f .guardrails/src/antigravity-hook.ts ]; then command -v bun >/dev/null 2>&1 || exit 0; AGENT_RUNTIME=antigravity AGENT_RUNTIME_CONFIG=.agents/runtime/antigravity/config.json GUARDRAILS_INTEGRATION=runtime:antigravity:PreToolUse exec bun .guardrails/src/antigravity-hook.ts; else exit 0; fi'";
 
 function kimiText(...blocks: string[][]): string {
   const header = [
@@ -71,10 +73,26 @@ async function rootWithConfigs(): Promise<string> {
     JSON.stringify({ version: 1, hooks: { preToolUse: [{ command: GUARD_CURSOR, timeout: 30, failClosed: false }] } }, null, 2) + "\n",
   );
   await putIn(root, ".kimi/config.toml", kimiText(KIMI_GUARD_BLOCK));
+  await putIn(
+    root,
+    ".agents/hooks.json",
+    JSON.stringify(
+      {
+        "guardrails-pretooluse": {
+          PreToolUse: [
+            { matcher: "run_command|view_file", hooks: [{ type: "command", command: GUARD_ANTIGRAVITY, timeout: 30 }] },
+            { matcher: "view_file", hooks: [{ type: "command", command: "graphify hook-guard read", timeout: 10 }] },
+          ],
+        },
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   return root;
 }
 
-describe("registry docs (N-3), пять рантаймов", () => {
+describe("registry docs (N-3), шесть рантаймов", () => {
   test("docsWrite расставляет записи реестра всем рантаймам, чужие записи сохраняются", async () => {
     const root = await rootWithConfigs();
     docsWrite(root);
@@ -109,6 +127,11 @@ describe("registry docs (N-3), пять рантаймов", () => {
     expect(kimi).toContain(GUARD_KIMI);
     expect(kimi).toContain("exec bun tooling/harness/src/cli.ts serena remind");
     expect(kimi.startsWith("# Kimi Code")).toBe(true);
+
+    const antigravity = JSON.parse(await readFile(join(root, ".agents/hooks.json"), "utf8"));
+    expect(antigravity["guardrails-pretooluse"].PreToolUse).toHaveLength(1);
+    expect(antigravity["guardrails-pretooluse"].PreToolUse[0].hooks[0].command).toBe(GUARD_ANTIGRAVITY);
+    expect(JSON.stringify(antigravity)).not.toContain("graphify");
   });
 
   test("прямой вызов инструмента даёт ошибку validate (N-5) - claude, zcode, cursor, kimi", async () => {
@@ -134,11 +157,17 @@ describe("registry docs (N-3), пять рантаймов", () => {
     const kimi = await readFile(kimiPath, "utf8");
     await writeFile(kimiPath, kimi.replace(/command = "sh -c '[^']*guard-search[^']*'/, `command = "graphify hook-guard search"`));
 
+    const antigravityPath = join(root, ".agents/hooks.json");
+    const antigravity = JSON.parse(await readFile(antigravityPath, "utf8"));
+    antigravity["guardrails-pretooluse"].PreToolUse[0].hooks[0].command = "graphify hook-guard search";
+    await writeFile(antigravityPath, JSON.stringify(antigravity, null, 2) + "\n");
+
     const problems = docsCheck(root);
     expect(problems.some((line) => line.startsWith("claude: прямой вызов"))).toBe(true);
     expect(problems.some((line) => line.startsWith("zcode: прямой вызов"))).toBe(true);
     expect(problems.some((line) => line.startsWith("cursor: прямой вызов"))).toBe(true);
     expect(problems.some((line) => line.startsWith("kimi: прямой вызов"))).toBe(true);
+    expect(problems.some((line) => line.startsWith("antigravity: вызов индексного инструмента"))).toBe(true);
   });
 
   test("удаление записи реестра даёт ошибку", async () => {
@@ -152,8 +181,9 @@ describe("registry docs (N-3), пять рантаймов", () => {
   });
 
   test("реестр покрывает ожидаемые рантаймы", () => {
-    expect(RUNTIMES.map((runtime) => runtime.id).sort()).toEqual(["claude", "codex", "cursor", "kimi", "zcode"]);
+    expect(RUNTIMES.map((runtime) => runtime.id).sort()).toEqual(["antigravity", "claude", "codex", "cursor", "kimi", "zcode"]);
     expect(RUNTIMES.find((runtime) => runtime.id === "codex")!.entries).toEqual([]);
+    expect(RUNTIMES.find((runtime) => runtime.id === "antigravity")!.entries).toEqual([]);
   });
 
   test("guard-запись codex сохраняется", async () => {

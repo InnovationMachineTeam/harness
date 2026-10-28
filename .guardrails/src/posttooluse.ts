@@ -21,7 +21,7 @@ import { writeHookStatus } from "./mimosa";
 function root(): string {
   let current = process.cwd();
   while (current !== dirname(current)) {
-    try { if (readFileSync(join(current, "guardrails", "policy.json"), "utf8")) return current; } catch {}
+    try { if (readFileSync(join(current, ".guardrails", "policy.json"), "utf8")) return current; } catch {}
     current = dirname(current);
   }
   return process.cwd();

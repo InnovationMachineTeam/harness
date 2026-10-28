@@ -1,6 +1,6 @@
 # Рантаймы: модульная система
 
-Рантайм - CLI/приложение агента (Claude Code, Codex CLI, ZCode, Cursor, Kimi Code, OpenCode). Консоль построена так, чтобы список и возможности рантаймов определялись конфигурацией и адаптерами, а не хардкодом в UI.
+Рантайм - CLI/приложение агента (Claude Code, Codex CLI, ZCode, Cursor, Kimi Code, OpenCode, Antigravity). Консоль построена так, чтобы список и возможности рантаймов определялись конфигурацией и адаптерами, а не хардкодом в UI.
 
 ## Источник правды
 
@@ -25,12 +25,17 @@ interface RuntimeAdapter {
   getSession?(ctx, id): Promise<SessionDetail|null>;
   replyCommand?(sessionId, text);   // headless-resume: ответ в существующую сессию
   runCommand?(text);                // headless-запуск новой сессии (промпты)
+  runEnv?: Record<string, string>;  // доп. переменные окружения headless-запуска
 }
 ```
 
 `ProbeContext` = `{ repoRoot, home, fs: FsSignalHelpers, workspaces }` - адаптеры не ходят в ФС напрямую, только через хелперы (тестируемость).
 
 Все адаптеры регистрируются в `src/runtimes/index.ts` (`ADAPTERS`) - единая точка подключения.
+
+### Переменные окружения headless-запуска
+
+`runEnv` адаптера подмешивается в окружение всех spawn-мест CLI рантайма (prompts.ts - direct-чат, задачи "Исправить" и workflow-промты; ответ в сессию; дизайн-прогоны). У zcode это `ZCODE_BUILTIN_PROVIDER_CONFIG_FILE` и `ZCODE_PERSONAL_PROVIDER_CONFIG_FILE`: GUI ZCode передаёт их дочерним процессам сам, а консольный headless-запуск без них ищет встроенный конфиг провайдера рядом с `zcode.cjs` и не находит его (бандл приложения хранит конфиг в `Contents/Resources/config/provider/`). Переменные выставляются, только когда оба файла существуют.
 
 ## Сигналы активности по рантаймам
 
@@ -42,6 +47,7 @@ interface RuntimeAdapter {
 | cursor | - | `state.vscdb` + свежесть `~/.cursor` |
 | kimi | - | `user-history/*.jsonl`, лог CLI |
 | opencode | - | `opencode.db(-wal)` |
+| antigravity | - | `~/.gemini/antigravity-cli/history.jsonl`, `~/.gemini/antigravity/brain`, `conversations/` |
 
 ## Статусы
 
@@ -49,9 +55,9 @@ interface RuntimeAdapter {
 
 ## Диагностика (issues)
 
-Общие проверки (`core/issues.ts`): все модели `verified:false` → warn; ошибки последнего MCP-синка → error. Адаптерские: наличие файла адаптера хуков и ссылка на `.guardrails/src/cli.ts` с верным `AGENT_RUNTIME`, zcode `hooks.enabled`, Cursor fail-closed, зеркало Kimi `[[hooks]]`, плагин OpenCode. Полный реестр точек применения и их состояние доступны в «Настройки → Guardrails». Issues видны бейджем ⚠ на карточке и раскрываются во вкладке "Диагностика" (с кнопкой "Исправить" → [operations.md](operations.md)).
+Общие проверки (`core/issues.ts`): все модели `verified:false` → warn; ошибки последнего MCP-синка → error. Адаптерские: наличие файла адаптера хуков и ссылка на `.guardrails/src/cli.ts` с верным `AGENT_RUNTIME`, zcode `hooks.enabled`, Cursor fail-closed, зеркало Kimi `[[hooks]]`, плагин OpenCode, у Antigravity - ссылка на обёртку `.guardrails/src/antigravity-hook.ts` в `.agents/hooks.json`. Полный реестр точек применения и их состояние доступны в «Настройки → Guardrails». Issues видны бейджем ⚠ на карточке и раскрываются во вкладке "Диагностика" (с кнопкой "Исправить" → [operations.md](operations.md)).
 
-Хуки индексов (Serena, CodeGraph, Graphify) подключены во всех рантаймах с событийными хуками: Claude и ZCode - полный набор (SessionStart, UserPromptSubmit, PreToolUse; SessionEnd - только Claude), Cursor - агрегатор `pretooluse` на preToolUse, Kimi - PreToolUse через зеркало `~/.kimi-code/config.toml`; Codex и OpenCode - правила AGENTS.md без хуков. Реестр и проверки - [tools.md](tools.md).
+Хуки индексов (Serena, CodeGraph, Graphify) подключены во всех рантаймах с событийными хуками: Claude и ZCode - полный набор (SessionStart, UserPromptSubmit, PreToolUse; SessionEnd - только Claude), Cursor - агрегатор `pretooluse` на preToolUse, Kimi - PreToolUse через зеркало `~/.kimi-code/config.toml`; Codex и OpenCode - правила AGENTS.md без хуков; Antigravity - только guard-хук (обёртка контракта требует двойной spawn bun и не укладывается в бюджет PreToolUse 200 мс). Реестр и проверки - [tools.md](tools.md). Отдельно от индекс-хуков Claude и ZCode несут ручной Stop-хук мастер-навыка unlazy (блокировка завершения сессии при незакрытых гейтах; в реестр хуков не входит) - [tools.md](tools.md).
 
 ## Ожидание ввода (awaiting-input)
 
@@ -69,6 +75,7 @@ interface RuntimeAdapter {
 | cursor | `.cursor/skills` | `~/.cursor/skills`, `~/.cursor/skills-cursor` | `.cursor/commands/` - `/master-<id>`, `/workflow-<id>`, `/master`, `/workflow` |
 | kimi | `.kimi-code/skills`, `.agents/skills` | `~/.kimi-code/skills`, `~/.agents/skills` | `.kimi-code/skills/` навыками - `/skill:master-<id>`, `/skill:workflow-<id>`, `/skill:master`, `/skill:workflow` |
 | opencode | `.opencode/skills` | `~/.config/opencode` | `.opencode/command/` - `/master-<id>`, `/workflow-<id>`, `/master`, `/workflow` |
+| antigravity | `.agents/skills` (читает нативно, как kimi) | `~/.gemini/config/skills` | синка нет: навык сам становится командой `/<имя-навыка>` |
 
 Тела команд, триггеры синка и управление - [skills.md](skills.md), раздел "Нативные команды рантаймов"; статус и ручная регенерация - Настройки → Навыки → "Команды рантаймов".
 
@@ -108,6 +115,7 @@ Design-инструменты распределены по уровням; пр
 | Codex | после доверия каталогу `.codex/` | правила AGENTS.md вместо хука | событие не поддерживается |
 | Kimi Code | через зеркало `~/.kimi-code/config.toml` - синхронизировано с текущим движком | блоки в шаблоне закомментированы до проверки поддержки событий | блоки в шаблоне закомментированы до проверки поддержки событий |
 | OpenCode | плагин `tool.execute.before` | не подключено | возможно через `tool.execute.after`, требует проверки SDK |
+| Antigravity | нативный хук `.agents/hooks.json`, контракт decision-JSON через обёртку `antigravity-hook.ts`, fail-open | правила AGENTS.md (события PreInvocation/PostInvocation не подключены) | не подключено |
 
 Консоль (direct-чат, workflow и MCP-агенты) защищается обёрткой моделей `chatModelForProvider`: инъекции блокируются, персональные данные и секреты редактируются в промпте и ответе, включая выводы инструментов, возвращаемые в messages. Состояние точек применения - «Настройки → Guardrails» и `bun .guardrails/src/cli.ts where <id>`.
 

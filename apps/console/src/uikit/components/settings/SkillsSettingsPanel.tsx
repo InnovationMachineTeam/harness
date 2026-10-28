@@ -69,9 +69,18 @@ interface CommandStatus {
   error?: string;
 }
 
+interface AgentStatus {
+  runtime: string;
+  agentsDir: string;
+  agents: Array<{ roleId: string; title: string; file: string; present: boolean }>;
+  error?: string;
+}
+
 interface CommandsSyncResponse {
   statuses: CommandStatus[];
+  agentStatuses?: AgentStatus[];
   reports?: Array<{ runtime: string; written: string[]; removed: string[]; error?: string }>;
+  agentReports?: Array<{ runtime: string; written: string[]; removed: string[]; error?: string }>;
 }
 
 /** Синк нативных слэш-команд: статус по рантаймам и ручная регенерация. */
@@ -99,11 +108,15 @@ function CommandsSyncSection({ onChanged }: { onChanged?: () => void }) {
       const data: CommandsSyncResponse = await response.json();
       const written = (data.reports ?? []).reduce((sum, report) => sum + report.written.length, 0);
       const removed = (data.reports ?? []).reduce((sum, report) => sum + report.removed.length, 0);
-      const problems = (data.reports ?? []).filter((report) => report.error).map((report) => `${report.runtime}: ${report.error}`);
+      const agentWritten = (data.agentReports ?? []).reduce((sum, report) => sum + report.written.length, 0);
+      const agentRemoved = (data.agentReports ?? []).reduce((sum, report) => sum + report.removed.length, 0);
+      const problems = [...(data.reports ?? []), ...(data.agentReports ?? [])]
+        .filter((report) => report.error)
+        .map((report) => `${report.runtime}: ${report.error}`);
       setMessage(
         problems.length
           ? `Синк выполнен с ошибками - ${problems.join("; ")}`
-          : `Синк выполнен: записано ${written}, удалено ${removed}`,
+          : `Синк выполнен: команд записано ${written}, удалено ${removed}; субагентов записано ${agentWritten}, удалено ${agentRemoved}`,
       );
       load();
       onChanged?.();
@@ -137,6 +150,18 @@ function CommandsSyncSection({ onChanged }: { onChanged?: () => void }) {
               </div>
             );
           })}
+          {(status.agentStatuses ?? []).map((entry) => {
+            const stale = entry.agents.filter((agent) => !agent.present).length;
+            return (
+              <div key={`agent-${entry.runtime}`} className="flex items-baseline justify-between gap-3 text-[11px]">
+                <span className="text-fg">{entry.runtime} субагенты</span>
+                <span className="text-fg-faint">
+                  {entry.agentsDir} - персон в плане: {entry.agents.length}
+                  {entry.error ? ` - ошибка: ${entry.error}` : stale ? ` - расхождение: ${stale}` : " - актуально"}
+                </span>
+              </div>
+            );
+          })}
         </div>
       ) : (
         <p className="text-[11px] text-fg-faint">Статус синхронизации недоступен.</p>
@@ -146,9 +171,10 @@ function CommandsSyncSection({ onChanged }: { onChanged?: () => void }) {
         Синк создаёт нативные слэш-команды в обязательной рабочей папке: /master:&lt;id&gt; и /workflow:&lt;id&gt;
         (Claude Code, ZCode), /master-&lt;id&gt; и /workflow-&lt;id&gt; (Cursor, OpenCode), у Codex и Kimi те же команды
         доставляются навыками (вызов /master-&lt;id&gt; и /skill:master-&lt;id&gt;). Общие /master и /workflow принимают
-        "&lt;id&gt; &lt;задача&gt;". Команды работают в отдельно запущенном рантайме. Управляемые файлы помечены маркером
-        консоли; чужие файлы каталогов не изменяются. Синк выполняется автоматически при переключении навыков; кнопка -
-        ручная регенерация.
+        "&lt;id&gt; &lt;задача&gt;". Роли с полем subagent становятся именованными read-only субагентами в каталогах
+        .claude/agents и .zcode/agents. Команды и субагенты работают в отдельно запущенном рантайме. Управляемые
+        файлы помечены маркером консоли; чужие файлы каталогов не изменяются. Синк выполняется автоматически при
+        переключении навыков; кнопка - ручная регенерация.
       </p>
     </Panel>
   );

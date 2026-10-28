@@ -14,7 +14,8 @@
     "console:test": "bun run --filter '@harness/console' test",
     "validate:hooks": "bun tooling/harness/src/cli.ts validate",
     "asr": "bun apps/console/scripts/asr.ts",
-    "harness-doctor": "bun tooling/harness/src/cli.ts doctor"
+    "harness-doctor": "bun tooling/harness/src/cli.ts doctor",
+    "worktree:remove": "bun tooling/scripts/src/worktree.ts"
   },
   "devDependencies": {
     "husky": "9.1.7",

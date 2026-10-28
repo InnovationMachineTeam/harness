@@ -3,7 +3,7 @@ import { mkdir, open } from "node:fs/promises";
 import path from "node:path";
 import type { ChildProcess } from "node:child_process";
 import { loadVendorConfigs } from "./registry";
-import { saveTaskMeta, taskTitle, type TaskLaunchInfo } from "./tasks";
+import { saveTaskMeta, taskTitle, type TaskKind, type TaskLaunchInfo } from "./tasks";
 import type { Issue, RuntimeAdapter } from "./types";
 
 /**
@@ -77,6 +77,7 @@ export type EffortLevel = "low" | "medium" | "high" | "max";
  * - codex: -m <model>, -c model_reasoning_effort=<minimal|low|medium|high> (max -> high);
  * - opencode: -m provider/model, --variant <level> (уровень передаётся как есть);
  * - kimi: -m <model>; effort не поддерживается;
+ * - antigravity (agy): --model <id>, --effort <level> (уровень передаётся как есть);
  * - zcode (node <cli> -p): флагов model/effort нет - параметры фиксируются в задаче.
  * Возвращает args перед промтом и env-добавки.
  */
@@ -104,6 +105,10 @@ export function headlessModelEffortArgs(
       return { args, supported: true };
     case "kimi":
       if (model) args.push("-m", model);
+      return { args, supported: true };
+    case "antigravity":
+      if (model) args.push("--model", model);
+      if (effort) args.push("--effort", effort);
       return { args, supported: true };
     default:
       return { args: [], supported: false };
@@ -152,6 +157,10 @@ export async function launchPromptRun(opts: {
    * headlessJson; движок workflow извлекает из конверта текст, usage и стоимость.
    */
   outputFormat?: "json";
+  /** Вид задачи в реестре (по умолчанию "prompt"; рутины передают "routine"). */
+  taskKind?: TaskKind;
+  /** Заголовок задачи реестра (по умолчанию - первая строка промта). */
+  taskTitle?: string;
 }): Promise<PromptRunResult> {
   const { repoRoot, adapter, runtimeId } = opts;
   const cwd = opts.cwd ?? repoRoot;
@@ -189,6 +198,7 @@ export async function launchPromptRun(opts: {
     cwd,
     env: {
       ...process.env,
+      ...(adapter.runEnv ?? {}),
       ...(opts.correlation
         ? {
             HARNESS_WORKFLOW_RUN_ID: opts.correlation.workflowRunId,
@@ -218,6 +228,9 @@ export async function launchPromptRun(opts: {
     case "opencode":
       child = spawn("opencode", ["run", ...extraArgs, prompt], spawnOptions);
       break;
+    case "agy":
+      child = spawn("agy", ["-p", ...extraArgs, prompt], spawnOptions);
+      break;
     case "node":
       child = spawn("node", [raw.args[0], "-p", ...extraArgs, prompt], spawnOptions);
       break;
@@ -244,8 +257,8 @@ export async function launchPromptRun(opts: {
       : `, effort ${opts.effort} (CLI без флага - уровень не передан)`
     : "";
   const task: TaskLaunchInfo = {
-    kind: "prompt",
-    title: taskTitle(opts.prompt),
+    kind: opts.taskKind ?? "prompt",
+    title: opts.taskTitle ?? taskTitle(opts.prompt),
     executor: { type: "runtime", id: runtimeId },
     model: opts.model ?? (await runtimeStandardModel(repoRoot, runtimeId)),
     pid: child.pid ?? null,
@@ -334,7 +347,7 @@ export async function launchAgentWikiBuild(opts: {
   const fh = await open(opts.logFile, "a");
   const spawnOptions = {
     cwd: workspaceDir,
-    env: process.env,
+    env: { ...process.env, ...(adapter.runEnv ?? {}) },
     detached: true,
     stdio: ["ignore", fh.fd, fh.fd] as ["ignore", number, number],
   };
@@ -351,6 +364,9 @@ export async function launchAgentWikiBuild(opts: {
       break;
     case "opencode":
       child = spawn("opencode", ["run", prompt], spawnOptions);
+      break;
+    case "agy":
+      child = spawn("agy", ["-p", prompt], spawnOptions);
       break;
     case "node":
       child = spawn("node", [raw.args[0], "-p", prompt], spawnOptions);

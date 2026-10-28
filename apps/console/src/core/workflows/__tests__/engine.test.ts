@@ -97,7 +97,7 @@ describe("waitForProcess", () => {
   });
 
   test("heartbeat ожидания срабатывает с заданным интервалом", async () => {
-    const child = spawn("sleep", ["1"]);
+    const child = spawn("sleep", ["2"]);
     const beats: number[] = [];
     try {
       await waitForProcess(child.pid as number, { timeoutMs: 60_000, onWait: (elapsedMs) => beats.push(elapsedMs), heartbeatMs: 200 });

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { buildFixPrompt, launchPromptRun } from "@/core/prompts";
 import { parseTaskProviderId } from "@/core/providers";
 import { launchProviderRun } from "@/core/providerRun";
+import { resolveWorkflowWorkspace } from "@/core/workflows/http";
 import { resolveTaskRuntime } from "@/core/state";
 import type { Issue } from "@/core/types";
 import { serverContext } from "@/lib/server-context";
@@ -26,17 +27,18 @@ const LAUNCH_FAILURES: { pattern: RegExp; hint: string }[] = [
 ];
 
 /**
- * POST /api/prompts/run {prompt?, issue?, runtime?}
+ * POST /api/prompts/run {prompt?, issue?, runtime?, workspace?}
  * Запуск промта в НОВОЙ headless-сессии. Рантайм: явный → настройка задачи
  * "Исполнение команд" → рантайм по умолчанию (★). Процесс отвязанный; вывод - в
  * .agents/console/runs/<ts>-<runtime>.log. Спустя паузу лог проверяется на
  * типовые ошибки запуска (аутентификация/доверие) - чтобы UI сразу показал
- * причину, а не "сессия запущена" при остановившемся процессе.
+ * причину, а не "сессия запущена" при остановившемся процессе. workspace -
+ * рабочая папка запуска (cwd процесса; для provider-исполнителя не применяется).
  */
 export async function POST(request: Request) {
   const ctx = await serverContext();
   const body = (await request.json().catch(() => null)) as
-    | { prompt?: string; issue?: Issue; runtime?: string; issueRuntime?: string }
+    | { prompt?: string; issue?: Issue; runtime?: string; issueRuntime?: string; workspace?: string }
     | null;
 
   const runtimeId = body?.runtime ?? resolveTaskRuntime(ctx.state, "promptExecution");
@@ -74,11 +76,21 @@ export async function POST(request: Request) {
   const adapter = ctx.adapters[runtimeId];
   if (!adapter) return NextResponse.json({ error: `неизвестный рантайм: ${runtimeId}` }, { status: 400 });
 
+  let cwd: string | undefined;
+  if (body?.workspace) {
+    try {
+      cwd = resolveWorkflowWorkspace(ctx.state, body.workspace);
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 400 });
+    }
+  }
+
   const result = await launchPromptRun({
     repoRoot: ctx.repoRoot,
     adapter,
     runtimeId,
     prompt,
+    ...(cwd ? { cwd } : {}),
   });
   if (!result.ok) return NextResponse.json(result, { status: 400 });
 

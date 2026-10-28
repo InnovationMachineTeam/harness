@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { loadConsoleState, workspaceDirs } from "../state";
+import { loadConsoleState, workspaceDirs, type ConsoleState } from "../state";
+import { tickRoutines, ROUTINE_TICK_MS } from "../routines";
 import { executeWorkflowCommand } from "./engine";
 import { WorkflowStore } from "./storage";
 
@@ -13,6 +14,8 @@ export async function runWorkflowWorker(repoRoot: string): Promise<never> {
   const owner = "worker-" + process.pid + "-" + randomUUID().slice(0, 8);
   const stores = new Map<string, WorkflowStore>();
   let lastWorkspaceRefresh = 0;
+  let lastRoutineTick = 0;
+  let cachedState: ConsoleState | null = null;
   let stopped = false;
   /** Прогоны с исполняемой командой: команда ведёт граф до следующего окна или финала. */
   const inFlightRuns = new Set<string>();
@@ -33,7 +36,21 @@ export async function runWorkflowWorker(repoRoot: string): Promise<never> {
       for (const workspaceDir of workspaceDirs(state)) {
         if (!stores.has(workspaceDir)) stores.set(workspaceDir, new WorkflowStore(repoRoot, workspaceDir));
       }
+      cachedState = state;
       lastWorkspaceRefresh = Date.now();
+    }
+
+    // Тик планировщика рутин: та же аренда исключает второго исполнителя;
+    // запуск идёт в фоне, тик не блокирует команды workflow.
+    if (Date.now() - lastRoutineTick > ROUTINE_TICK_MS) {
+      lastRoutineTick = Date.now();
+      for (const store of stores.values()) {
+        if (!store.acquireLease(owner)) continue;
+        void tickRoutines(repoRoot, store, cachedState ?? undefined).catch((error) => {
+          const message = error instanceof Error ? error.message : String(error);
+          process.stderr.write("[worker] тик рутин отклонён: " + message + "\n");
+        });
+      }
     }
 
     for (const store of stores.values()) {

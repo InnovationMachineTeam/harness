@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Tabs } from "@/uikit";
 import type { RuntimeSnapshotDTO } from "@/core/types";
 import { AgentPanel } from "@/uikit/components/agent/AgentPanel";
+import { RoutinesPanel } from "@/uikit/components/agent/RoutinesPanel";
 import { RolesPanel } from "@/uikit/components/workflows/RolesPanel";
 import { TasksBoard } from "@/uikit/components/workflows/TasksBoard";
 import { WorkflowStudio } from "@/uikit/components/workflows/WorkflowStudio";
@@ -11,6 +12,7 @@ import { WorkflowStudio } from "@/uikit/components/workflows/WorkflowStudio";
 const TABS = [
   { key: "agent", label: "Агент" },
   { key: "tasks", label: "Задачи" },
+  { key: "routines", label: "Рутины" },
   { key: "workflow", label: "Workflow" },
   { key: "roles", label: "Роли" },
 ] as const;
@@ -29,7 +31,7 @@ function isTabKey(value: string | null): value is TabKey {
  */
 export function AgentWorkspace({ runtimes }: { runtimes: RuntimeSnapshotDTO[] }) {
   const [tab, setTab] = useState<TabKey>("agent");
-  const [visited, setVisited] = useState<Record<TabKey, boolean>>({ agent: true, tasks: false, workflow: false, roles: false });
+  const [visited, setVisited] = useState<Record<TabKey, boolean>>({ agent: true, tasks: false, routines: false, workflow: false, roles: false });
 
   useEffect(() => {
     const fromUrl = new URLSearchParams(window.location.search).get("tab");
@@ -56,6 +58,7 @@ export function AgentWorkspace({ runtimes }: { runtimes: RuntimeSnapshotDTO[] })
       <Tabs tabs={TABS} active={tab} onChange={change} />
       {pane("agent", <AgentPanel runtimes={runtimes} />)}
       {pane("tasks", <TasksBoard embedded />)}
+      {pane("routines", <RoutinesPanel runtimes={runtimes} />)}
       {pane("workflow", <WorkflowStudio />)}
       {pane("roles", <RolesPanel />)}
     </div>

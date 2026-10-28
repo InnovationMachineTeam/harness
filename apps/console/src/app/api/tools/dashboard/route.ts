@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { invalidateDashboardCache } from "@/core/cache";
-import { startDashboard, stopDashboard } from "@/core/dashboards";
+import { PORT_UP_TIMEOUT_MS, startDashboard, stopDashboard } from "@/core/dashboards";
 import { serviceExtraEnv } from "@/core/lightragLlm";
 import { toolById } from "@/core/tools";
 import { appendUsageEvent } from "@/core/toolsUsage";
@@ -27,7 +27,10 @@ export async function POST(request: Request) {
   }
 
   if (body?.action === "start") {
-    const result = await startDashboard(ctx.repoRoot, def.id, serviceExtraEnv(def.id, ctx.state));
+    // Первый docker compose up OpenBot тянет образы минуты - старт карточки
+    // не ждёт порт (доступность видна по пробе и в логе сервиса).
+    const waitMs = def.id === "openbot" ? 0 : PORT_UP_TIMEOUT_MS;
+    const result = await startDashboard(ctx.repoRoot, def.id, serviceExtraEnv(def.id, ctx.state), { waitMs });
     if (result.ok) {
       await appendUsageEvent(ctx.repoRoot, { tool: def.id, action: "toggle", detail: `dashboard start :${result.port}` });
     }
@@ -47,7 +50,7 @@ export async function POST(request: Request) {
     let detail: string;
     if (enabled) {
       // включили, а сервер был выключен - запускаем немедленно
-      const result = await startDashboard(ctx.repoRoot, def.id, serviceExtraEnv(def.id, ctx.state));
+      const result = await startDashboard(ctx.repoRoot, def.id, serviceExtraEnv(def.id, ctx.state), { waitMs: PORT_UP_TIMEOUT_MS });
       detail = result.ok ? result.detail : result.error;
     } else {
       const result = await stopDashboard(ctx.repoRoot, def.id);

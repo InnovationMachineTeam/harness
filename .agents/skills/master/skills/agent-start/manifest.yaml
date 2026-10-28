@@ -7,5 +7,5 @@ source:
   version: 1.0.0
   hash: builtin-agent-start-1
   update: manual-review
-runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
 tags: [session-start, git-status, context, planning, handoff, старт-сессии]

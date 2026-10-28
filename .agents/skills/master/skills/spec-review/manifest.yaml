@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: spec-review
+title: Spec review
+description: Используй этот навык для стресс-теста концепции и многостороннего ревью спецификации или дизайн-документа роем Goldfish-субагентов с нулевым контекстом; цикл доработки до нуля находок с подтверждением правок пользователем. Адаптация skills egm_brainstorm, egm_review_loop, egm_resolve из google/elephant-goldfish-model (Apache-2.0).
+source:
+  version: 1.1.0
+  hash: builtin-spec-review-2
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [spec, review, goldfish, критика, стресс-тест, спека, ревью, субагенты]

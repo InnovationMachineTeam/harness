@@ -185,7 +185,7 @@ export function skillLifecycleInfo(item: {
 /* ------------------------------ MCP ------------------------------ */
 
 export function mcpLifecycleInfo(server: { name: string; hooks?: PartialHooks }): LifecycleInfo {
-  const targets = ["state.mcp.servers (реестр)", "проектный .mcp.json", "пользовательские конфиги claude/codex/cursor/opencode (kimi, zcode - проектный .mcp.json)"];
+  const targets = ["state.mcp.servers (реестр)", "проектный .mcp.json", "пользовательские конфиги claude/codex/cursor/opencode (kimi, zcode, antigravity - проектные файлы)"];
   return {
     domain: "MCP-сервер",
     name: server.name,

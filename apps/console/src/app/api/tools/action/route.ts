@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { invalidateDashboardCache } from "@/core/cache";
 import { buildComboInstallSteps, buildInstallSteps, buildInitSteps, buildUninstallSteps, buildUpdateSteps, cleanupAfterUninstall, sanitizeRuntimes, sanitizeToolParams } from "@/core/toolActions";
 import { startToolJob, type ToolJobStep } from "@/core/toolJobs";
-import { startDashboard, stopDashboard } from "@/core/dashboards";
+import { PORT_UP_TIMEOUT_MS, startDashboard, stopDashboard } from "@/core/dashboards";
 import { serviceExtraEnv } from "@/core/lightragLlm";
 import { syncMcp } from "@/core/mcp/sync";
 import { runLifecycleHook } from "@/core/lifecycleHooks";
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
   // пробой порта), а не detached-шагами job'а.
   const startService = async (target: ToolDef): Promise<string> => {
     if (target.uninstallStopsDashboard !== true || !target.dashboard) return "";
-    const result = await startDashboard(ctx.repoRoot, target.id, serviceExtraEnv(target.id, ctx.state));
+    const result = await startDashboard(ctx.repoRoot, target.id, serviceExtraEnv(target.id, ctx.state), { waitMs: PORT_UP_TIMEOUT_MS });
     return result.ok ? result.detail : `сервис не запущен: ${result.error}`;
   };
 

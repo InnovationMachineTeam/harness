@@ -7,5 +7,5 @@ source:
   version: 1.1.0
   hash: builtin-codebase-research-2
   update: manual-review
-runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, antigravity, provider]
 tags: [research, codebase, code, documentation, tests, evidence, investigation, исследование]

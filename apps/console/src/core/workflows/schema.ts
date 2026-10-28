@@ -20,6 +20,8 @@ export const roleFrontmatterSchema = z.object({
   tools: stringList,
   defaultTier: z.enum(MODEL_TIERS).optional(),
   defaultEffort: z.enum(EFFORT_LEVELS).optional(),
+  /** Роль публикуется как именованный субагент-персона в рантаймах с файловыми субагентами (agentSync). */
+  subagent: z.boolean().optional(),
 });
 export type RoleFrontmatter = z.infer<typeof roleFrontmatterSchema>;
 

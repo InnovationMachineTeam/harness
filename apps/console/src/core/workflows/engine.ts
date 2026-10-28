@@ -10,6 +10,7 @@ import { runAgentLoop, loopReceiptId, type LoopTool } from "../agentLoop";
 import { enabledMcpServers, resolveProviderCandidate } from "../agentTools";
 import { callMcpTool, listMcpTools } from "../mcp/client";
 import { loadConsoleState, isMandatoryWorkspace } from "../state";
+import { adoptedLessonsContext } from "../lessonsLibrary";
 import { parseTaskProviderId, providerBaseUrlError, providerPresetById, type ModelTier } from "../providers";
 import { loadInternalSkills, loadRoles } from "./catalog";
 import { syncTaskToAgentPlane } from "./agentplane";
@@ -387,6 +388,8 @@ function sectionPrompt(opts: {
   roles: ResolvedRole[];
   assignment: string;
   skills: string[];
+  /** Блок принятых уроков библиотеки (adoptedLessonsContext); пустая строка - блока нет. */
+  lessons?: string;
   verdictRequired: boolean;
 }): string {
   const context = Object.entries(opts.state.artifacts)
@@ -402,6 +405,7 @@ function sectionPrompt(opts: {
     "Phase: " + opts.node.phase,
     opts.node.description ? "Описание шага: " + opts.node.description : "",
     roles ? "## Роли\n" + roles : "",
+    opts.lessons ? opts.lessons : "",
     opts.assignment ? "## Задание секции\n" + opts.assignment : "",
     opts.skills.length ? "## Master skills\n" + opts.skills.join("\n\n") : "",
     context ? "## Доступные артефакты\n" + context : "",
@@ -511,6 +515,8 @@ export async function runAgentCall(opts: {
   const isCancelled = (): boolean => opts.store.getRun(opts.run.id)?.status === "cancelled";
   const tier = opts.node.runtime.tier ?? opts.roles.find((role) => role.defaultTier)?.defaultTier ?? "standard";
   const skills = await collectSkills(opts.repoRoot, opts.run, opts.roles);
+  // Принятые уроки библиотеки (.agents/lessons): одно чтение на вызов секции; недоступная библиотека не ломает прогон.
+  const lessons = await adoptedLessonsContext(opts.repoRoot).catch(() => "");
   const unavailableMcp = new Set(opts.roles.flatMap((role) => role.unavailable).filter((item) => item.kind === "mcp").map((item) => item.id));
   const agentId = (opts.roles[0]?.id ?? "agent") + ":" + opts.node.id + ":" + opts.section;
   const execute = async (runtimeId: string): Promise<AgentResult> => {
@@ -530,7 +536,7 @@ export async function runAgentCall(opts: {
     const prompt = sectionPrompt({
       section: opts.section, node: opts.node, run: opts.run, state: opts.state,
       roles: opts.roles, assignment: opts.assignment, skills: skills.map((skill) => skill.content),
-      verdictRequired: opts.verdictRequired,
+      lessons, verdictRequired: opts.verdictRequired,
     });
     // Промт секции в ledger: privacy прогона решает, хранится текст (full), размер с хешем (metadata) или ничего (aggregates).
     opts.store.appendEvent(opts.run.id, "step.prompt", {
@@ -655,7 +661,7 @@ export async function runAgentCall(opts: {
     ].filter(Boolean).join("\n\n");
     const prompt = sectionPrompt({
       section: opts.section, node: opts.node, run: opts.run, state: opts.state,
-      roles: [], assignment: opts.assignment, skills: [],
+      roles: [], assignment: opts.assignment, skills: [], lessons,
       verdictRequired: opts.verdictRequired,
     });
     opts.store.appendEvent(opts.run.id, "step.prompt", {

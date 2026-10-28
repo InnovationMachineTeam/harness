@@ -206,13 +206,15 @@ function SkillList({
 
 const MCP_LABEL_FILTERS: Array<{ key: McpLabel | "all"; label: string }> = [
   { key: "all", label: "Все" },
+  { key: "builtin", label: "builtin" },
   { key: "preset", label: "preset" },
   { key: "plugin", label: "plugin" },
   { key: "tool", label: "tool" },
   { key: "manual", label: "manual" },
 ];
 
-const MCP_LABEL_TONE: Record<McpLabel, "neutral" | "amber" | "emerald" | "sky"> = {
+const MCP_LABEL_TONE: Record<McpLabel, "solid" | "neutral" | "amber" | "emerald" | "sky"> = {
+  builtin: "solid",
   preset: "neutral",
   plugin: "amber",
   tool: "emerald",

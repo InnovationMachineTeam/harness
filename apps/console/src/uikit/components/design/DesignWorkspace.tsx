@@ -621,7 +621,7 @@ function DesignToolsPanel(props: { onChanged: () => Promise<void> }) {
 
   const toggle = async (preset: McpPresetInfo, action: "install" | "enable" | "disable") => {
     const consequences: Record<string, string> = {
-      install: `Сервер "${preset.name}" войдёт в глобальный реестр MCP включённым и будет синхронизирован: запись появится в проектном .mcp.json и пользовательских конфигах рантаймов (claude, codex, cursor, opencode). Выполнится hook install, если он объявлен.`,
+      install: `Сервер "${preset.name}" войдёт в глобальный реестр MCP включённым и будет синхронизирован: запись появится в проектном .mcp.json, .agents/mcp_config.json и пользовательских конфигах рантаймов (claude, codex, cursor, opencode). Выполнится hook install, если он объявлен.`,
       enable: `Сервер "${preset.name}" будет включён в синке: запись появится в проектном .mcp.json и пользовательских конфигах рантаймов. Выполнится hook enable, если он объявлен.`,
       disable: `Сервер "${preset.name}" будет удалён из файлов синка (проектный .mcp.json, конфиги рантаймов); запись в реестре сохранится - вернуть можно включением. Выполнится hook disable, если он объявлен.`,
     };

@@ -2,7 +2,7 @@
 
 import { CheckCircle2, ChevronDown, Download, FileCog, Play, RefreshCw, ShieldCheck } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
-import { Button, Chip, EmptyState, Input, Loading, Notice, Panel, SectionLabel, Segmented, cx } from "@/uikit";
+import { Button, Chip, EmptyState, FieldLabel, Input, Loading, Modal, Notice, Panel, SectionLabel, Segmented, Textarea, Toggle, cx } from "@/uikit";
 
 type Status = "verified" | "degraded" | "missing";
 
@@ -66,6 +66,8 @@ interface ExceptionRecord {
   reason: string;
   approvedBy: string;
   expiresAt: string;
+  singleUse?: boolean;
+  scope?: { tools?: string[]; pathPattern?: string; commandPattern?: string };
 }
 
 interface JournalAggregates {
@@ -140,6 +142,57 @@ export function GuardrailsPanel() {
   const [expandedCheck, setExpandedCheck] = useState<string | null>(null);
   const [expandedIntegration, setExpandedIntegration] = useState<string | null>(null);
   const [expandedException, setExpandedException] = useState<string | null>(null);
+  const [exceptionForm, setExceptionForm] = useState<{ ruleId: string; reason: string; days: string; singleUse: boolean; commandPattern: string; pathPattern: string; tools: string } | null>(null);
+  const [exceptionBusy, setExceptionBusy] = useState(false);
+  const [exceptionError, setExceptionError] = useState<string | null>(null);
+
+  const openExceptionForm = (ruleId: string) => {
+    setExceptionError(null);
+    setExceptionForm({ ruleId, reason: "", days: "7", singleUse: false, commandPattern: "", pathPattern: "", tools: "" });
+  };
+
+  const submitException = async () => {
+    if (!exceptionForm) return;
+    setExceptionBusy(true);
+    setExceptionError(null);
+    try {
+      const response = await fetch("/api/guardrails/exceptions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ruleId: exceptionForm.ruleId.trim(),
+          reason: exceptionForm.reason.trim(),
+          days: Number(exceptionForm.days) || undefined,
+          singleUse: exceptionForm.singleUse,
+          scope: {
+            tools: exceptionForm.tools.trim() ? exceptionForm.tools.split(",").map((item) => item.trim()).filter(Boolean) : [],
+            pathPattern: exceptionForm.pathPattern.trim() || undefined,
+            commandPattern: exceptionForm.commandPattern.trim() || undefined,
+          },
+        }),
+      });
+      const json = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(json.error ?? response.statusText);
+      setExceptionForm(null);
+      await load();
+    } catch (error) {
+      setExceptionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setExceptionBusy(false);
+    }
+  };
+
+  const removeExceptionById = async (id: string) => {
+    setExceptionError(null);
+    try {
+      const response = await fetch(`/api/guardrails/exceptions?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+      const json = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(json.error ?? response.statusText);
+      await load();
+    } catch (error) {
+      setExceptionError(error instanceof Error ? error.message : String(error));
+    }
+  };
 
   const load = useCallback(async () => {
     setError(null);
@@ -257,22 +310,30 @@ export function GuardrailsPanel() {
           <span className="min-w-0 flex-1 truncate text-[10px] text-fg-muted" title={event.reason}>{event.reason}</span>
           <span className="font-mono text-[9px] text-fg-faint">{event.integrationId ?? event.runtime ?? ""}</span>
           {event.exceptionId ? <Chip tone="sky">исключение {event.exceptionId}</Chip> : null}
+          {event.effect === "block" && event.ruleId && !event.exceptionId ? (
+            <Button size="xs" onClick={() => openExceptionForm(event.ruleId!)} title="создать исключение для правила">подтвердить</Button>
+          ) : null}
           <span className="font-mono text-[9px] text-fg-faint">{event.at ? new Date(event.at).toLocaleTimeString() : ""}{typeof event.latencyMs === "number" ? ` · ${event.latencyMs} мс` : ""}</span>
         </div>)}</div> : <EmptyState size="sm">Решений пока нет - журнал заполняется хуками и проверками.</EmptyState>}
       </Panel> : null}
-      {scope === "exceptions" ? <Panel title="Исключения политики" actions={<span className="text-[10px] text-fg-faint">guardrails/exceptions/*.json</span>}>
+      {scope === "exceptions" ? <Panel title="Исключения политики" actions={<span className="text-[10px] text-fg-faint"><Button size="xs" variant="primary" className="mr-2" onClick={() => openExceptionForm("")}>Создать исключение</Button>guardrails/exceptions/*.json</span>}>
+        {exceptionError ? <Notice tone="error">{exceptionError}</Notice> : null}
         {exceptions?.active.length ? <div className="space-y-2">{exceptions.active.map((item) => {
           const open = expandedException === item.id;
           const expiredSoon = Date.parse(item.expiresAt) - Date.now() < 7 * 24 * 60 * 60 * 1000;
           return <button type="button" key={item.id} aria-expanded={open} onClick={() => setExpandedException(open ? null : item.id)} className="block w-full rounded-xl border border-line bg-surface/60 p-4 text-left transition-colors hover:border-line-strong">
             <div className="flex items-start gap-3">
               <div className="min-w-0 flex-1"><h3 className="font-mono text-xs font-semibold text-fg">{item.id}</h3><p className="mt-1 text-[11px] text-fg-muted">{item.reason}</p></div>
-              <div className="flex shrink-0 items-center gap-1.5"><Chip tone="emerald">активно</Chip>{expiredSoon ? <Chip tone="amber">истекает</Chip> : null}<ChevronDown size={14} className={cx("text-fg-faint transition-transform", open && "rotate-180")}/></div>
+              <div className="flex shrink-0 items-center gap-1.5">{item.singleUse ? <Chip tone="sky">разовое</Chip> : null}<Chip tone="emerald">активно</Chip>{expiredSoon ? <Chip tone="amber">истекает</Chip> : null}<ChevronDown size={14} className={cx("text-fg-faint transition-transform", open && "rotate-180")}/></div>
             </div>
             {open ? <div className="mt-3 grid gap-2 border-t border-line/70 pt-3 text-[10px] leading-relaxed md:grid-cols-2">
               <Detail title="Правило"><span className="font-mono">{item.ruleId}</span></Detail>
               <Detail title="Действует до">{new Date(item.expiresAt).toLocaleString()}</Detail>
               <Detail title="Одобрил" wide>{item.approvedBy}</Detail>
+              {item.scope?.tools?.length ? <Detail title="Инструменты"><span className="font-mono">{item.scope.tools.join(", ")}</span></Detail> : null}
+              {item.scope?.pathPattern ? <Detail title="Шаблон пути"><span className="font-mono">{item.scope.pathPattern}</span></Detail> : null}
+              {item.scope?.commandPattern ? <Detail title="Шаблон команды"><span className="font-mono">{item.scope.commandPattern}</span></Detail> : null}
+              <div className="md:col-span-2"><Button size="xs" variant="danger" onClick={() => void removeExceptionById(item.id)}>Удалить исключение</Button></div>
             </div> : null}
           </button>;
         })}</div> : <EmptyState size="sm">Активных исключений нет.</EmptyState>}
@@ -322,5 +383,59 @@ export function GuardrailsPanel() {
         </button>;
       })}{!integrations.length ? <EmptyState>Интеграции не найдены.</EmptyState> : null}</div>}
     </> : null}
+
+    <Modal
+      open={exceptionForm !== null}
+      onClose={() => setExceptionForm(null)}
+      title="Новое исключение политики"
+      description="Разрешение человека для правила guard. Разовое удаляется после первого применения; постоянное действует по шаблону области до истечения срока."
+      footer={
+        <>
+          <Button variant="ghost" size="md" onClick={() => setExceptionForm(null)}>Отмена</Button>
+          <Button variant="primary" size="md" disabled={exceptionBusy || !exceptionForm?.ruleId.trim() || !exceptionForm?.reason.trim()} onClick={() => void submitException()}>
+            {exceptionBusy ? "Создание…" : exceptionForm?.singleUse ? "Разрешить один раз" : "Создать"}
+          </Button>
+        </>
+      }
+    >
+      {exceptionForm ? (
+        <div className="space-y-3">
+          {exceptionError ? <Notice tone="error">{exceptionError}</Notice> : null}
+          <div>
+            <FieldLabel htmlFor="exc-rule">Правило (id)</FieldLabel>
+            <Input id="exc-rule" className="mt-1 w-full font-mono" value={exceptionForm.ruleId} onChange={(event) => setExceptionForm({ ...exceptionForm, ruleId: event.target.value })} placeholder="git.force-push" />
+          </div>
+          <div>
+            <FieldLabel htmlFor="exc-reason">Причина решения</FieldLabel>
+            <Textarea id="exc-reason" className="mt-1 min-h-16 w-full" value={exceptionForm.reason} onChange={(event) => setExceptionForm({ ...exceptionForm, reason: event.target.value })} placeholder="Почему разрешение обоснованно" />
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className="w-28">
+              <FieldLabel htmlFor="exc-days">Срок, дней</FieldLabel>
+              <Input id="exc-days" className="mt-1 w-full" type="number" min={1} max={365} value={exceptionForm.days} onChange={(event) => setExceptionForm({ ...exceptionForm, days: event.target.value })} disabled={exceptionForm.singleUse} />
+            </div>
+            <div className="flex items-end gap-2 pb-1">
+              <Toggle checked={exceptionForm.singleUse} onChange={(value) => setExceptionForm({ ...exceptionForm, singleUse: value, days: value ? "1" : exceptionForm.days })} ariaLabel="разовое исключение" />
+              <span className="text-xs text-fg-faint">разовое (один вызов)</span>
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <div>
+              <FieldLabel htmlFor="exc-command">Шаблон команды (regex)</FieldLabel>
+              <Input id="exc-command" className="mt-1 w-full font-mono" value={exceptionForm.commandPattern} onChange={(event) => setExceptionForm({ ...exceptionForm, commandPattern: event.target.value })} placeholder="^git push --force-with-lease" />
+            </div>
+            <div>
+              <FieldLabel htmlFor="exc-path">Шаблон пути (regex)</FieldLabel>
+              <Input id="exc-path" className="mt-1 w-full font-mono" value={exceptionForm.pathPattern} onChange={(event) => setExceptionForm({ ...exceptionForm, pathPattern: event.target.value })} placeholder="tests/fixtures/" />
+            </div>
+          </div>
+          <div>
+            <FieldLabel htmlFor="exc-tools">Инструменты (через запятую)</FieldLabel>
+            <Input id="exc-tools" className="mt-1 w-full font-mono" value={exceptionForm.tools} onChange={(event) => setExceptionForm({ ...exceptionForm, tools: event.target.value })} placeholder="Bash, Edit" />
+          </div>
+          <p className="text-[10px] leading-relaxed text-fg-faint">Без шаблонов исключение покрывает все вызовы правила - заполняйте область минимально необходимой. CLI-эквивалент: bun .guardrails/src/cli.ts approve --rule {exceptionForm.ruleId || "<id>"} --reason "…".</p>
+        </div>
+      ) : null}
+    </Modal>
   </div>;
 }

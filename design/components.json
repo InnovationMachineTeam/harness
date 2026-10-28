@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated": "2026-10-04T23:17:55.596Z",
+  "updated": "2026-10-13T21:08:02.000Z",
   "web": [
     {
       "name": "AgentActivityList",
@@ -21,6 +21,14 @@
     {
       "name": "AiSdkPanel",
       "path": "apps/console/src/uikit/components/settings/AiSdkPanel.tsx"
+    },
+    {
+      "name": "ArchitectureMap",
+      "path": "apps/console/src/uikit/components/architecture/ArchitectureMap.tsx"
+    },
+    {
+      "name": "ArchitectureTabs",
+      "path": "apps/console/src/uikit/components/architecture/ArchitectureTabs.tsx"
     },
     {
       "name": "AuditChips",
@@ -269,6 +277,10 @@
     {
       "name": "SubscriptionPicker",
       "path": "apps/console/src/uikit/components/pricing/SubscriptionPicker.tsx"
+    },
+    {
+      "name": "SystemViews",
+      "path": "apps/console/src/uikit/components/architecture/SystemViews.tsx"
     },
     {
       "name": "TasksBoard",

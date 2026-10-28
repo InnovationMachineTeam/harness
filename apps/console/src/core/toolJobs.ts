@@ -1,5 +1,17 @@
 import { spawn, type ChildProcess } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  appendFileSync,
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+  writeSync,
+} from "node:fs";
 import path from "node:path";
 
 /**
@@ -28,6 +40,11 @@ export interface ToolJobStep {
   detached?: boolean;
   /** Стабильный идентификатор шага (обновления: id записи реестра) - в results и метах. */
   stepId?: string;
+  /**
+   * Писать stdout шага в файл (evidence-отчёты rea); stderr - только в терминал.
+   * Файл создаётся заново на каждом запуске; путь валидирует вызывающий роут.
+   */
+  outputFile?: string;
 }
 
 /** Итог выполненного шага (код выхода; null - процесс не запустился или убит сигналом). */
@@ -55,7 +72,7 @@ const ANSI_RE = /\x1b\[[0-9;?]*[a-zA-Z]|\x1b\][^\x07]*\x07/g;
 // N-5: установщики индексов (graphify install, codegraph install, serena init)
 // переписывают файлы хуков рантаймов - вокруг их шагов файлы хуков
 // восстанавливаются к состоянию до шага.
-const PROTECTED_HOOK_FILES = [".claude/settings.json", ".codex/hooks.json", ".cursor/hooks.json"];
+const PROTECTED_HOOK_FILES = [".claude/settings.json", ".codex/hooks.json", ".cursor/hooks.json", ".agents/hooks.json"];
 const INDEX_INSTALLERS = new Set(["codegraph", "graphify", "serena"]);
 
 // Путь строго внутри корня: resolve + boundary-проверка (образец - cleanupAfterUninstall).
@@ -271,21 +288,56 @@ export function startToolJob(opts: {
       return;
     }
     (job as ToolJob & { child?: ChildProcess }).child = child;
-    const onChunk = (chunk: Buffer) => {
-      const text = chunk.toString("utf8").replace(ANSI_RE, "");
-      for (const line of text.split("\r\n").join("\n").split("\n")) {
+    // evidence-файл: stdout шага дублируется в файл (установщики его не задают)
+    let outputFd: number | null = null;
+    if (step.outputFile) {
+      try {
+        mkdirSync(path.dirname(step.outputFile), { recursive: true });
+        outputFd = openSync(step.outputFile, "w");
+      } catch (err) {
+        push(job, `выходной файл недоступен (${String(err)}) - вывод только в терминал`);
+        outputFd = null;
+      }
+    }
+    const closeOutput = (): void => {
+      if (outputFd !== null) {
+        try {
+          closeSync(outputFd);
+        } catch {
+          /* уже закрыт */
+        }
+        outputFd = null;
+      }
+    };
+    const streamText = (text: string): void => {
+      const clean = text.replace(ANSI_RE, "");
+      for (const line of clean.split("\r\n").join("\n").split("\n")) {
         if (line.trim()) push(job, line.trimEnd());
       }
     };
-    child.stdout?.on("data", onChunk);
-    child.stderr?.on("data", onChunk);
+    const onStdout = (chunk: Buffer) => {
+      const text = chunk.toString("utf8");
+      if (outputFd !== null) {
+        try {
+          writeSync(outputFd, text);
+        } catch {
+          /* файловый вывод не критичен для выполнения */
+        }
+      }
+      streamText(text);
+    };
+    const onStderr = (chunk: Buffer) => streamText(chunk.toString("utf8"));
+    child.stdout?.on("data", onStdout);
+    child.stderr?.on("data", onStderr);
     child.on("error", (err) => {
+      closeOutput();
       restoreHooks();
       push(job, `ошибка: ${String(err.message ?? err)}`);
       recordResult(1);
       runNext(index + 1, step.optional ? null : 1);
     });
     child.on("close", (code) => {
+      closeOutput();
       restoreHooks();
       recordResult(code);
       if (code === 0) {

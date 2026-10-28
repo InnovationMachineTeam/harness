@@ -262,12 +262,13 @@ function codeBurnSummary(repoRoot: string, sinceIso: string, catalog: Awaited<Re
 }
 
 /** Компактная JSON-сводка отчёта без текстов сообщений (для промпта анализа). */
-export async function buildDataSummary(repoRoot: string, kind: OptimizationKind): Promise<Record<string, unknown>> {
+export async function buildDataSummary(repoRoot: string, kind: OptimizationKind, workspaces: string[] = []): Promise<Record<string, unknown>> {
   const sinceIso = new Date(Date.now() - REPORT_PERIOD_DAYS * 86_400_000).toISOString();
   // сбор индекса - без гарантии: сводка строится и на пустом индексе
   void ensureSessionsIndex(repoRoot).catch(() => 0);
   const catalog = await readCatalog(repoRoot);
-  return kind === "claudeInsights" ? claudeInsightsSummary(repoRoot, sinceIso, catalog) : codeBurnSummary(repoRoot, sinceIso, catalog);
+  const base = kind === "claudeInsights" ? claudeInsightsSummary(repoRoot, sinceIso, catalog) : codeBurnSummary(repoRoot, sinceIso, catalog);
+  return { ...base, configuredWorkspaces: workspaces };
 }
 
 const KIND_FOCUS: Record<OptimizationKind, string> = {
@@ -287,8 +288,12 @@ export function buildReportPrompt(kind: OptimizationKind, summary: Record<string
     "Опирайся на числа из статистики; каждая рекомендация - конкретное действие, которое можно выполнить в этом репозитории.",
     "",
     "Верни СТРОГО один JSON-объект без пояснений и markdown-обёртки, формат:",
-    '{"recommendations":[{"id":"короткий-латинский-идентификатор","title":"краткое действие","detail":"что сделать и на каких числах основано","impact":"high|medium|low"}]}',
+    '{"recommendations":[{"id":"короткий-латинский-идентификатор","title":"краткое действие","detail":"что сделать и на каких числах основано","impact":"high|medium|low","mode":"auto|manual","scope":"global|<путь рабочей папки>"}]}',
     "Требования: 5-10 рекомендаций, тексты на русском языке, уникальные id, сначала рекомендации с impact=high.",
+    "Поле mode: auto - рекомендацию может выполнить агент в этом репозитории (правки кода, конфигов, навыков, хуков, команд); "
+      + "manual - требуется ручное действие человека вне репозитория (подписки, входы во внешние сервисы, покупки, изменения на стороне провайдера).",
+    "Поле scope: если рекомендация относится к конкретной рабочей папке - укажи её путь из списка configuredWorkspaces "
+      + "(или из topProjects статистики); если ко всем папкам или не привязана к папке - \"global\".",
     "",
     "Статистика (JSON):",
     JSON.stringify(summary),
@@ -337,7 +342,7 @@ async function resolveReportProvider(
   if (baseUrlError) return baseUrlError;
   const precheck = await resolveProviderToken(preset, entry);
   if (!precheck.ok) return precheck.error;
-  const summary = await buildDataSummary(repoRoot, kind);
+  const summary = await buildDataSummary(repoRoot, kind, workspaceDirs(state));
   return { preset, providerId, model, entry, baseUrl: entry.baseUrl.trim(), prompt: buildReportPrompt(kind, summary) };
 }
 

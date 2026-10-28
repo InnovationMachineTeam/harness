@@ -4,8 +4,8 @@ import { RUNTIME_ADAPTERS } from "../src/runtimeAdapters";
 import { INTEGRATIONS } from "../src/integrations";
 
 describe("реестр рантайм-адаптеров", () => {
-  test("все шесть рантаймов присутствуют", () =>
-    expect(RUNTIME_ADAPTERS.map((adapter) => adapter.id).sort()).toEqual(["claude", "codex", "cursor", "kimi", "opencode", "zcode"]));
+  test("все семь рантаймов присутствуют", () =>
+    expect(RUNTIME_ADAPTERS.map((adapter) => adapter.id).sort()).toEqual(["antigravity", "claude", "codex", "cursor", "kimi", "opencode", "zcode"]));
 
   test("check подтверждает все подключённые точки", () => {
     const rows = adaptersCheck(process.cwd());

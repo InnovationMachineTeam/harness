@@ -1,0 +1,11 @@
+apiVersion: harness/v1
+kind: InternalSkill
+id: docs-drift
+title: Docs drift
+description: "Используй этот навык для проверки согласованности документации и кода: детекция дрейфа между документами и текущим исходным кодом по категориям Missing Features, Incomplete Models, Logic Shortcuts, Architectural Divergence и обратный дрейф; датированный отчёт расхождений. Адаптация skill egm_drift_report из google/elephant-goldfish-model (Apache-2.0)."
+source:
+  version: 1.0.0
+  hash: builtin-docs-drift-1
+  update: manual-review
+runtimes: [claude, codex, cursor, kimi, zcode, opencode, provider]
+tags: [docs, drift, документация, согласованность, код, отчёт]
