@@ -260,7 +260,7 @@ describe("shipped roles", () => {
   test("внутренние навыки содержат согласованный frontmatter и eval-наборы", async () => {
     const repoRoot = path.resolve(import.meta.dir, "../../../../..");
     const skills = (await loadInternalSkills(repoRoot)).filter((skill) => (skill.group ?? "master") === "master");
-    const expectedIds = ["codebase-research", "docs-drift", "lessons-learned", "requirements-clarifier", "spec-review", "system-design"];
+    const expectedIds = ["codebase-research", "docs-drift", "lessons-learned", "requirements-clarifier", "spec-review", "system-design", "unlazy"];
     expect(skills.map((skill) => skill.value.id).sort()).toEqual(expectedIds);
     // версии и хэши соответствуют манифестам мастер-каталога
     const expectedSource: Record<string, { version: string; hash: string }> = {
@@ -270,6 +270,7 @@ describe("shipped roles", () => {
       "requirements-clarifier": { version: "1.1.0", hash: "builtin-requirements-clarifier-2" },
       "spec-review": { version: "1.1.0", hash: "builtin-spec-review-2" },
       "system-design": { version: "1.1.0", hash: "builtin-system-design-2" },
+      unlazy: { version: "2.1.0", hash: "builtin-unlazy-1" },
     };
 
     for (const skill of skills) {
