@@ -25,8 +25,10 @@ beforeEach(() => {
   delete process.env.HARNESS_CONSOLE_STATE;
 });
 
-afterEach(async () => {
-  process.env.HARNESS_CONSOLE_STATE = previousStateEnv;
+afterEach(() => {
+  // присваивание undefined превратило бы переменную в строку "undefined"
+  if (previousStateEnv === undefined) delete process.env.HARNESS_CONSOLE_STATE;
+  else process.env.HARNESS_CONSOLE_STATE = previousStateEnv;
 });
 
 describe("setupGateRequired", () => {
