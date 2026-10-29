@@ -45,6 +45,11 @@ export interface ToolJobStep {
    * Файл создаётся заново на каждом запуске; путь валидирует вызывающий роут.
    */
   outputFile?: string;
+  /**
+   * Дополнение окружения шага поверх окружения консоли (setup wizard: PATH
+   * с ~/.bun/bin после установки bun инсталлером в том же job'е).
+   */
+  env?: Record<string, string>;
 }
 
 /** Итог выполненного шага (код выхода; null - процесс не запустился или убит сигналом). */
@@ -249,7 +254,7 @@ export function startToolJob(opts: {
       try {
         detachedChild = spawn(step.command[0], step.command.slice(1), {
           cwd: step.cwd ?? opts.defaultCwd,
-          env: process.env,
+          env: step.env ? { ...process.env, ...step.env } : process.env,
           detached: true,
           stdio: ["ignore", "ignore", "ignore"],
         });
@@ -277,7 +282,7 @@ export function startToolJob(opts: {
     try {
       child = spawn(step.command[0], step.command.slice(1), {
         cwd: step.cwd ?? opts.defaultCwd,
-        env: process.env,
+        env: step.env ? { ...process.env, ...step.env } : process.env,
         stdio: ["pipe", "pipe", "pipe"],
       });
     } catch (err) {

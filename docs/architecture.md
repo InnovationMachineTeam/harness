@@ -281,6 +281,12 @@ runtime event
 | `GET /api/tools/job?jobId=` | SSE-стрим job'а установки инструмента (файловый лог); завершающий кадр `{ done, exitCode, results? }` несёт итоги шагов (stepId/exitCode) |
 | `POST /api/tools/job/input` | Ввод в stdin job'а (интерактивные установщики) |
 | `GET /api/tools/usage` | События tools-usage.json + внешние метрики (CLI/файлы) |
+| `GET /api/setup/gate` | Лёгкая проверка для SetupGate (layout): нужна ли первичная установка; на новой установке фиксирует её начало (`setupWizard.done=false` в state.json) до первых сохранений состояния |
+| `GET /api/setup/status` | Полный статус Setup Wizard (/setup): gate, система (ОС, brew/apt), зависимости (bun, node ≥ 22), системные утилиты, детект рантаймов агентов, пакетный менеджер, зависимости воркспейса, список инструментов для выбора |
+| `POST /api/setup/package-manager` | Выбор менеджера глобальных npm-пакетов (общий с setup.sh файл `.agents/console/package-manager.json`) |
+| `POST /api/setup/system` | Установка недостающих системных компонентов (`targets`: `bun`, `node`, `workspace` - bun install): шаги повторяют setup.sh литеральными командами, job (SSE `/api/tools/job`); интерактивные случаи (нет Homebrew, sudo на Linux) - отказ с подсказкой terminal-скрипта |
+| `POST /api/setup/tools` | Пакетная установка инструментов консоли (`toolIds`): один job из buildInstallSteps каждого инструмента, после успеха - финализация (записи installed, MCP-пресеты, sync, tools.env, хуки) |
+| `POST /api/setup/complete` | Завершение или пропуск визарда (`skipped`): `setupWizard.done=true` в state.json, gate консоли снимается |
 | `GET /api/rea` | Раздел "Реверс": статус CLI rea, каталог операций (`core/rea.ts`), провайдеры (`rea providers --json`, синхронный снимок), реестр анализов (последние 50) |
 | `POST /api/rea/run` | Операции rea как job'ы инструментов (терминал - SSE `/api/tools/job`): `analysis` - analyze/inspect-* с evidence-файлом, `environment` - environment-build в `sources/<имя>` (каталог должен отсутствовать или быть пустым), `doctor`; записи - `.agents/console/rea/analyses.jsonl`, onDone job'а обновляет статус |
 | `GET /api/rea/analysis?id=` | Evidence-отчёт записи реестра (только по id; файл больше 4 МБ - первые 4 МБ с признаком обрезки) |
@@ -348,6 +354,7 @@ runtime event
   "graphifyLlm": { "preset", "apiKey", "modelId?", "providerId?" },
   "agui": { "enabled": false, "token": "" },  // AG-UI endpoint (POST /api/agui): Bearer-токен внешних клиентов; включается в "Настройки → Основные"
   "mcpHttp": { "enabled": false, "token": "" },  // HTTP-транспорт собственного MCP-сервера (POST /api/mcp/harness); включается в "Настройки → MCP"
+  "setupWizard": { "done": true, "completedAt": "...", "skippedAt": null },  // Setup Wizard /setup: gate консоли на новой установке (правила - core/setupWizard.ts)
   "lastMcpSync": { "<target>": { "ok", "applied", "removed", "error" } }
 }
 ```

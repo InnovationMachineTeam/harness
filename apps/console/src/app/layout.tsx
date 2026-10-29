@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { DesignProvider } from "@/uikit/components/DesignProvider";
 import { Nav } from "@/uikit/components/Nav";
+import { SetupGate } from "@/uikit/components/SetupGate";
 import { StoreHydrator } from "@/uikit/components/StoreHydrator";
 import { UIKitHost } from "@/uikit";
 import "./globals.css";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <DesignProvider />
         <div className="mx-auto max-w-6xl px-6 py-8">
           <StoreHydrator />
+          <SetupGate />
           <Nav />
           {children}
         </div>

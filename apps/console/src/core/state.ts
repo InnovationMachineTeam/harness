@@ -392,7 +392,19 @@ export interface ConsoleState {
     modelBaseUrl?: string;
     singleUser?: boolean;
   };
+  /**
+   * Setup Wizard первой установки (/setup): gate консоли до завершения или
+   * пропуска. Формат и правила gate - core/setupWizard.ts.
+   */
+  setupWizard?: SetupWizardState;
   lastMcpSync: Record<string, TargetSyncResult>;
+}
+
+/** Состояние Setup Wizard (страница /setup, правила gate - core/setupWizard.ts). */
+export interface SetupWizardState {
+  done: boolean;
+  completedAt: string | null;
+  skippedAt: string | null;
 }
 
 /** Эффективный рантайм для задачи: назначенный или рантайм по умолчанию (★). */
@@ -599,10 +611,22 @@ export async function loadConsoleState(repoRoot: string): Promise<ConsoleState> 
         singleUser: raw.openbotConfig?.singleUser !== false,
       },
       lastMcpSync: raw.lastMcpSync ?? {},
+      ...(raw.setupWizard !== undefined ? { setupWizard: normalizeSetupWizard(raw.setupWizard) ?? undefined } : {}),
     };
   } catch {
     return fallback;
   }
+}
+
+/** Нормализация поля setupWizard (формат - core/setupWizard.ts); битое значение отбрасывается. */
+export function normalizeSetupWizard(value: unknown): SetupWizardState | null {
+  if (!value || typeof value !== "object") return null;
+  const raw = value as Record<string, unknown>;
+  return {
+    done: raw.done === true,
+    completedAt: typeof raw.completedAt === "string" ? raw.completedAt : null,
+    skippedAt: typeof raw.skippedAt === "string" ? raw.skippedAt : null,
+  };
 }
 
 /** Атомарная запись: tmp-файл с уникальным суффиксом (параллельные сохранения в одну миллисекунду не совпадают именами) + rename. */
